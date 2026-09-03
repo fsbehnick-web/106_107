@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Расписание — группы 106 и 107</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0d131c;
+    --panel: #151d29;
+    --panel-2: #1a2431;
+    --line: #26313f;
+    --g106: #c7c0b0;
+    --g106-dim: #948a78;
+    --g106-soft: rgba(199,192,176,0.10);
+    --g107: #c34f68;
+    --g107-dim: #7f3247;
+    --g107-soft: rgba(195,79,104,0.14);
+    --text: #eceae0;
+    --text-dim: #8a9199;
+    --free: #7fd88f;
+    --shadow: 0 10px 30px -12px rgba(0,0,0,0.55);
+    --ease: cubic-bezier(.22,1,.36,1);
+  }
+  body.theme-beige{
+    --bg: #f3ead9;
+    --panel: #fcf7ec;
+    --panel-2: #efe2ca;
+    --line: #ddccac;
+    --g106: #6b4a35;
+    --g106-dim: #8f6c52;
+    --g106-soft: rgba(107,74,53,0.10);
+    --g107: #7a2740;
+    --g107-dim: #a8607a;
+    --g107-soft: rgba(122,39,64,0.10);
+    --text: #382f24;
+    --text-dim: #85765c;
+    --free: #4f7a4a;
+    --shadow: 0 10px 26px -14px rgba(80,60,20,0.28);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Manrope', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    padding: 28px 16px 60px;
+    -webkit-font-smoothing: antialiased;
+    transition: background-color .4s var(--ease), color .3s var(--ease);
+  }
+  .wrap{max-width: 800px; margin: 0 auto;}
+
+  body, .col, .meet-note, .date-pill, .theme-toggle, .slot{
+    transition: background-color .35s var(--ease), border-color .35s var(--ease), color .25s var(--ease), box-shadow .35s var(--ease) !important;
+  }
+
+  @keyframes dropIn{
+    from{ opacity:0; transform: translateY(-10px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+  @keyframes riseIn{
+    from{ opacity:0; transform: translateY(10px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+  @keyframes slotIn{
+    from{ opacity:0; transform: translateY(12px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+  @keyframes pillPop{
+    0%{ transform: scale(.90); }
+    55%{ transform: scale(1.06); }
+    100%{ transform: scale(1); }
+  }
+  .drop-in{
+    opacity:0;
+    animation: dropIn .45s var(--ease) forwards;
+    will-change: opacity, transform;
+  }
+  .drop-in.d1{ animation-delay: .04s; }
+  .drop-in.d2{ animation-delay: .1s; }
+  .drop-in.d3{ animation-delay: .16s; }
+  .rise-in{
+    opacity:0;
+    animation: riseIn .45s var(--ease) forwards;
+    will-change: opacity, transform;
+  }
+  .rise-in.d1{ animation-delay: .14s; }
+  .rise-in.d2{ animation-delay: .2s; }
+  .rise-in.d3{ animation-delay: .26s; }
+
+  .board-header{
+    text-align:center;
+    padding: 6px 10px 26px;
+    margin-bottom: 20px;
+    position:relative;
+  }
+  .board-header::after{
+    content:"";
+    position:absolute;
+    bottom:0; left:50%;
+    transform: translateX(-50%);
+    width:64px; height:2px;
+    background: linear-gradient(90deg, var(--g106), var(--g107));
+    border-radius: 2px;
+    opacity:.55;
+  }
+  .board-header .kicker{
+    letter-spacing: 2.5px;
+    color: var(--text-dim);
+    font-size: 11px;
+    font-weight:600;
+    text-transform:uppercase;
+  }
+  .board-header h1{
+    font-weight: 800;
+    font-size: clamp(26px, 6vw, 36px);
+    margin: 8px 0 6px;
+    letter-spacing: 0.5px;
+    background: linear-gradient(100deg, var(--g106) 20%, var(--text) 55%, var(--g107) 85%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .board-header p{
+    margin:0;
+    color: var(--text-dim);
+    font-size: 13.5px;
+  }
+  .theme-toggle{
+    margin-top: 16px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    padding: 7px 16px;
+    border-radius: 20px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight:600;
+    cursor: pointer;
+    transition: border-color .25s var(--ease), color .25s var(--ease), transform .15s var(--ease);
+  }
+  .theme-toggle:hover{ color: var(--text); border-color: var(--g106-dim); transform: translateY(-1px); }
+  .theme-toggle:active{ transform: translateY(0) scale(.96); }
+
+  .date-rail{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding: 4px 2px 14px;
+    margin-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .date-rail::-webkit-scrollbar{ display:none; }
+  .date-pill{
+    flex: 0 0 auto;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    font-size: 13px;
+    padding: 9px 13px;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align:center;
+    line-height:1.3;
+    transition: border-color .25s var(--ease), color .25s var(--ease), transform .28s cubic-bezier(.34,1.56,.64,1), box-shadow .25s var(--ease), background-color .25s var(--ease);
+  }
+  .date-pill:hover{ transform: translateY(-3px); border-color: var(--g106-dim); }
+  .date-pill:active{ transform: translateY(0) scale(.96); }
+  .date-pill b{display:block; font-size:15.5px; color: var(--text); font-weight:700; transition: color .25s var(--ease);}
+  .date-pill.active{
+    border-color: var(--g106);
+    color: var(--g106);
+    background: var(--g106-soft);
+    box-shadow: 0 6px 16px -8px rgba(0,0,0,0.35);
+  }
+  .date-pill.active b{color: var(--g106);}
+  .date-pill.off b{color: var(--text-dim);}
+  .date-pill.pop{ animation: pillPop .4s cubic-bezier(.34,1.56,.64,1); }
+
+  .day-title-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    margin: 0 0 18px;
+    position:relative;
+  }
+  .day-title{
+    font-size: 14.5px;
+    font-weight:600;
+    color: var(--text-dim);
+    text-align:center;
+    margin: 0;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .today-btn{
+    position:absolute;
+    right:0;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-family:inherit;
+    font-size: 11px;
+    font-weight:700;
+    letter-spacing: .3px;
+    cursor:pointer;
+    opacity:0;
+    pointer-events:none;
+    transform: translateY(-50%) scale(.9);
+    top:50%;
+    transition: opacity .25s var(--ease), transform .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease);
+  }
+  .today-btn.show{
+    opacity:1;
+    pointer-events:auto;
+    transform: translateY(-50%) scale(1);
+  }
+  .today-btn:hover{ color: var(--text); border-color: var(--g106-dim); }
+  .today-btn:active{ transform: translateY(-50%) scale(.94); }
+
+  .date-pill{ position:relative; }
+  .date-pill.today::after{
+    content:"";
+    position:absolute;
+    top:6px; right:6px;
+    width:6px; height:6px;
+    border-radius:50%;
+    background: var(--g107);
+    box-shadow: 0 0 0 0 var(--g107-soft);
+    animation: todayPulse 2.2s ease-out infinite;
+  }
+  .date-pill.today.active::after{ background: var(--bg); }
+  @keyframes todayPulse{
+    0%{ box-shadow: 0 0 0 0 rgba(195,79,104,.45); }
+    70%{ box-shadow: 0 0 0 6px rgba(195,79,104,0); }
+    100%{ box-shadow: 0 0 0 0 rgba(195,79,104,0); }
+  }
+
+  .content-swap{
+    transition: opacity .26s var(--ease), transform .26s var(--ease);
+  }
+  .content-swap.swapping{ opacity:0; transform: translateY(6px) scale(.99); }
+
+  .columns{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 560px){
+    .columns{grid-template-columns: 1fr;}
+  }
+
+  .col{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow:hidden;
+    box-shadow: var(--shadow);
+    transition: transform .35s var(--ease), box-shadow .35s var(--ease), background-color .35s var(--ease), border-color .35s var(--ease);
+  }
+  .col:hover{
+    transform: translateY(-3px);
+    box-shadow: 0 16px 34px -14px rgba(0,0,0,0.5);
+  }
+  .col-head{
+    padding: 13px 16px;
+    font-weight:700;
+    font-size:14px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    position:relative;
+  }
+  .col-head::before{
+    content:"";
+    position:absolute;
+    top:0; left:0; right:0; height:3px;
+  }
+  .col.g106 .col-head{ color: var(--g106); }
+  .col.g106 .col-head::before{ background: linear-gradient(90deg, var(--g106-dim), var(--g106)); }
+  .col.g107 .col-head{ color: var(--g107); }
+  .col.g107 .col-head::before{ background: linear-gradient(90deg, var(--g107-dim), var(--g107)); }
+  .col-head .free-tag{
+    font-size:11px;
+    color: var(--free);
+    font-weight:600;
+  }
+
+  .slot{
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--line);
+    border-left: 3px solid transparent;
+    font-size: 13px;
+    display:flex;
+    gap:10px;
+    cursor: pointer;
+    animation: slotIn .4s var(--ease) both;
+    animation-delay: calc(var(--i, 0) * 0.045s);
+    will-change: opacity, transform;
+    transition: background-color .3s var(--ease), border-left-color .3s var(--ease), padding-left .3s var(--ease);
+  }
+  .slot:hover{ background: var(--panel-2); }
+  .slot:last-child{border-bottom:none;}
+  .slot.now{
+    background: var(--g107-soft);
+    border-left-color: var(--g107);
+    padding-left: 13px;
+  }
+  .slot.now .time{ color: var(--g107); }
+  .slot.now .time::after{
+    content: "сейчас";
+    display:block;
+    margin-top:3px;
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+    color: var(--g107);
+    animation: fadePulse 1.8s ease-in-out infinite;
+  }
+  .slot.past{ opacity:.5; }
+  @keyframes fadePulse{
+    0%,100%{ opacity:1; }
+    50%{ opacity:.45; }
+  }
+  .slot .time{
+    color: var(--text-dim);
+    flex: 0 0 84px;
+    font-size:12px;
+    font-weight:600;
+    padding-top:1px;
+  }
+  .slot .what b{display:block; color: var(--text); font-size:13px; font-weight:600;}
+  .slot .what span{color: var(--text-dim); font-size:12px;}
+  .empty-day{
+    padding: 26px 14px;
+    text-align:center;
+    color: var(--free);
+    font-size:13px;
+    font-weight:600;
+    animation: slotIn .45s var(--ease) both;
+  }
+
+  .meet-note{
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    box-shadow: var(--shadow);
+    animation: slotIn .45s var(--ease) both;
+    animation-delay: .1s;
+  }
+  .meet-note b{color: var(--text);}
+
+  .sheet-scrim{
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .28s var(--ease);
+    z-index: 998;
+  }
+  .sheet-scrim.open{ opacity:1; pointer-events:auto; }
+
+  .detail-sheet{
+    position: fixed;
+    left: 50%;
+    bottom: 0;
+    width: min(92vw, 460px);
+    max-height: 62vh;
+    transform: translate(-50%, 100%);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-bottom: none;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -14px 40px -12px rgba(0,0,0,0.5);
+    padding: 10px 22px calc(22px + env(safe-area-inset-bottom, 0px));
+    z-index: 999;
+    transition: transform .32s cubic-bezier(.22,1,.36,1);
+  }
+  .detail-sheet.open{ transform: translate(-50%, 0); }
+  .detail-sheet.dragging{ transition: none; }
+  .detail-sheet.g106 .sheet-time{ color: var(--g106); }
+  .detail-sheet.g107 .sheet-time{ color: var(--g107); }
+  .detail-sheet.g106 .sheet-meta span::before{ background: var(--g106); }
+  .detail-sheet.g107 .sheet-meta span::before{ background: var(--g107); }
+
+  .sheet-grabber{
+    width: 40px;
+    height: 4px;
+    border-radius: 3px;
+    background: var(--line);
+    margin: 4px auto 14px;
+    cursor: grab;
+    touch-action: none;
+  }
+  .sheet-close{
+    position: absolute;
+    top: 14px; right: 14px;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--text-dim);
+    font-size: 13px;
+    cursor: pointer;
+    transition: color .2s var(--ease), border-color .2s var(--ease), transform .15s var(--ease);
+  }
+  .sheet-close:hover{ color: var(--text); border-color: var(--g106-dim); }
+  .sheet-close:active{ transform: scale(.92); }
+  .sheet-body{
+    max-height: calc(62vh - 60px);
+    overflow-y: auto;
+    touch-action: pan-y;
+  }
+  .sheet-time{
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .5px;
+  }
+  .sheet-title{
+    margin: 6px 0 14px;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .sheet-meta{
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+  .sheet-meta span{
+    position: relative;
+    padding-left: 16px;
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+  .sheet-meta span::before{
+    content: "";
+    position: absolute;
+    left: 0; top: 6px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--text-dim);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.001s !important; transition-duration: 0.001s !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap" id="pageWrap">
+
+  <div class="board-header">
+    <div class="kicker drop-in d1">Расписание</div>
+    <h1 class="drop-in d2">Группы 106 и 107</h1>
+    <p class="drop-in d3">01.03.01 Математика · профиль «Математика. Преподавание математики» · 1–12 сентября 2026, адаптационный модуль</p>
+    <button id="themeToggle" class="theme-toggle drop-in d3" onclick="toggleTheme()" aria-pressed="false">Бежевая тема</button>
+  </div>
+
+  <div class="rise-in d1">
+    <div class="date-rail" id="dateRail" role="tablist" aria-label="Выбор дня"></div>
+    <div class="day-title-row">
+      <div class="day-title" id="dayTitle" aria-live="polite"></div>
+      <button class="today-btn" id="todayBtn" onclick="jumpToToday()" title="Вернуться к сегодняшнему дню">Сегодня</button>
+    </div>
+  </div>
+
+  <div class="content-swap rise-in d2" id="daySwap">
+    <div class="columns">
+      <div class="col g106">
+        <div class="col-head"><span>106 · ВОМ23-ММИ2606</span><span class="free-tag" id="g106Free"></span></div>
+        <div id="g106Slots"></div>
+      </div>
+      <div class="col g107">
+        <div class="col-head"><span>107 · ВОМ23-ММИ2607</span><span class="free-tag" id="g107Free"></span></div>
+        <div id="g107Slots"></div>
+      </div>
+    </div>
+
+    <div class="meet-note" id="meetNote"></div>
+  </div>
+
+</div>
+
+<div class="sheet-scrim" id="sheetScrim" onclick="closeSheet()"></div>
+<div class="detail-sheet" id="detailSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" aria-hidden="true">
+  <div class="sheet-grabber" id="sheetGrabber" aria-hidden="true"></div>
+  <button class="sheet-close" onclick="closeSheet()" aria-label="Закрыть">✕</button>
+  <div class="sheet-body">
+    <div class="sheet-time" id="sheetTime"></div>
+    <h3 class="sheet-title" id="sheetTitle"></h3>
+    <div class="sheet-meta" id="sheetMeta"></div>
+  </div>
+</div>
+
+<script>
+// Расписание группы 106 (ВОМ23-ММИ2606)
+const g106 = {
+  "2026-09-01": [
+    {t:"09:00–10:30", w:"Первый раз на первый курс", d:"ассист. Тихонов С.О. · ауд. 301"},
+    {t:"10:40–12:10", w:"Знакомство со структурой МПГУ и ИМИ", d:"Дирекция ИМИ и представители кафедр · ауд. 402"},
+    {t:"12:40–14:10", w:"Знакомство с ЭБС МПГУ", d:"Курицына Т.В. · ауд. 301"}
+  ],
+  "2026-09-02": [
+    {t:"09:00–10:30", w:"Знакомство со студ. самоуправлением и профсоюзом", d:"Горпенко К.Д., Корноухова Д.Д. · ауд. 402"},
+    {t:"10:40–12:10", w:"МПГУ – не только учёба", d:"Гульянц С.С., представители УВР · ауд. 402"},
+    {t:"12:40–14:10", w:"Геометрия", d:"лекция · доц. Никифорова А.В. · ауд. 401"},
+    {t:"14:20–15:50", w:"Математический анализ", d:"лекция · проф. Матвеев Е.М. · ауд. 401"}
+  ],
+  "2026-09-03": [
+    {t:"09:00–10:30", w:"Знакомство с цифровой образоват. средой МПГУ", d:"лекция · доц. Маняхина В.Г. · ауд. 301"},
+    {t:"10:40–12:10", w:"История России", d:"лекция · доц. Филина Е.И. · ауд. 402"},
+    {t:"12:40–14:10", w:"Алгебра", d:"лекция · проф. Михайлова М.В. · ауд. 401"},
+    {t:"14:20–15:50", w:"Цифровая образоват. среда МПГУ (лаб)", d:"по подгруппам: доц. Маняхина В.Г. 1 п/гр, доц. Иванова Н.Ю. 2 п/гр, ст. пр. Овчарова П.С. 3 п/гр · ауд. 209, 208, 210"}
+  ],
+  "2026-09-04": [
+    {t:"10:40–12:10", w:"Учимся учиться", d:"доц. Чуйкова Н.В. · ауд. 401"},
+    {t:"12:40–14:10", w:"Основы российской государственности", d:"лекция · доц. Максимова Л.Н. · ауд. 402"},
+    {t:"14:20–15:50", w:"Основы российской государственности", d:"лекция · доц. Максимова Л.Н. · ауд. 402"}
+  ],
+  "2026-09-05": [
+    {t:"09:00–15:50", w:"Встречи с кураторами-студентами", d:"весь день · День кураторов"}
+  ],
+  "2026-09-07": [
+    {t:"09:00–10:30", w:"Алгебра", d:"практика · ассист. Артемов Д.Ю. · ауд. 407"},
+    {t:"10:40–12:10", w:"Геометрия", d:"лекция · доц. Никифорова А.В. · ауд. 301"},
+    {t:"14:20–15:50", w:"Тренинг по военно-спортивной подготовке", d:"пр-кт Вернадского, дом 88, спорт. зал"}
+  ],
+  "2026-09-08": [
+    {t:"12:40–14:10", w:"Иностранный язык", d:"практика · доц. Кашпарова В.С. · ауд. 405"},
+    {t:"14:20–15:50", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · ауд. 305"}
+  ],
+  "2026-09-09": [
+    {t:"09:00–10:30", w:"Геометрия", d:"лекция · доц. Никифорова А.В. · ауд. 301"},
+    {t:"10:40–12:10", w:"История России", d:"лекция · доц. Филина Е.И. · ауд. 402"},
+    {t:"12:40–14:10", w:"Геометрия", d:"практика · доц. Никифорова А.В. · ауд. 207"}
+  ],
+  "2026-09-10": [
+    {t:"09:00–10:30", w:"Математический анализ", d:"лекция · проф. Матвеев Е.М. · ауд. 401"},
+    {t:"10:40–12:10", w:"Знакомство с деканатом и его функциями", d:"Машкина А.В. · ауд. 301"},
+    {t:"12:40–14:10", w:"Алгебра", d:"лекция · проф. Михайлова М.В. · ауд. 401"}
+  ],
+  "2026-09-11": [
+    {t:"12:40–14:10", w:"Математический анализ", d:"практика · ассист. Морозенкова М.С. · ауд. 207"},
+    {t:"14:20–15:50", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · ауд. 407"},
+    {t:"16:00–17:30", w:"Речевые практики", d:"практика · ассист. Редькина Д.И. · ауд. 405"}
+  ],
+  "2026-09-12": [
+    {t:"09:00–15:50", w:"Самостоятельные и групповые прогулки", d:"весь день · День здоровья"}
+  ],
+  "2026-09-13": []
+};
+
+// Расписание группы 107 (ВОМ23-ММИ2607)
+const g107 = {
+  "2026-09-01": [
+    {t:"09:00–10:30", w:"Первый раз на первый курс", d:"ассист. Тихонов С.О. · ауд. 301"},
+    {t:"10:40–12:10", w:"Знакомство со структурой МПГУ и ИМИ", d:"Дирекция ИМИ и представители кафедр · ауд. 402"},
+    {t:"12:40–14:10", w:"Знакомство с ЭБС МПГУ", d:"Курицына Т.В. · ауд. 301"},
+    {t:"14:20–15:50", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · ауд. 207"}
+  ],
+  "2026-09-02": [
+    {t:"09:00–10:30", w:"Знакомство со студ. самоуправлением и профсоюзом", d:"Горпенко К.Д., Корноухова Д.Д. · ауд. 402"},
+    {t:"10:40–12:10", w:"МПГУ – не только учёба", d:"Гульянц С.С., представители УВР · ауд. 402"},
+    {t:"12:40–14:10", w:"Геометрия", d:"лекция · доц. Никифорова А.В. · ауд. 401"},
+    {t:"14:20–15:50", w:"Математический анализ", d:"лекция · проф. Матвеев Е.М. · ауд. 401"}
+  ],
+  "2026-09-03": [
+    {t:"09:00–10:30", w:"Знакомство с цифровой образоват. средой МПГУ", d:"лекция · доц. Маняхина В.Г. · ауд. 301"},
+    {t:"10:40–12:10", w:"История России", d:"лекция · доц. Филина Е.И. · ауд. 402"},
+    {t:"12:40–14:10", w:"Алгебра", d:"лекция · проф. Михайлова М.В. · ауд. 401"}
+  ],
+  "2026-09-04": [
+    {t:"10:40–12:10", w:"Учимся учиться", d:"доц. Чуйкова Н.В. · ауд. 401"},
+    {t:"12:40–14:10", w:"Основы российской государственности", d:"лекция · доц. Максимова Л.Н. · ауд. 402"},
+    {t:"14:20–15:50", w:"Основы российской государственности", d:"лекция · доц. Максимова Л.Н. · ауд. 402"},
+    {t:"16:00–17:30", w:"Цифровая образоват. среда МПГУ (лаб)", d:"по подгруппам: доц. Маняхина В.Г. 1 п/гр, доц. Иванова Н.Ю. 2 п/гр, ст. пр. Овчарова П.С. 3 п/гр · ауд. 208, 108, 211"}
+  ],
+  "2026-09-05": [
+    {t:"09:00–15:50", w:"Встречи с кураторами-студентами", d:"весь день · День кураторов"}
+  ],
+  "2026-09-07": [
+    {t:"10:40–12:10", w:"Геометрия", d:"лекция · доц. Никифорова А.В. · ауд. 301"},
+    {t:"12:40–14:10", w:"Алгебра", d:"практика · ассист. Артемов Д.Ю. · ауд. 407"},
+    {t:"14:20–15:50", w:"Тренинг по военно-спортивной подготовке", d:"пр-кт Вернадского, дом 88, спорт. зал"}
+  ],
+  "2026-09-08": [
+    {t:"09:00–10:30", w:"Иностранный язык", d:"практика · доц. Кашпарова В.С. · ауд. 405"},
+    {t:"10:40–12:10", w:"Геометрия", d:"практика · доц. Никифорова А.В. · ауд. 207"}
+  ],
+  "2026-09-09": [
+    {t:"09:00–10:30", w:"Геометрия", d:"лекция · доц. Никифорова А.В. · ауд. 301"},
+    {t:"10:40–12:10", w:"История России", d:"лекция · доц. Филина Е.И. · ауд. 402"},
+    {t:"14:20–15:50", w:"Тренинг по военно-спортивной подготовке", d:"пр-кт Вернадского, дом 88, спорт. зал"}
+  ],
+  "2026-09-10": [
+    {t:"09:00–10:30", w:"Математический анализ", d:"лекция · проф. Матвеев Е.М. · ауд. 401"},
+    {t:"10:40–12:10", w:"Знакомство с деканатом и его функциями", d:"Машкина А.В. · ауд. 301"},
+    {t:"12:40–14:10", w:"Алгебра", d:"лекция · проф. Михайлова М.В. · ауд. 401"}
+  ],
+  "2026-09-11": [
+    {t:"10:40–12:10", w:"Математический анализ", d:"практика · ассист. Морозенкова М.С. · ауд. 207"},
+    {t:"12:40–14:10", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · ауд. 407"},
+    {t:"14:20–15:50", w:"Речевые практики", d:"практика · ассист. Редькина Д.И. · ауд. 405"}
+  ],
+  "2026-09-12": [
+    {t:"09:00–15:50", w:"Самостоятельные и групповые прогулки", d:"весь день · День здоровья"}
+  ],
+  "2026-09-13": []
+};
+
+const dateList = [
+  ["2026-09-01","1 сент","Вт"],
+  ["2026-09-02","2 сент","Ср"],
+  ["2026-09-03","3 сент","Чт"],
+  ["2026-09-04","4 сент","Пт"],
+  ["2026-09-05","5 сент","Сб"],
+  ["2026-09-06","6 сент","Вс"],
+  ["2026-09-07","7 сент","Пн"],
+  ["2026-09-08","8 сент","Вт"],
+  ["2026-09-09","9 сент","Ср"],
+  ["2026-09-10","10 сент","Чт"],
+  ["2026-09-11","11 сент","Пт"],
+  ["2026-09-12","12 сент","Сб"],
+  ["2026-09-13","13 сент","Вс"],
+];
+
+const weekdayNames = ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"];
+
+const dom = {
+  rail: document.getElementById('dateRail'),
+  dayTitle: document.getElementById('dayTitle'),
+  todayBtn: document.getElementById('todayBtn'),
+  daySwap: document.getElementById('daySwap'),
+  g106Slots: document.getElementById('g106Slots'),
+  g106Free: document.getElementById('g106Free'),
+  g107Slots: document.getElementById('g107Slots'),
+  g107Free: document.getElementById('g107Free'),
+  meetNote: document.getElementById('meetNote'),
+  themeToggle: document.getElementById('themeToggle'),
+  sheetScrim: document.getElementById('sheetScrim'),
+  sheet: document.getElementById('detailSheet'),
+  sheetGrabber: document.getElementById('sheetGrabber'),
+  sheetTime: document.getElementById('sheetTime'),
+  sheetTitle: document.getElementById('sheetTitle'),
+  sheetMeta: document.getElementById('sheetMeta'),
+};
+
+function todayISO(){
+  const d = new Date();
+  const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+const TODAY = todayISO();
+
+function pickInitialDate(){
+  if(dateList.some(([iso])=>iso===TODAY)) return TODAY;
+  if(TODAY < dateList[0][0]) return dateList[0][0];
+  return dateList[dateList.length-1][0];
+}
+let currentDate = pickInitialDate();
+
+function weekdayIndex(dateStr){
+  const d = new Date(dateStr + "T00:00:00");
+  return d.getDay();
+}
+
+function lastEnd(items){
+  if(!items || items.length===0) return null;
+  const last = items[items.length-1];
+  const parts = last.t.split("–");
+  return parts.length===2 ? parts[1].trim() : null;
+}
+
+function freeTagText(items, allDayFreeText, busyAllDayText){
+  if(items.length===0) return allDayFreeText;
+  const end = lastEnd(items);
+  return end ? `до ${end}` : busyAllDayText;
+}
+
+function buildRail(){
+  const frag = document.createDocumentFragment();
+  dateList.forEach(([iso,label,wd])=>{
+    const pill = document.createElement('div');
+    pill.className = 'date-pill'
+      + (iso===currentDate ? ' active':'')
+      + ((wd==="Сб"||wd==="Вс")?' off':'')
+      + (iso===TODAY ? ' today':'');
+    pill.dataset.iso = iso;
+    pill.setAttribute('role','tab');
+    pill.setAttribute('aria-selected', iso===currentDate ? 'true':'false');
+    pill.title = iso===TODAY ? `${label} — сегодня` : label;
+    pill.innerHTML = `<b>${label}</b>${wd}`;
+    pill.onclick = ()=>{ if(iso!==currentDate){ currentDate = iso; goToDate(); } };
+    frag.appendChild(pill);
+  });
+  dom.rail.innerHTML = "";
+  dom.rail.appendChild(frag);
+}
+
+function replayAnim(el){
+  el.style.animation = 'none';
+  void el.offsetWidth;
+  el.style.animation = '';
+}
+
+function updateActivePill(){
+  dom.rail.querySelectorAll('.date-pill').forEach(p=>{
+    const isActive = p.dataset.iso === currentDate;
+    p.classList.toggle('active', isActive);
+    p.setAttribute('aria-selected', isActive ? 'true':'false');
+  });
+  const activePill = dom.rail.querySelector('.date-pill.active');
+  if(activePill){
+    replayAnim(activePill);
+    activePill.classList.remove('pop');
+    void activePill.offsetWidth;
+    activePill.classList.add('pop');
+    activePill.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
+  }
+  dom.todayBtn.classList.toggle('show', currentDate !== TODAY);
+}
+
+function goToDate(){
+  updateActivePill();
+  dom.daySwap.classList.add('swapping');
+  window.setTimeout(()=>{
+    render();
+    requestAnimationFrame(()=>{ dom.daySwap.classList.remove('swapping'); });
+  }, 220);
+}
+
+function jumpToToday(){
+  const target = pickInitialDate();
+  if(target !== currentDate){
+    currentDate = target;
+    goToDate();
+  }
+}
+
+document.addEventListener('keydown', e=>{
+  if(e.target && ['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
+  if(e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  const idx = dateList.findIndex(d=>d[0]===currentDate);
+  const next = idx + (e.key==='ArrowRight' ? 1 : -1);
+  if(next < 0 || next >= dateList.length) return;
+  currentDate = dateList[next][0];
+  goToDate();
+});
+
+function minutesNow(){
+  const d = new Date();
+  return d.getHours()*60 + d.getMinutes();
+}
+
+function parseRange(t){
+  const parts = t.split("–");
+  if(parts.length!==2) return null;
+  const [sh,sm] = parts[0].split(":").map(Number);
+  const [eh,em] = parts[1].split(":").map(Number);
+  if([sh,sm,eh,em].some(Number.isNaN)) return null;
+  return [sh*60+sm, eh*60+em];
+}
+
+let dayItems = { g106: [], g107: [] };
+
+function renderSlots(container, items, emptyText, group){
+  if(items.length===0){
+    container.innerHTML = `<div class="empty-day">${emptyText}</div>`;
+    return;
+  }
+  const isToday = currentDate === TODAY;
+  const now = isToday ? minutesNow() : null;
+  container.innerHTML = items.map((it,i)=>{
+    const range = isToday ? parseRange(it.t) : null;
+    let cls = "slot";
+    if(range){
+      if(now >= range[0] && now <= range[1]) cls += " now";
+      else if(now > range[1]) cls += " past";
+    }
+    return `
+      <div class="${cls}" style="--i:${i}" onclick="openSlot('${group}', ${i})"
+           tabindex="0" role="button" aria-haspopup="dialog">
+        <div class="time">${it.t}</div>
+        <div class="what"><b>${it.w}</b><span>${it.d}</span></div>
+      </div>`;
+  }).join("");
+}
+
+function render(){
+  const wIdx = weekdayIndex(currentDate);
+  dom.dayTitle.textContent =
+    dateList.find(d=>d[0]===currentDate)[1] + " · " + weekdayNames[wIdx]
+    + (currentDate===TODAY ? " · сегодня" : "");
+
+  const gItems = g106[currentDate] || [];
+  dayItems.g106 = gItems;
+  renderSlots(dom.g106Slots, gItems, "Пар нет — весь день свободна", 'g106');
+  dom.g106Free.textContent = freeTagText(gItems, "весь день", "занята весь день");
+
+  const hItems = g107[currentDate] || [];
+  dayItems.g107 = hItems;
+  renderSlots(dom.g107Slots, hItems, "Пар нет — весь день свободна", 'g107');
+  dom.g107Free.textContent = freeTagText(hItems, "весь день", "занята весь день");
+
+  const note = dom.meetNote;
+  const bothFree = gItems.length===0 && hItems.length===0;
+  const bothSame = JSON.stringify(gItems)===JSON.stringify(hItems) && gItems.length>0;
+
+  if(bothFree){
+    note.innerHTML = `<b>У обеих групп пар нет</b> — весь день свободен.`;
+  } else if(bothSame){
+    note.innerHTML = `Сегодня обе группы занимаются вместе, до <b>${lastEnd(gItems)}</b>.`;
+  } else {
+    const gPhrase = gItems.length===0 ? "свободна весь день"
+      : (lastEnd(gItems) ? `освобождается к <b>${lastEnd(gItems)}</b>` : "занята весь день");
+    const hPhrase = hItems.length===0 ? "свободна весь день"
+      : (lastEnd(hItems) ? `освобождается к <b>${lastEnd(hItems)}</b>` : "занята весь день");
+    note.innerHTML = `Группа 106 ${gPhrase}, группа 107 ${hPhrase}.`;
+  }
+  replayAnim(note);
+}
+
+let lastFocused = null;
+
+const teacherFullNames = {
+  "Тихонов С.О.": "Тихонов Сергей Олегович",
+  "Курицына Т.В.": "Курицына Татьяна Владимировна",
+  "Никифорова А.В.": "Никифорова Анна Валентиновна",
+  "Матвеев Е.М.": "Матвеев Евгений Михайлович",
+  "Артемов Д.Ю.": "Артемов Даниил Юрьевич",
+  "Морозенкова М.С.": "Морозенкова Марина Сергеевна",
+  "Максимова Л.Н.": "Максимова Людмила Николаевна",
+  "Куанова И.Б.": "Куанова Инесса Бакытжановна",
+  "Филина Е.И.": "Филина Елена Ивановна",
+  "Кашпарова В.С.": "Кашпарова Валентина Сергеевна",
+  "Маняхина В.Г.": "Маняхина Валентина Геннадьевна",
+  "Иванова Н.Ю.": "Иванова Наталья Юрьевна",
+  "Овчарова П.С.": "Овчарова Полина Сергеевна",
+  "Чуйкова Н.В.": "Чуйкова Наталия Владимировна",
+  "Гульянц С.С.": "Гульянц Светлана Станиславовна",
+  "Михайлова М.В.": "Михайлова Марина Владимировна",
+  "Машкина А.В.": "Машкина Анастасия Владимировна",
+  "Редькина Д.И.": "Редькина Дарья Игоревна"
+};
+
+function openSlot(group, idx){
+  const it = dayItems[group] && dayItems[group][idx];
+  if(!it) return;
+  lastFocused = document.activeElement;
+
+  dom.sheet.classList.remove('g106','g107');
+  dom.sheet.classList.add(group);
+  dom.sheetTime.textContent = it.t;
+  dom.sheetTitle.textContent = it.w;
+  dom.sheetMeta.innerHTML = it.d.split("·").map(part=>{
+    const trimmed = part.trim();
+    const full = teacherFullNames[trimmed];
+    return `<span>${full || trimmed}</span>`;
+  }).join("");
+
+  dom.sheetScrim.classList.add('open');
+  dom.sheet.classList.add('open');
+  dom.sheet.setAttribute('aria-hidden','false');
+  document.body.style.overflow = 'hidden';
+  dom.sheet.querySelector('.sheet-close').focus({preventScroll:true});
+}
+
+function closeSheet(){
+  if(!dom.sheet.classList.contains('open')) return;
+  dom.sheetScrim.classList.remove('open');
+  dom.sheet.classList.remove('open');
+  dom.sheet.setAttribute('aria-hidden','true');
+  document.body.style.overflow = '';
+  if(lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus({preventScroll:true});
+}
+
+document.addEventListener('keydown', e=>{
+  if(e.key === 'Escape') closeSheet();
+});
+
+(function initSheetDrag(){
+  let startY = 0, dragging = false, sheetHeight = 0;
+  const start = (y)=>{
+    dragging = true;
+    startY = y;
+    sheetHeight = dom.sheet.getBoundingClientRect().height;
+    dom.sheet.classList.add('dragging');
+  };
+  const move = (y)=>{
+    if(!dragging) return;
+    const delta = Math.max(0, y - startY);
+    dom.sheet.style.transform = `translate(-50%, ${delta}px)`;
+  };
+  const end = (y)=>{
+    if(!dragging) return;
+    dragging = false;
+    dom.sheet.classList.remove('dragging');
+    dom.sheet.style.transform = '';
+    const delta = Math.max(0, y - startY);
+    if(delta > sheetHeight * 0.28){
+      closeSheet();
+    }
+  };
+  dom.sheetGrabber.addEventListener('pointerdown', e=>start(e.clientY));
+  window.addEventListener('pointermove', e=>{ if(dragging) move(e.clientY); });
+  window.addEventListener('pointerup', e=>end(e.clientY));
+  window.addEventListener('pointercancel', ()=>{ dragging=false; dom.sheet.classList.remove('dragging'); dom.sheet.style.transform=''; });
+})();
+
+function toggleTheme(){
+  const isBeige = document.body.classList.toggle('theme-beige');
+  dom.themeToggle.textContent = isBeige ? 'Тёмная тема' : 'Бежевая тема';
+  dom.themeToggle.setAttribute('aria-pressed', String(isBeige));
+}
+
+function initBoard(){
+  buildRail();
+  render();
+  document.querySelectorAll('.drop-in, .rise-in').forEach(el=>{
+    el.addEventListener('animationend', function handler(){
+      el.classList.remove('drop-in','rise-in','d1','d2','d3');
+      el.removeEventListener('animationend', handler);
+    });
+  });
+  window.setInterval(()=>{ render(); }, 60000);
+  document.addEventListener('visibilitychange', ()=>{
+    if(!document.hidden){ render(); }
+  });
+}
+
+initBoard();
+</script>
+</body>
+</html>
