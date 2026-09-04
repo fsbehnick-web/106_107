@@ -2,6 +2,16 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<script>
+// Применяем сохранённую тему как можно раньше — до отрисовки, чтобы не
+// было вспышки дефолтной темы при перезаходе на сайт.
+(function(){
+  try{
+    var saved = localStorage.getItem('schedule-theme-106-107');
+    if(saved) document.documentElement.setAttribute('data-theme', saved);
+  }catch(e){}
+})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Расписание — группы 106 и 107</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,7 +35,8 @@
     --shadow: 0 10px 30px -12px rgba(0,0,0,0.55);
     --ease: cubic-bezier(.22,1,.36,1);
   }
-  body.theme-beige{
+  /* Бежевая — тёплая светлая тема, коричневый + бордовый */
+  :root[data-theme="beige"]{
     --bg: #f3ead9;
     --panel: #fcf7ec;
     --panel-2: #efe2ca;
@@ -41,6 +52,57 @@
     --free: #4f7a4a;
     --shadow: 0 10px 26px -14px rgba(80,60,20,0.28);
   }
+  /* Океан — глубокий тёмно-бирюзовый, циан + коралл */
+  :root[data-theme="ocean"]{
+    --bg: #071b24;
+    --panel: #0e2833;
+    --panel-2: #123340;
+    --line: #1c4453;
+    --g106: #7fd4d9;
+    --g106-dim: #4fa3a8;
+    --g106-soft: rgba(127,212,217,0.12);
+    --g107: #ff9166;
+    --g107-dim: #cc6f45;
+    --g107-soft: rgba(255,145,102,0.14);
+    --text: #eaf6f7;
+    --text-dim: #8fb3ba;
+    --free: #7fe0a8;
+    --shadow: 0 10px 30px -12px rgba(0,0,0,0.6);
+  }
+  /* Графит — нейтральный тёмно-серый, голубой + янтарный */
+  :root[data-theme="graphite"]{
+    --bg: #15161a;
+    --panel: #1e2025;
+    --panel-2: #26282f;
+    --line: #34363e;
+    --g106: #8ab4f8;
+    --g106-dim: #5f87c9;
+    --g106-soft: rgba(138,180,248,0.12);
+    --g107: #f2b155;
+    --g107-dim: #c98d3a;
+    --g107-soft: rgba(242,177,85,0.14);
+    --text: #eceef2;
+    --text-dim: #9599a3;
+    --free: #7fd88f;
+    --shadow: 0 10px 30px -12px rgba(0,0,0,0.55);
+  }
+  /* Мята — светлая, тёмно-бирюзовый + сливовый */
+  :root[data-theme="mint"]{
+    --bg: #eef5ef;
+    --panel: #ffffff;
+    --panel-2: #e3efe4;
+    --line: #c9dccb;
+    --g106: #2f7d6b;
+    --g106-dim: #5c9c8d;
+    --g106-soft: rgba(47,125,107,0.10);
+    --g107: #8a3f6b;
+    --g107-dim: #ab6f92;
+    --g107-soft: rgba(138,63,107,0.10);
+    --text: #1f2e26;
+    --text-dim: #5b6f61;
+    --free: #2f7d3f;
+    --shadow: 0 10px 26px -14px rgba(30,60,40,0.18);
+  }
   *{box-sizing:border-box;}
   body{
     margin:0;
@@ -53,7 +115,7 @@
   }
   .wrap{max-width: 800px; margin: 0 auto;}
 
-  body, .col, .meet-note, .date-pill, .theme-toggle, .slot{
+  body, .col, .date-pill, .theme-swatch, .slot{
     transition: background-color .35s var(--ease), border-color .35s var(--ease), color .25s var(--ease), box-shadow .35s var(--ease) !important;
   }
 
@@ -129,21 +191,30 @@
     color: var(--text-dim);
     font-size: 13.5px;
   }
-  .theme-toggle{
+  .theme-switcher{
     margin-top: 16px;
-    background: var(--panel-2);
-    border: 1px solid var(--line);
-    color: var(--text-dim);
-    padding: 7px 16px;
-    border-radius: 20px;
-    font-family: inherit;
-    font-size: 12px;
-    font-weight:600;
-    cursor: pointer;
-    transition: border-color .25s var(--ease), color .25s var(--ease), transform .15s var(--ease);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap: 9px;
   }
-  .theme-toggle:hover{ color: var(--text); border-color: var(--g106-dim); transform: translateY(-1px); }
-  .theme-toggle:active{ transform: translateY(0) scale(.96); }
+  .theme-swatch{
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid var(--line);
+    padding: 0;
+    cursor: pointer;
+    background: var(--panel-2);
+    background-clip: padding-box;
+    transition: border-color .25s var(--ease), transform .15s var(--ease), box-shadow .25s var(--ease);
+  }
+  .theme-swatch:hover{ transform: translateY(-2px) scale(1.06); }
+  .theme-swatch:active{ transform: translateY(0) scale(.94); }
+  .theme-swatch.active{
+    border-color: var(--text);
+    box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--text-dim);
+  }
 
   .date-rail{
     display:flex;
@@ -300,6 +371,7 @@
     border-left: 3px solid transparent;
     font-size: 13px;
     display:flex;
+    align-items:flex-start;
     gap:10px;
     cursor: pointer;
     animation: slotIn .4s var(--ease) both;
@@ -315,14 +387,12 @@
     padding-left: 13px;
   }
   .slot.now .time{ color: var(--g107); }
-  .slot.now .time::after{
-    content: "сейчас";
+  .slot .time-left{
     display:block;
     margin-top:3px;
     font-size:9.5px;
     font-weight:700;
     letter-spacing:.5px;
-    text-transform:uppercase;
     color: var(--g107);
     animation: fadePulse 1.8s ease-in-out infinite;
   }
@@ -348,20 +418,6 @@
     font-weight:600;
     animation: slotIn .45s var(--ease) both;
   }
-
-  .meet-note{
-    background: var(--panel-2);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 14px 16px;
-    font-size: 13px;
-    color: var(--text-dim);
-    margin-bottom: 8px;
-    box-shadow: var(--shadow);
-    animation: slotIn .45s var(--ease) both;
-    animation-delay: .1s;
-  }
-  .meet-note b{color: var(--text);}
 
   .sheet-scrim{
     position: fixed;
@@ -421,6 +477,10 @@
   }
   .sheet-close:hover{ color: var(--text); border-color: var(--g106-dim); }
   .sheet-close:active{ transform: scale(.92); }
+  .sheet-header{
+    cursor: grab;
+    touch-action: pan-y;
+  }
   .sheet-body{
     max-height: calc(62vh - 60px);
     overflow-y: auto;
@@ -472,7 +532,7 @@
     <div class="kicker drop-in d1">Расписание</div>
     <h1 class="drop-in d2">Группы 106 и 107</h1>
     <p class="drop-in d3">01.03.01 Математика · профиль «Математика. Преподавание математики» · 1–12 сентября 2026, адаптационный модуль</p>
-    <button id="themeToggle" class="theme-toggle drop-in d3" onclick="toggleTheme()" aria-pressed="false">Бежевая тема</button>
+    <div class="theme-switcher drop-in d3" id="themeSwitcher" role="group" aria-label="Выбор темы оформления"></div>
   </div>
 
   <div class="rise-in d1">
@@ -494,8 +554,6 @@
         <div id="g107Slots"></div>
       </div>
     </div>
-
-    <div class="meet-note" id="meetNote"></div>
   </div>
 
 </div>
@@ -504,9 +562,11 @@
 <div class="detail-sheet" id="detailSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" aria-hidden="true">
   <div class="sheet-grabber" id="sheetGrabber" aria-hidden="true"></div>
   <button class="sheet-close" onclick="closeSheet()" aria-label="Закрыть">✕</button>
-  <div class="sheet-body">
+  <div class="sheet-header" id="sheetHeader">
     <div class="sheet-time" id="sheetTime"></div>
     <h3 class="sheet-title" id="sheetTitle"></h3>
+  </div>
+  <div class="sheet-body">
     <div class="sheet-meta" id="sheetMeta"></div>
   </div>
 </div>
@@ -529,7 +589,11 @@ const g106 = {
     {t:"09:00–10:30", w:"Знакомство с цифровой образоват. средой МПГУ", d:"лекция · доц. Маняхина В.Г. · ауд. 301"},
     {t:"10:40–12:10", w:"История России", d:"лекция · доц. Филина Е.И. · ауд. 402"},
     {t:"12:40–14:10", w:"Алгебра", d:"лекция · проф. Михайлова М.В. · ауд. 401"},
-    {t:"14:20–15:50", w:"Цифровая образоват. среда МПГУ (лаб)", d:"по подгруппам: доц. Маняхина В.Г. 1 п/гр, доц. Иванова Н.Ю. 2 п/гр, ст. пр. Овчарова П.С. 3 п/гр · ауд. 209, 208, 210"}
+    {t:"14:20–15:50", w:"Цифровая образоват. среда МПГУ (лаб)", d:"по подгруппам", sub:[
+      {n:1, who:"Маняхина В.Г.", where:"ауд. 209"},
+      {n:2, who:"Иванова Н.Ю.", where:"ауд. 208"},
+      {n:3, who:"Овчарова П.С.", where:"ауд. 210"}
+    ]}
   ],
   "2026-09-04": [
     {t:"10:40–12:10", w:"Учимся учиться", d:"доц. Чуйкова Н.В. · ауд. 401"},
@@ -539,6 +603,7 @@ const g106 = {
   "2026-09-05": [
     {t:"09:00–15:50", w:"Встречи с кураторами-студентами", d:"весь день · День кураторов"}
   ],
+  "2026-09-06": [],
   "2026-09-07": [
     {t:"09:00–10:30", w:"Алгебра", d:"практика · ассист. Артемов Д.Ю. · ауд. 407"},
     {t:"10:40–12:10", w:"Геометрия", d:"лекция · доц. Никифорова А.В. · ауд. 301"},
@@ -592,11 +657,16 @@ const g107 = {
     {t:"10:40–12:10", w:"Учимся учиться", d:"доц. Чуйкова Н.В. · ауд. 401"},
     {t:"12:40–14:10", w:"Основы российской государственности", d:"лекция · доц. Максимова Л.Н. · ауд. 402"},
     {t:"14:20–15:50", w:"Основы российской государственности", d:"лекция · доц. Максимова Л.Н. · ауд. 402"},
-    {t:"16:00–17:30", w:"Цифровая образоват. среда МПГУ (лаб)", d:"по подгруппам: доц. Маняхина В.Г. 1 п/гр, доц. Иванова Н.Ю. 2 п/гр, ст. пр. Овчарова П.С. 3 п/гр · ауд. 208, 108, 211"}
+    {t:"16:00–17:30", w:"Цифровая образоват. среда МПГУ (лаб)", d:"по подгруппам", sub:[
+      {n:1, who:"Маняхина В.Г.", where:"ауд. 208"},
+      {n:2, who:"Иванова Н.Ю.", where:"ауд. 108"},
+      {n:3, who:"Овчарова П.С.", where:"ауд. 211"}
+    ]}
   ],
   "2026-09-05": [
     {t:"09:00–15:50", w:"Встречи с кураторами-студентами", d:"весь день · День кураторов"}
   ],
+  "2026-09-06": [],
   "2026-09-07": [
     {t:"10:40–12:10", w:"Геометрия", d:"лекция · доц. Никифорова А.В. · ауд. 301"},
     {t:"12:40–14:10", w:"Алгебра", d:"практика · ассист. Артемов Д.Ю. · ауд. 407"},
@@ -654,11 +724,11 @@ const dom = {
   g106Free: document.getElementById('g106Free'),
   g107Slots: document.getElementById('g107Slots'),
   g107Free: document.getElementById('g107Free'),
-  meetNote: document.getElementById('meetNote'),
-  themeToggle: document.getElementById('themeToggle'),
+  themeSwitcher: document.getElementById('themeSwitcher'),
   sheetScrim: document.getElementById('sheetScrim'),
   sheet: document.getElementById('detailSheet'),
   sheetGrabber: document.getElementById('sheetGrabber'),
+  sheetHeader: document.getElementById('sheetHeader'),
   sheetTime: document.getElementById('sheetTime'),
   sheetTitle: document.getElementById('sheetTitle'),
   sheetMeta: document.getElementById('sheetMeta'),
@@ -669,7 +739,7 @@ function todayISO(){
   const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
   return `${y}-${m}-${day}`;
 }
-const TODAY = todayISO();
+let TODAY = todayISO();
 
 function pickInitialDate(){
   if(dateList.some(([iso])=>iso===TODAY)) return TODAY;
@@ -686,7 +756,7 @@ function weekdayIndex(dateStr){
 function lastEnd(items){
   if(!items || items.length===0) return null;
   const last = items[items.length-1];
-  const parts = last.t.split("–");
+  const parts = last.t.split(/[-–—]/);
   return parts.length===2 ? parts[1].trim() : null;
 }
 
@@ -707,9 +777,16 @@ function buildRail(){
     pill.dataset.iso = iso;
     pill.setAttribute('role','tab');
     pill.setAttribute('aria-selected', iso===currentDate ? 'true':'false');
+    // Роving tabindex: только активный день в Tab-порядке, остальные —
+    // доступны по стрелкам/клику, как того требует паттерн ARIA Tabs.
+    pill.tabIndex = iso===currentDate ? 0 : -1;
     pill.title = iso===TODAY ? `${label} — сегодня` : label;
     pill.innerHTML = `<b>${label}</b>${wd}`;
-    pill.onclick = ()=>{ if(iso!==currentDate){ currentDate = iso; goToDate(); } };
+    const select = ()=>{ if(iso!==currentDate){ currentDate = iso; goToDate(); } };
+    pill.onclick = select;
+    pill.onkeydown = (e)=>{
+      if(e.key==='Enter' || e.key===' '){ e.preventDefault(); select(); }
+    };
     frag.appendChild(pill);
   });
   dom.rail.innerHTML = "";
@@ -727,6 +804,7 @@ function updateActivePill(){
     const isActive = p.dataset.iso === currentDate;
     p.classList.toggle('active', isActive);
     p.setAttribute('aria-selected', isActive ? 'true':'false');
+    p.tabIndex = isActive ? 0 : -1;
   });
   const activePill = dom.rail.querySelector('.date-pill.active');
   if(activePill){
@@ -758,6 +836,7 @@ function jumpToToday(){
 
 document.addEventListener('keydown', e=>{
   if(e.target && ['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
+  if(dom.sheet.classList.contains('open')) return;
   if(e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
   const idx = dateList.findIndex(d=>d[0]===currentDate);
   const next = idx + (e.key==='ArrowRight' ? 1 : -1);
@@ -772,7 +851,9 @@ function minutesNow(){
 }
 
 function parseRange(t){
-  const parts = t.split("–");
+  // Поддерживаем en-dash (–), обычный дефис (-) и em-dash (—) — на случай,
+  // если при вводе данных попадётся не тот символ.
+  const parts = t.split(/[-–—]/);
   if(parts.length!==2) return null;
   const [sh,sm] = parts[0].split(":").map(Number);
   const [eh,em] = parts[1].split(":").map(Number);
@@ -782,64 +863,13 @@ function parseRange(t){
 
 let dayItems = { g106: [], g107: [] };
 
-function renderSlots(container, items, emptyText, group){
-  if(items.length===0){
-    container.innerHTML = `<div class="empty-day">${emptyText}</div>`;
-    return;
-  }
-  const isToday = currentDate === TODAY;
-  const now = isToday ? minutesNow() : null;
-  container.innerHTML = items.map((it,i)=>{
-    const range = isToday ? parseRange(it.t) : null;
-    let cls = "slot";
-    if(range){
-      if(now >= range[0] && now <= range[1]) cls += " now";
-      else if(now > range[1]) cls += " past";
-    }
-    return `
-      <div class="${cls}" style="--i:${i}" onclick="openSlot('${group}', ${i})"
-           tabindex="0" role="button" aria-haspopup="dialog">
-        <div class="time">${it.t}</div>
-        <div class="what"><b>${it.w}</b><span>${it.d}</span></div>
-      </div>`;
-  }).join("");
-}
-
-function render(){
-  const wIdx = weekdayIndex(currentDate);
-  dom.dayTitle.textContent =
-    dateList.find(d=>d[0]===currentDate)[1] + " · " + weekdayNames[wIdx]
-    + (currentDate===TODAY ? " · сегодня" : "");
-
-  const gItems = g106[currentDate] || [];
-  dayItems.g106 = gItems;
-  renderSlots(dom.g106Slots, gItems, "Пар нет — весь день свободна", 'g106');
-  dom.g106Free.textContent = freeTagText(gItems, "весь день", "занята весь день");
-
-  const hItems = g107[currentDate] || [];
-  dayItems.g107 = hItems;
-  renderSlots(dom.g107Slots, hItems, "Пар нет — весь день свободна", 'g107');
-  dom.g107Free.textContent = freeTagText(hItems, "весь день", "занята весь день");
-
-  const note = dom.meetNote;
-  const bothFree = gItems.length===0 && hItems.length===0;
-  const bothSame = JSON.stringify(gItems)===JSON.stringify(hItems) && gItems.length>0;
-
-  if(bothFree){
-    note.innerHTML = `<b>У обеих групп пар нет</b> — весь день свободен.`;
-  } else if(bothSame){
-    note.innerHTML = `Сегодня обе группы занимаются вместе, до <b>${lastEnd(gItems)}</b>.`;
-  } else {
-    const gPhrase = gItems.length===0 ? "свободна весь день"
-      : (lastEnd(gItems) ? `освобождается к <b>${lastEnd(gItems)}</b>` : "занята весь день");
-    const hPhrase = hItems.length===0 ? "свободна весь день"
-      : (lastEnd(hItems) ? `освобождается к <b>${lastEnd(hItems)}</b>` : "занята весь день");
-    note.innerHTML = `Группа 106 ${gPhrase}, группа 107 ${hPhrase}.`;
-  }
-  replayAnim(note);
-}
-
-let lastFocused = null;
+// Карта должностей и полных ФИО преподавателей
+const titlesMap = {
+  "ст. пр.": "старший преподаватель",
+  "доц.": "доцент",
+  "проф.": "профессор",
+  "ассист.": "ассистент"
+};
 
 const teacherFullNames = {
   "Тихонов С.О.": "Тихонов Сергей Олегович",
@@ -862,6 +892,90 @@ const teacherFullNames = {
   "Редькина Д.И.": "Редькина Дарья Игоревна"
 };
 
+// Очистка сокращений должностей для общего меню.
+// \b в JS без флага /u строится по [A-Za-z0-9_] и не видит кириллицу,
+// поэтому вместо него используем (?:^|\s) слева и границу по концу строки
+// или пробелу справа.
+function cleanShortDesc(str) {
+  if (!str) return '';
+  let cleaned = str;
+  Object.keys(titlesMap).forEach(shortTitle => {
+    const escaped = shortTitle.replace(/\./g, '\\.');
+    const regex = new RegExp('(?:^|\\s)' + escaped + '\\s*', 'g');
+    cleaned = cleaned.replace(regex, m => m.startsWith(' ') || m.startsWith('\u00A0') ? ' ' : '');
+  });
+  return cleaned.trim();
+}
+
+// Расшифровка должностей и полных ФИО для всплывающего окна
+function expandMetaPart(part) {
+  let res = part.trim();
+  Object.entries(titlesMap).forEach(([shortTitle, fullTitle]) => {
+    const escaped = shortTitle.replace(/\./g, '\\.');
+    res = res.replace(new RegExp(escaped, 'g'), fullTitle);
+  });
+  Object.entries(teacherFullNames).forEach(([shortName, fullName]) => {
+    const escaped = shortName.replace(/\./g, '\\.');
+    res = res.replace(new RegExp(escaped, 'g'), fullName);
+  });
+  return res;
+}
+
+function renderSlots(container, items, emptyText, group){
+  if(items.length===0){
+    container.innerHTML = `<div class="empty-day">${emptyText}</div>`;
+    return;
+  }
+  const isToday = currentDate === TODAY;
+  const now = isToday ? minutesNow() : null;
+  container.innerHTML = items.map((it,i)=>{
+    const range = isToday ? parseRange(it.t) : null;
+    let cls = "slot";
+    let isNow = false;
+    if(range){
+      if(now >= range[0] && now <= range[1]){ cls += " now"; isNow = true; }
+      else if(now > range[1]) cls += " past";
+    }
+    // Пересчитывается на каждый вызов renderSlots (то есть каждую минуту,
+    // см. setInterval в initBoard), а не один раз при загрузке страницы.
+    // Время пары не заменяется — под ним отдельной строкой добавляется
+    // остаток до конца.
+    const minutesLeft = isNow ? range[1] - now : null;
+    const formatLeft = (mins)=>{
+      const h = Math.floor(mins/60), m = mins%60;
+      return h>0 ? `${h}ч ${m}м` : `${m}м`;
+    };
+    const timeLeftHtml = isNow
+      ? `<div class="time-left">${minutesLeft > 0 ? formatLeft(minutesLeft) : '<1м'}</div>`
+      : '';
+    return `
+      <div class="${cls}" style="--i:${i}" data-group="${group}" data-idx="${i}"
+           tabindex="0" role="button" aria-haspopup="dialog">
+        <div class="time">${it.t}${timeLeftHtml}</div>
+        <div class="what"><b>${it.w}</b><span>${cleanShortDesc(it.d)}</span></div>
+      </div>`;
+  }).join("");
+}
+
+function render(){
+  const wIdx = weekdayIndex(currentDate);
+  dom.dayTitle.textContent =
+    dateList.find(d=>d[0]===currentDate)[1] + " · " + weekdayNames[wIdx]
+    + (currentDate===TODAY ? " · сегодня" : "");
+
+  const gItems = g106[currentDate] || [];
+  dayItems.g106 = gItems;
+  renderSlots(dom.g106Slots, gItems, "Пар нет — весь день свободна", 'g106');
+  dom.g106Free.textContent = freeTagText(gItems, "весь день", "занята весь день");
+
+  const hItems = g107[currentDate] || [];
+  dayItems.g107 = hItems;
+  renderSlots(dom.g107Slots, hItems, "Пар нет — весь день свободна", 'g107');
+  dom.g107Free.textContent = freeTagText(hItems, "весь день", "занята весь день");
+}
+
+let lastFocused = null;
+
 function openSlot(group, idx){
   const it = dayItems[group] && dayItems[group][idx];
   if(!it) return;
@@ -871,11 +985,9 @@ function openSlot(group, idx){
   dom.sheet.classList.add(group);
   dom.sheetTime.textContent = it.t;
   dom.sheetTitle.textContent = it.w;
-  dom.sheetMeta.innerHTML = it.d.split("·").map(part=>{
-    const trimmed = part.trim();
-    const full = teacherFullNames[trimmed];
-    return `<span>${full || trimmed}</span>`;
-  }).join("");
+  dom.sheetMeta.innerHTML = it.sub && it.sub.length
+    ? it.sub.map(s=>`<span>${s.n} гр: ${expandMetaPart(s.who)} · ${s.where}</span>`).join("")
+    : it.d.split("·").map(part=>`<span>${expandMetaPart(part)}</span>`).join("");
 
   dom.sheetScrim.classList.add('open');
   dom.sheet.classList.add('open');
@@ -894,45 +1006,147 @@ function closeSheet(){
 }
 
 document.addEventListener('keydown', e=>{
-  if(e.key === 'Escape') closeSheet();
+  if(e.key === 'Escape'){ closeSheet(); return; }
+  // Простой фокус-трап: пока шторка открыта, Tab не должен уводить фокус
+  // на затенённый контент под ней.
+  if(e.key === 'Tab' && dom.sheet.classList.contains('open')){
+    const focusable = dom.sheet.querySelectorAll(
+      'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    if(focusable.length === 0) return;
+    const first = focusable[0], last = focusable[focusable.length-1];
+    if(e.shiftKey && document.activeElement === first){
+      e.preventDefault(); last.focus();
+    } else if(!e.shiftKey && document.activeElement === last){
+      e.preventDefault(); first.focus();
+    }
+  }
 });
 
 (function initSheetDrag(){
-  let startY = 0, dragging = false, sheetHeight = 0;
-  const start = (y)=>{
-    dragging = true;
+  // Порог в пикселях: пока смещение меньше, считаем это обычным кликом
+  // (или попыткой выделить текст), а не свайпом — не добавляем класс
+  // dragging и не трогаем transform, чтобы не было "дёрганья" на тапе.
+  const DRAG_THRESHOLD = 6;
+  let tracking = false, dragging = false, startY = 0, sheetHeight = 0;
+
+  const beginTrack = (y)=>{
+    tracking = true;
+    dragging = false;
     startY = y;
     sheetHeight = dom.sheet.getBoundingClientRect().height;
-    dom.sheet.classList.add('dragging');
   };
   const move = (y)=>{
-    if(!dragging) return;
-    const delta = Math.max(0, y - startY);
-    dom.sheet.style.transform = `translate(-50%, ${delta}px)`;
+    if(!tracking) return;
+    const delta = y - startY;
+    if(!dragging){
+      if(Math.abs(delta) < DRAG_THRESHOLD) return;
+      dragging = true;
+      dom.sheet.classList.add('dragging');
+    }
+    dom.sheet.style.transform = `translate(-50%, ${Math.max(0, delta)}px)`;
   };
   const end = (y)=>{
-    if(!dragging) return;
-    dragging = false;
-    dom.sheet.classList.remove('dragging');
-    dom.sheet.style.transform = '';
+    if(!tracking) return;
+    tracking = false;
     const delta = Math.max(0, y - startY);
-    if(delta > sheetHeight * 0.28){
-      closeSheet();
+    if(dragging){
+      dragging = false;
+      dom.sheet.classList.remove('dragging');
+      dom.sheet.style.transform = '';
+      if(delta > sheetHeight * 0.28) closeSheet();
     }
   };
-  dom.sheetGrabber.addEventListener('pointerdown', e=>start(e.clientY));
-  window.addEventListener('pointermove', e=>{ if(dragging) move(e.clientY); });
+  dom.sheetGrabber.addEventListener('pointerdown', e=>beginTrack(e.clientY));
+  dom.sheetHeader.addEventListener('pointerdown', e=>beginTrack(e.clientY));
+  window.addEventListener('pointermove', e=>{ if(tracking) move(e.clientY); });
   window.addEventListener('pointerup', e=>end(e.clientY));
-  window.addEventListener('pointercancel', ()=>{ dragging=false; dom.sheet.classList.remove('dragging'); dom.sheet.style.transform=''; });
+  window.addEventListener('pointercancel', ()=>{
+    tracking = false; dragging = false;
+    dom.sheet.classList.remove('dragging'); dom.sheet.style.transform = '';
+  });
 })();
 
-function toggleTheme(){
-  const isBeige = document.body.classList.toggle('theme-beige');
-  dom.themeToggle.textContent = isBeige ? 'Тёмная тема' : 'Бежевая тема';
-  dom.themeToggle.setAttribute('aria-pressed', String(isBeige));
+// Темы оформления. id совпадает со значением [data-theme] в CSS.
+// bg/a/b — цвета для превью-кружка (не влияют на сам сайт).
+const THEME_KEY = 'schedule-theme-106-107';
+const THEMES = [
+  {id:'dark',     name:'Тёмная',   bg:'#0d131c', a:'#c7c0b0', b:'#c34f68'},
+  {id:'beige',    name:'Бежевая',  bg:'#f3ead9', a:'#6b4a35', b:'#7a2740'},
+  {id:'ocean',    name:'Океан',    bg:'#071b24', a:'#7fd4d9', b:'#ff9166'},
+  {id:'graphite', name:'Графит',   bg:'#15161a', a:'#8ab4f8', b:'#f2b155'},
+  {id:'mint',     name:'Мята',     bg:'#eef5ef', a:'#2f7d6b', b:'#8a3f6b'},
+];
+
+function currentThemeId(){
+  return document.documentElement.getAttribute('data-theme') || 'dark';
 }
 
+function applyTheme(id, persist){
+  document.documentElement.setAttribute('data-theme', id);
+  if(persist){
+    try{ localStorage.setItem(THEME_KEY, id); }catch(e){}
+  }
+  dom.themeSwitcher.querySelectorAll('.theme-swatch').forEach(el=>{
+    const isActive = el.dataset.theme === id;
+    el.classList.toggle('active', isActive);
+    el.setAttribute('aria-pressed', String(isActive));
+  });
+}
+
+function buildThemeSwitcher(){
+  const frag = document.createDocumentFragment();
+  THEMES.forEach(t=>{
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'theme-swatch';
+    btn.dataset.theme = t.id;
+    btn.title = t.name;
+    btn.setAttribute('aria-label', t.name);
+    btn.setAttribute('aria-pressed', 'false');
+    btn.style.background = `linear-gradient(135deg, ${t.bg} 40%, ${t.a} 70%, ${t.b} 100%)`;
+    btn.onclick = ()=> applyTheme(t.id, true);
+    frag.appendChild(btn);
+  });
+  dom.themeSwitcher.innerHTML = '';
+  dom.themeSwitcher.appendChild(frag);
+  applyTheme(currentThemeId(), false);
+}
+
+// Если вкладка провисит открытой всю ночь, TODAY нужно пересчитать —
+// иначе подсветка "сегодня" и фильтр "now/past" будут привязаны к вчера.
+function checkDayRollover(){
+  const fresh = todayISO();
+  if(fresh !== TODAY){
+    const wasOnToday = currentDate === TODAY;
+    TODAY = fresh;
+    if(wasOnToday) currentDate = TODAY;
+    buildRail();
+  }
+}
+
+// Делегированный обработчик вместо инлайновых onclick/onkeydown в разметке
+// пар — так генерируемый HTML не тянет за собой логику в атрибутах.
+document.addEventListener('click', e=>{
+  const slot = e.target.closest('.slot[data-group]');
+  if(slot) openSlot(slot.dataset.group, Number(slot.dataset.idx));
+});
+document.addEventListener('keydown', e=>{
+  if(e.key !== 'Enter' && e.key !== ' ') return;
+  const slot = e.target.closest && e.target.closest('.slot[data-group]');
+  if(slot){ e.preventDefault(); openSlot(slot.dataset.group, Number(slot.dataset.idx)); }
+});
+
+// Прокрутка ленты дат колесом мыши по горизонтали (без Shift) —
+// на десктопах без трекпада иначе до дальних дат не добраться.
+dom.rail.addEventListener('wheel', (e)=>{
+  if(e.deltaY === 0) return;
+  dom.rail.scrollLeft += e.deltaY;
+  e.preventDefault();
+}, {passive:false});
+
 function initBoard(){
+  buildThemeSwitcher();
   buildRail();
   render();
   document.querySelectorAll('.drop-in, .rise-in').forEach(el=>{
@@ -940,10 +1154,16 @@ function initBoard(){
       el.classList.remove('drop-in','rise-in','d1','d2','d3');
       el.removeEventListener('animationend', handler);
     });
+    // Подстраховка на случай, если animationend не придёт (свёрнутая
+    // вкладка, урезанная анимация при prefers-reduced-motion и т.п.) —
+    // без этого элемент с opacity:0 в стилях остался бы невидимым навсегда.
+    window.setTimeout(()=>{
+      el.classList.remove('drop-in','rise-in','d1','d2','d3');
+    }, 1500);
   });
-  window.setInterval(()=>{ render(); }, 60000);
+  window.setInterval(()=>{ checkDayRollover(); render(); }, 60000);
   document.addEventListener('visibilitychange', ()=>{
-    if(!document.hidden){ render(); }
+    if(!document.hidden){ checkDayRollover(); render(); }
   });
 }
 
