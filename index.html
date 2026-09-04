@@ -928,26 +928,51 @@ function renderSlots(container, items, emptyText, group){
   }
   const isToday = currentDate === TODAY;
   const now = isToday ? minutesNow() : null;
+  const formatLeft = (mins)=>{
+    const h = Math.floor(mins/60), m = mins%60;
+    return h>0 ? `${h}ч ${m}м` : `${m}м`;
+  };
+
+  // Ровно один слот получает живой отсчёт: если сейчас идёт пара — это
+  // она (до конца), иначе — ближайшая следующая по времени начала пары
+  // (до её начала). Одновременно "до пары" и "до конца" не показываются.
+  let nowIdx = -1, nextIdx = -1, nextStart = Infinity;
+  if(isToday){
+    items.forEach((it,i)=>{
+      const range = parseRange(it.t);
+      if(!range) return;
+      if(now >= range[0] && now <= range[1] && nowIdx === -1) nowIdx = i;
+    });
+    if(nowIdx === -1){
+      items.forEach((it,i)=>{
+        const range = parseRange(it.t);
+        if(range && range[0] > now && range[0] < nextStart){
+          nextStart = range[0];
+          nextIdx = i;
+        }
+      });
+    }
+  }
+
   container.innerHTML = items.map((it,i)=>{
     const range = isToday ? parseRange(it.t) : null;
     let cls = "slot";
-    let isNow = false;
     if(range){
-      if(now >= range[0] && now <= range[1]){ cls += " now"; isNow = true; }
+      if(i === nowIdx) cls += " now";
       else if(now > range[1]) cls += " past";
     }
     // Пересчитывается на каждый вызов renderSlots (то есть каждую минуту,
     // см. setInterval в initBoard), а не один раз при загрузке страницы.
     // Время пары не заменяется — под ним отдельной строкой добавляется
-    // остаток до конца.
-    const minutesLeft = isNow ? range[1] - now : null;
-    const formatLeft = (mins)=>{
-      const h = Math.floor(mins/60), m = mins%60;
-      return h>0 ? `${h}ч ${m}м` : `${m}м`;
-    };
-    const timeLeftHtml = isNow
-      ? `<div class="time-left">${minutesLeft > 0 ? formatLeft(minutesLeft) : '<1м'}</div>`
-      : '';
+    // отсчёт: до конца идущей пары либо до начала ближайшей следующей.
+    let timeLeftHtml = '';
+    if(range && i === nowIdx){
+      const minutesLeft = range[1] - now;
+      timeLeftHtml = `<div class="time-left">${minutesLeft > 0 ? formatLeft(minutesLeft) : '<1м'}</div>`;
+    } else if(range && i === nextIdx){
+      const minutesUntil = range[0] - now;
+      timeLeftHtml = `<div class="time-left">${minutesUntil > 0 ? formatLeft(minutesUntil) : '<1м'}</div>`;
+    }
     return `
       <div class="${cls}" style="--i:${i}" data-group="${group}" data-idx="${i}"
            tabindex="0" role="button" aria-haspopup="dialog">
