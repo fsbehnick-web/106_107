@@ -18,90 +18,43 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+  /* Мокко — базовая тема (без data-theme), тёмная: эспрессо-шоколад +
+     карамель + бордо, в духе трендов 2026 (Pantone Mocha Mousse,
+     Benjamin Moore Silhouette). */
   :root{
-    --bg: #0d131c;
-    --panel: #151d29;
-    --panel-2: #1a2431;
-    --line: #26313f;
-    --g106: #c7c0b0;
-    --g106-dim: #948a78;
-    --g106-soft: rgba(199,192,176,0.10);
-    --g107: #c34f68;
-    --g107-dim: #7f3247;
-    --g107-soft: rgba(195,79,104,0.14);
-    --text: #eceae0;
-    --text-dim: #8a9199;
-    --free: #7fd88f;
-    --shadow: 0 10px 30px -12px rgba(0,0,0,0.55);
+    --bg: #1a1512;
+    --panel: #241d17;
+    --panel-2: #2c231c;
+    --line: #3d3025;
+    --g106: #d3a86a;
+    --g106-dim: #a17f4d;
+    --g106-soft: rgba(211,168,106,0.12);
+    --g107: #9c2f45;
+    --g107-dim: #722236;
+    --g107-soft: rgba(156,47,69,0.15);
+    --text: #f0e4d4;
+    --text-dim: #a4907a;
+    --free: #8fbf7a;
+    --shadow: 0 10px 30px -12px rgba(0,0,0,0.6);
     --ease: cubic-bezier(.22,1,.36,1);
   }
-  /* Бежевая — тёплая светлая тема, коричневый + бордовый */
-  :root[data-theme="beige"]{
-    --bg: #f3ead9;
-    --panel: #fcf7ec;
-    --panel-2: #efe2ca;
-    --line: #ddccac;
-    --g106: #6b4a35;
-    --g106-dim: #8f6c52;
-    --g106-soft: rgba(107,74,53,0.10);
-    --g107: #7a2740;
-    --g107-dim: #a8607a;
-    --g107-soft: rgba(122,39,64,0.10);
-    --text: #382f24;
-    --text-dim: #85765c;
-    --free: #4f7a4a;
-    --shadow: 0 10px 26px -14px rgba(80,60,20,0.28);
-  }
-  /* Океан — глубокий тёмно-бирюзовый, циан + коралл */
-  :root[data-theme="ocean"]{
-    --bg: #071b24;
-    --panel: #0e2833;
-    --panel-2: #123340;
-    --line: #1c4453;
-    --g106: #7fd4d9;
-    --g106-dim: #4fa3a8;
-    --g106-soft: rgba(127,212,217,0.12);
-    --g107: #ff9166;
-    --g107-dim: #cc6f45;
-    --g107-soft: rgba(255,145,102,0.14);
-    --text: #eaf6f7;
-    --text-dim: #8fb3ba;
-    --free: #7fe0a8;
-    --shadow: 0 10px 30px -12px rgba(0,0,0,0.6);
-  }
-  /* Графит — нейтральный тёмно-серый, голубой + янтарный */
-  :root[data-theme="graphite"]{
-    --bg: #15161a;
-    --panel: #1e2025;
-    --panel-2: #26282f;
-    --line: #34363e;
-    --g106: #8ab4f8;
-    --g106-dim: #5f87c9;
-    --g106-soft: rgba(138,180,248,0.12);
-    --g107: #f2b155;
-    --g107-dim: #c98d3a;
-    --g107-soft: rgba(242,177,85,0.14);
-    --text: #eceef2;
-    --text-dim: #9599a3;
-    --free: #7fd88f;
-    --shadow: 0 10px 30px -12px rgba(0,0,0,0.55);
-  }
-  /* Мята — светлая, тёмно-бирюзовый + сливовый */
-  :root[data-theme="mint"]{
-    --bg: #eef5ef;
-    --panel: #ffffff;
-    --panel-2: #e3efe4;
-    --line: #c9dccb;
-    --g106: #2f7d6b;
-    --g106-dim: #5c9c8d;
-    --g106-soft: rgba(47,125,107,0.10);
-    --g107: #8a3f6b;
-    --g107-dim: #ab6f92;
-    --g107-soft: rgba(138,63,107,0.10);
-    --text: #1f2e26;
-    --text-dim: #5b6f61;
-    --free: #2f7d3f;
-    --shadow: 0 10px 26px -14px rgba(30,60,40,0.18);
+  /* Терракота — светлая, глина/хаки + терракотовый (в духе трендов 2026:
+     Universal Khaki, terracotta & clay). */
+  :root[data-theme="terracotta"]{
+    --bg: #f1e3d0;
+    --panel: #faf3e6;
+    --panel-2: #ecdcc3;
+    --line: #ddc6a4;
+    --g106: #6b5a3a;
+    --g106-dim: #8f7c56;
+    --g106-soft: rgba(107,90,58,0.10);
+    --g107: #b1512f;
+    --g107-dim: #8a3e24;
+    --g107-soft: rgba(177,81,47,0.12);
+    --text: #382d1e;
+    --text-dim: #83725a;
+    --free: #5f7a43;
+    --shadow: 0 10px 26px -14px rgba(90,55,20,0.25);
   }
   *{box-sizing:border-box;}
   body{
@@ -115,12 +68,12 @@
   }
   .wrap{max-width: 800px; margin: 0 auto;}
 
-  /* Единое правило переходов для цветовых свойств при смене темы.
-     Индивидуальные transition ниже покрывают только неповторяющиеся
-     свойства (transform, box-shadow и т.п.), чтобы не дублировать. */
-  body, .col, .date-pill, .theme-swatch, .slot{
-    transition: background-color .35s var(--ease), border-color .35s var(--ease), color .25s var(--ease) !important;
-  }
+  /* Раньше здесь было общее правило transition с !important на несколько
+     селекторов сразу. В CSS !important заменяет ВЕСЬ список transition-свойств
+     целиком, а не объединяется с локальными правилами — из-за этого подъём
+     карточек при hover, пульсация активной даты и подсветка "текущей пары"
+     переставали анимироваться. Теперь каждый селектор ниже сам перечисляет
+     полный список нужных ему transition-свойств (цвета темы + свои эффекты). */
 
   @keyframes dropIn{
     from{ opacity:0; transform: translateY(-10px); }
@@ -171,6 +124,7 @@
     background: linear-gradient(90deg, var(--g106), var(--g107));
     border-radius: 2px;
     opacity:.55;
+    transition: background-image .35s var(--ease);
   }
   .board-header .kicker{
     letter-spacing: 2.5px;
@@ -188,6 +142,7 @@
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+    transition: background-image .4s var(--ease);
   }
   .board-header p{
     margin:0;
@@ -212,7 +167,7 @@
     background-clip: padding-box;
     transition: border-color .25s var(--ease), transform .15s var(--ease), box-shadow .25s var(--ease);
   }
-  .theme-swatch:hover{ transform: translateY(-2px) scale(1.06); }
+  .theme-swatch:hover{ transform: translateY(-2px) scale(1.06); will-change: transform; }
   .theme-swatch:active{ transform: translateY(0) scale(.94); }
   .theme-swatch.active{
     border-color: var(--text);
@@ -230,6 +185,7 @@
   }
   .date-rail::-webkit-scrollbar{ display:none; }
   .date-pill{
+    position:relative;
     flex: 0 0 auto;
     background: var(--panel);
     border: 1px solid var(--line);
@@ -242,7 +198,7 @@
     line-height:1.3;
     transition: border-color .25s var(--ease), color .25s var(--ease), transform .28s cubic-bezier(.34,1.56,.64,1), box-shadow .25s var(--ease), background-color .25s var(--ease);
   }
-  .date-pill:hover{ transform: translateY(-3px); border-color: var(--g106-dim); }
+  .date-pill:hover{ transform: translateY(-3px); border-color: var(--g106-dim); will-change: transform; }
   .date-pill:active{ transform: translateY(0) scale(.96); }
   .date-pill b{display:block; font-size:15.5px; color: var(--text); font-weight:700; transition: color .25s var(--ease);}
   .date-pill.active{
@@ -271,7 +227,9 @@
     margin: 0;
     letter-spacing: 1.5px;
     text-transform: uppercase;
+    transition: color .3s var(--ease), opacity .22s var(--ease);
   }
+  .day-title.swapping{ opacity: 0; }
   .today-btn{
     position:absolute;
     right:0;
@@ -299,7 +257,9 @@
   .today-btn:hover{ color: var(--text); border-color: var(--g106-dim); }
   .today-btn:active{ transform: translateY(-50%) scale(.94); }
 
-  .date-pill{ position:relative; }
+  /* Точка "сегодня": статичная точка (::after) + пульсирующее кольцо (::before).
+     Кольцо анимируется только через transform/opacity — это чистый композитинг
+     (без перерисовки каждый кадр), в отличие от прежней анимации box-shadow. */
   .date-pill.today::after{
     content:"";
     position:absolute;
@@ -307,14 +267,26 @@
     width:6px; height:6px;
     border-radius:50%;
     background: var(--g107);
-    box-shadow: 0 0 0 0 var(--g107-soft);
-    animation: todayPulse 2.2s ease-out infinite;
+    z-index:1;
+    transition: background-color .3s var(--ease);
   }
-  .date-pill.today.active::after{ background: var(--bg); }
+  .date-pill.today::before{
+    content:"";
+    position:absolute;
+    top:6px; right:6px;
+    width:6px; height:6px;
+    border-radius:50%;
+    background: var(--g107);
+    animation: todayPulse 2.2s ease-out infinite;
+    will-change: transform, opacity;
+    transition: background-color .3s var(--ease);
+  }
+  .date-pill.today.active::after,
+  .date-pill.today.active::before{ background: var(--bg); }
   @keyframes todayPulse{
-    0%{ box-shadow: 0 0 0 0 rgba(195,79,104,.45); }
-    70%{ box-shadow: 0 0 0 6px rgba(195,79,104,0); }
-    100%{ box-shadow: 0 0 0 0 rgba(195,79,104,0); }
+    0%{ transform: scale(1); opacity:.5; }
+    70%{ transform: scale(2.6); opacity:0; }
+    100%{ transform: scale(2.6); opacity:0; }
   }
 
   .content-swap{
@@ -338,11 +310,12 @@
     border-radius: 14px;
     overflow:hidden;
     box-shadow: var(--shadow);
-    transition: transform .35s var(--ease), box-shadow .35s var(--ease);
+    transition: background-color .35s var(--ease), border-color .35s var(--ease), transform .35s var(--ease), box-shadow .35s var(--ease);
   }
   .col:hover{
     transform: translateY(-3px);
     box-shadow: 0 16px 34px -14px rgba(0,0,0,0.5);
+    will-change: transform;
   }
   .col-head{
     padding: 13px 16px;
@@ -352,11 +325,13 @@
     justify-content:space-between;
     align-items:center;
     position:relative;
+    transition: color .3s var(--ease);
   }
   .col-head::before{
     content:"";
     position:absolute;
     top:0; left:0; right:0; height:3px;
+    transition: background-image .35s var(--ease);
   }
   .col.g106 .col-head{ color: var(--g106); }
   .col.g106 .col-head::before{ background: linear-gradient(90deg, var(--g106-dim), var(--g106)); }
@@ -380,7 +355,7 @@
     animation: slotIn .4s var(--ease) both;
     animation-delay: calc(var(--i, 0) * 0.045s);
     will-change: opacity, transform;
-    transition: border-left-color .3s var(--ease), padding-left .3s var(--ease);
+    transition: background-color .3s var(--ease), border-left-color .3s var(--ease), padding-left .3s var(--ease);
   }
   .slot:hover{ background: var(--panel-2); }
   .slot:last-child{border-bottom:none;}
@@ -397,6 +372,7 @@
     font-weight:700;
     letter-spacing:.5px;
     color: var(--g107);
+    transition: color .3s var(--ease);
   }
   .slot.past{ opacity:.5; }
 
@@ -406,9 +382,10 @@
     font-size:12px;
     font-weight:600;
     padding-top:1px;
+    transition: color .3s var(--ease);
   }
-  .slot .what b{display:block; color: var(--text); font-size:13px; font-weight:600;}
-  .slot .what span{color: var(--text-dim); font-size:12px;}
+  .slot .what b{display:block; color: var(--text); font-size:13px; font-weight:600; transition: color .3s var(--ease);}
+  .slot .what span{color: var(--text-dim); font-size:12px; transition: color .3s var(--ease);}
   .empty-day{
     padding: 26px 14px;
     text-align:center;
@@ -489,6 +466,7 @@
     font-size: 13px;
     font-weight: 700;
     letter-spacing: .5px;
+    transition: color .3s var(--ease);
   }
   .sheet-title{
     margin: 6px 0 14px;
@@ -508,6 +486,7 @@
     font-size: 14px;
     color: var(--text-dim);
     line-height: 1.4;
+    transition: color .3s var(--ease);
   }
   .sheet-meta span::before{
     content: "";
@@ -516,6 +495,7 @@
     width: 6px; height: 6px;
     border-radius: 50%;
     background: var(--text-dim);
+    transition: background-color .3s var(--ease);
   }
 
   @media (prefers-reduced-motion: reduce){
@@ -823,10 +803,14 @@ function updateActivePill(){
 function goToDate(){
   updateActivePill();
   dom.daySwap.classList.add('swapping');
+  dom.dayTitle.classList.add('swapping');
   window.setTimeout(()=>{
     render();
-    requestAnimationFrame(()=>{ dom.daySwap.classList.remove('swapping'); });
-  }, 220);
+    requestAnimationFrame(()=>{
+      dom.daySwap.classList.remove('swapping');
+      dom.dayTitle.classList.remove('swapping');
+    });
+  }, 260);
 }
 
 function jumpToToday(){
@@ -916,6 +900,33 @@ function expandMetaPart(part) {
   return res;
 }
 
+function formatLeft(mins){
+  const h = Math.floor(mins/60), m = mins%60;
+  return h>0 ? `${h}ч ${m}м` : `${m}м`;
+}
+
+// Считает индекс "текущей" и "следующей" пары для момента времени `now`
+// (в минутах от полуночи). Вынесено отдельно, чтобы использовать и при
+// полной отрисовке дня, и при лёгком ежеминутном обновлении без
+// пересоздания DOM-узлов.
+function computeLiveIndices(items, now){
+  let nowIdx = -1, nextIdx = -1, nextStart = Infinity;
+  for(let i=0;i<items.length;i++){
+    const range = parseRange(items[i].t);
+    if(range && now >= range[0] && now <= range[1]){ nowIdx = i; break; }
+  }
+  if(nowIdx === -1){
+    items.forEach((it,i)=>{
+      const range = parseRange(it.t);
+      if(range && range[0] > now && range[0] < nextStart){
+        nextStart = range[0];
+        nextIdx = i;
+      }
+    });
+  }
+  return {nowIdx, nextIdx};
+}
+
 function renderSlots(container, items, emptyText, group){
   if(items.length===0){
     container.innerHTML = `<div class="empty-day">${emptyText}</div>`;
@@ -923,27 +934,7 @@ function renderSlots(container, items, emptyText, group){
   }
   const isToday = currentDate === TODAY;
   const now = isToday ? minutesNow() : null;
-  const formatLeft = (mins)=>{
-    const h = Math.floor(mins/60), m = mins%60;
-    return h>0 ? `${h}ч ${m}м` : `${m}м`;
-  };
-
-  let nowIdx = -1, nextIdx = -1, nextStart = Infinity;
-  if(isToday){
-    for(let i=0;i<items.length;i++){
-      const range = parseRange(items[i].t);
-      if(range && now >= range[0] && now <= range[1]){ nowIdx = i; break; }
-    }
-    if(nowIdx === -1){
-      items.forEach((it,i)=>{
-        const range = parseRange(it.t);
-        if(range && range[0] > now && range[0] < nextStart){
-          nextStart = range[0];
-          nextIdx = i;
-        }
-      });
-    }
-  }
+  const {nowIdx, nextIdx} = isToday ? computeLiveIndices(items, now) : {nowIdx:-1, nextIdx:-1};
 
   container.innerHTML = items.map((it,i)=>{
     const range = isToday ? parseRange(it.t) : null;
@@ -968,6 +959,46 @@ function renderSlots(container, items, emptyText, group){
         <div class="what"><b>${it.w}</b><span>${cleanShortDesc(it.d)}</span></div>
       </div>`;
   }).join("");
+}
+
+// Ежеминутное обновление "сейчас/далее/прошло" БЕЗ пересоздания DOM-узлов.
+// Раньше это делал полный render(), который каждую минуту перегенерировал
+// innerHTML всех пар — а значит заново запускал анимацию их появления
+// (slotIn), создавая заметный глитч на весь список раз в 60 секунд.
+// Здесь только точечно правим классы и текст оставшегося времени.
+function refreshLiveIndicators(container, items){
+  if(currentDate !== TODAY || !items.length) return;
+  const now = minutesNow();
+  const {nowIdx, nextIdx} = computeLiveIndices(items, now);
+  container.querySelectorAll('.slot[data-idx]').forEach(el=>{
+    const i = Number(el.dataset.idx);
+    const range = parseRange(items[i].t);
+    el.classList.remove('now','past');
+    let timeLeftEl = el.querySelector('.time-left');
+    if(range && i === nowIdx){
+      el.classList.add('now');
+      const minutesLeft = range[1] - now;
+      const text = minutesLeft > 0 ? formatLeft(minutesLeft) : '<1м';
+      if(!timeLeftEl){
+        timeLeftEl = document.createElement('div');
+        timeLeftEl.className = 'time-left';
+        el.querySelector('.time').appendChild(timeLeftEl);
+      }
+      timeLeftEl.textContent = text;
+    } else if(range && i === nextIdx){
+      const minutesUntil = range[0] - now;
+      const text = minutesUntil > 0 ? formatLeft(minutesUntil) : '<1м';
+      if(!timeLeftEl){
+        timeLeftEl = document.createElement('div');
+        timeLeftEl.className = 'time-left';
+        el.querySelector('.time').appendChild(timeLeftEl);
+      }
+      timeLeftEl.textContent = text;
+    } else {
+      if(range && now > range[1]) el.classList.add('past');
+      if(timeLeftEl) timeLeftEl.remove();
+    }
+  });
 }
 
 function render(){
@@ -1077,15 +1108,12 @@ document.addEventListener('keydown', e=>{
 
 const THEME_KEY = 'schedule-theme-106-107';
 const THEMES = [
-  {id:'dark',     name:'Тёмная',   bg:'#0d131c', a:'#c7c0b0', b:'#c34f68'},
-  {id:'beige',    name:'Бежевая',  bg:'#f3ead9', a:'#6b4a35', b:'#7a2740'},
-  {id:'ocean',    name:'Океан',    bg:'#071b24', a:'#7fd4d9', b:'#ff9166'},
-  {id:'graphite', name:'Графит',   bg:'#15161a', a:'#8ab4f8', b:'#f2b155'},
-  {id:'mint',     name:'Мята',     bg:'#eef5ef', a:'#2f7d6b', b:'#8a3f6b'},
+  {id:'mocha',      name:'Мокко',      bg:'#1a1512', a:'#d3a86a', b:'#9c2f45'},
+  {id:'terracotta', name:'Терракота', bg:'#f1e3d0', a:'#6b5a3a', b:'#b1512f'},
 ];
 
 function currentThemeId(){
-  return document.documentElement.getAttribute('data-theme') || 'dark';
+  return document.documentElement.getAttribute('data-theme') || 'mocha';
 }
 
 function applyTheme(id, persist){
@@ -1127,7 +1155,9 @@ function checkDayRollover(){
     if(wasOnToday) currentDate = TODAY;
     buildRail();
     updateActivePill();
+    return true;
   }
+  return false;
 }
 
 document.addEventListener('click', e=>{
@@ -1160,9 +1190,19 @@ function initBoard(){
       el.classList.remove('drop-in','rise-in','d1','d2','d3');
     }, 1500);
   });
-  window.setInterval(()=>{ checkDayRollover(); render(); }, 60000);
+  const liveTick = ()=>{
+    const dayChanged = checkDayRollover();
+    if(dayChanged){
+      render(); // день сменился — набор пар другой, нужна полная перерисовка
+    } else {
+      // тот же день — точечно освежаем "сейчас/далее", не трогая DOM пар
+      refreshLiveIndicators(dom.g106Slots, dayItems.g106);
+      refreshLiveIndicators(dom.g107Slots, dayItems.g107);
+    }
+  };
+  window.setInterval(liveTick, 60000);
   document.addEventListener('visibilitychange', ()=>{
-    if(!document.hidden){ checkDayRollover(); render(); }
+    if(!document.hidden) liveTick();
   });
 }
 
