@@ -115,8 +115,11 @@
   }
   .wrap{max-width: 800px; margin: 0 auto;}
 
+  /* Единое правило переходов для цветовых свойств при смене темы.
+     Индивидуальные transition ниже покрывают только неповторяющиеся
+     свойства (transform, box-shadow и т.п.), чтобы не дублировать. */
   body, .col, .date-pill, .theme-swatch, .slot{
-    transition: background-color .35s var(--ease), border-color .35s var(--ease), color .25s var(--ease), box-shadow .35s var(--ease) !important;
+    transition: background-color .35s var(--ease), border-color .35s var(--ease), color .25s var(--ease) !important;
   }
 
   @keyframes dropIn{
@@ -335,7 +338,7 @@
     border-radius: 14px;
     overflow:hidden;
     box-shadow: var(--shadow);
-    transition: transform .35s var(--ease), box-shadow .35s var(--ease), background-color .35s var(--ease), border-color .35s var(--ease);
+    transition: transform .35s var(--ease), box-shadow .35s var(--ease);
   }
   .col:hover{
     transform: translateY(-3px);
@@ -377,7 +380,7 @@
     animation: slotIn .4s var(--ease) both;
     animation-delay: calc(var(--i, 0) * 0.045s);
     will-change: opacity, transform;
-    transition: background-color .3s var(--ease), border-left-color .3s var(--ease), padding-left .3s var(--ease);
+    transition: border-left-color .3s var(--ease), padding-left .3s var(--ease);
   }
   .slot:hover{ background: var(--panel-2); }
   .slot:last-child{border-bottom:none;}
@@ -394,13 +397,9 @@
     font-weight:700;
     letter-spacing:.5px;
     color: var(--g107);
-    animation: fadePulse 1.8s ease-in-out infinite;
   }
   .slot.past{ opacity:.5; }
-  @keyframes fadePulse{
-    0%,100%{ opacity:1; }
-    50%{ opacity:.45; }
-  }
+
   .slot .time{
     color: var(--text-dim);
     flex: 0 0 84px;
@@ -531,7 +530,7 @@
   <div class="board-header">
     <div class="kicker drop-in d1">Расписание</div>
     <h1 class="drop-in d2">Группы 106 и 107</h1>
-    <p class="drop-in d3">01.03.01 Математика · профиль «Математика. Преподавание математики» · 1–12 сентября 2026, адаптационный модуль</p>
+    <p class="drop-in d3">01.03.01 Математика · профиль «Математика. Преподавание математики» · 1–13 сентября 2026, адаптационный модуль</p>
     <div class="theme-switcher drop-in d3" id="themeSwitcher" role="group" aria-label="Выбор темы оформления"></div>
   </div>
 
@@ -713,6 +712,11 @@ const dateList = [
   ["2026-09-13","13 сент","Вс"],
 ];
 
+// Даты, у которых на весь день стоит мероприятие (не обычная выходная суббота/
+// воскресенье) — им не нужно приглушение через класс .off, чтобы не выглядело
+// так, будто в этот день вообще ничего нет.
+const allDayEventDates = new Set(["2026-09-05","2026-09-12"]);
+
 const weekdayNames = ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"];
 
 const dom = {
@@ -770,15 +774,14 @@ function buildRail(){
   const frag = document.createDocumentFragment();
   dateList.forEach(([iso,label,wd])=>{
     const pill = document.createElement('div');
+    const isWeekendOff = (wd==="Сб"||wd==="Вс") && !allDayEventDates.has(iso);
     pill.className = 'date-pill'
       + (iso===currentDate ? ' active':'')
-      + ((wd==="Сб"||wd==="Вс")?' off':'')
+      + (isWeekendOff ? ' off':'')
       + (iso===TODAY ? ' today':'');
     pill.dataset.iso = iso;
     pill.setAttribute('role','tab');
     pill.setAttribute('aria-selected', iso===currentDate ? 'true':'false');
-    // Роving tabindex: только активный день в Tab-порядке, остальные —
-    // доступны по стрелкам/клику, как того требует паттерн ARIA Tabs.
     pill.tabIndex = iso===currentDate ? 0 : -1;
     pill.title = iso===TODAY ? `${label} — сегодня` : label;
     pill.innerHTML = `<b>${label}</b>${wd}`;
@@ -851,8 +854,6 @@ function minutesNow(){
 }
 
 function parseRange(t){
-  // Поддерживаем en-dash (–), обычный дефис (-) и em-dash (—) — на случай,
-  // если при вводе данных попадётся не тот символ.
   const parts = t.split(/[-–—]/);
   if(parts.length!==2) return null;
   const [sh,sm] = parts[0].split(":").map(Number);
@@ -863,7 +864,6 @@ function parseRange(t){
 
 let dayItems = { g106: [], g107: [] };
 
-// Карта должностей и полных ФИО преподавателей
 const titlesMap = {
   "ст. пр.": "старший преподаватель",
   "доц.": "доцент",
@@ -892,10 +892,6 @@ const teacherFullNames = {
   "Редькина Д.И.": "Редькина Дарья Игоревна"
 };
 
-// Очистка сокращений должностей для общего меню.
-// \b в JS без флага /u строится по [A-Za-z0-9_] и не видит кириллицу,
-// поэтому вместо него используем (?:^|\s) слева и границу по концу строки
-// или пробелу справа.
 function cleanShortDesc(str) {
   if (!str) return '';
   let cleaned = str;
@@ -907,7 +903,6 @@ function cleanShortDesc(str) {
   return cleaned.trim();
 }
 
-// Расшифровка должностей и полных ФИО для всплывающего окна
 function expandMetaPart(part) {
   let res = part.trim();
   Object.entries(titlesMap).forEach(([shortTitle, fullTitle]) => {
@@ -933,16 +928,12 @@ function renderSlots(container, items, emptyText, group){
     return h>0 ? `${h}ч ${m}м` : `${m}м`;
   };
 
-  // Ровно один слот получает живой отсчёт: если сейчас идёт пара — это
-  // она (до конца), иначе — ближайшая следующая по времени начала пары
-  // (до её начала). Одновременно "до пары" и "до конца" не показываются.
   let nowIdx = -1, nextIdx = -1, nextStart = Infinity;
   if(isToday){
-    items.forEach((it,i)=>{
-      const range = parseRange(it.t);
-      if(!range) return;
-      if(now >= range[0] && now <= range[1] && nowIdx === -1) nowIdx = i;
-    });
+    for(let i=0;i<items.length;i++){
+      const range = parseRange(items[i].t);
+      if(range && now >= range[0] && now <= range[1]){ nowIdx = i; break; }
+    }
     if(nowIdx === -1){
       items.forEach((it,i)=>{
         const range = parseRange(it.t);
@@ -961,10 +952,6 @@ function renderSlots(container, items, emptyText, group){
       if(i === nowIdx) cls += " now";
       else if(now > range[1]) cls += " past";
     }
-    // Пересчитывается на каждый вызов renderSlots (то есть каждую минуту,
-    // см. setInterval в initBoard), а не один раз при загрузке страницы.
-    // Время пары не заменяется — под ним отдельной строкой добавляется
-    // отсчёт: до конца идущей пары либо до начала ближайшей следующей.
     let timeLeftHtml = '';
     if(range && i === nowIdx){
       const minutesLeft = range[1] - now;
@@ -973,9 +960,10 @@ function renderSlots(container, items, emptyText, group){
       const minutesUntil = range[0] - now;
       timeLeftHtml = `<div class="time-left">${minutesUntil > 0 ? formatLeft(minutesUntil) : '<1м'}</div>`;
     }
+    const ariaLabel = `${it.t}, ${it.w}`;
     return `
       <div class="${cls}" style="--i:${i}" data-group="${group}" data-idx="${i}"
-           tabindex="0" role="button" aria-haspopup="dialog">
+           tabindex="0" role="button" aria-haspopup="dialog" aria-label="${ariaLabel}">
         <div class="time">${it.t}${timeLeftHtml}</div>
         <div class="what"><b>${it.w}</b><span>${cleanShortDesc(it.d)}</span></div>
       </div>`;
@@ -1032,8 +1020,6 @@ function closeSheet(){
 
 document.addEventListener('keydown', e=>{
   if(e.key === 'Escape'){ closeSheet(); return; }
-  // Простой фокус-трап: пока шторка открыта, Tab не должен уводить фокус
-  // на затенённый контент под ней.
   if(e.key === 'Tab' && dom.sheet.classList.contains('open')){
     const focusable = dom.sheet.querySelectorAll(
       'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -1049,9 +1035,6 @@ document.addEventListener('keydown', e=>{
 });
 
 (function initSheetDrag(){
-  // Порог в пикселях: пока смещение меньше, считаем это обычным кликом
-  // (или попыткой выделить текст), а не свайпом — не добавляем класс
-  // dragging и не трогаем transform, чтобы не было "дёрганья" на тапе.
   const DRAG_THRESHOLD = 6;
   let tracking = false, dragging = false, startY = 0, sheetHeight = 0;
 
@@ -1092,8 +1075,6 @@ document.addEventListener('keydown', e=>{
   });
 })();
 
-// Темы оформления. id совпадает со значением [data-theme] в CSS.
-// bg/a/b — цвета для превью-кружка (не влияют на сам сайт).
 const THEME_KEY = 'schedule-theme-106-107';
 const THEMES = [
   {id:'dark',     name:'Тёмная',   bg:'#0d131c', a:'#c7c0b0', b:'#c34f68'},
@@ -1138,8 +1119,6 @@ function buildThemeSwitcher(){
   applyTheme(currentThemeId(), false);
 }
 
-// Если вкладка провисит открытой всю ночь, TODAY нужно пересчитать —
-// иначе подсветка "сегодня" и фильтр "now/past" будут привязаны к вчера.
 function checkDayRollover(){
   const fresh = todayISO();
   if(fresh !== TODAY){
@@ -1147,11 +1126,10 @@ function checkDayRollover(){
     TODAY = fresh;
     if(wasOnToday) currentDate = TODAY;
     buildRail();
+    updateActivePill();
   }
 }
 
-// Делегированный обработчик вместо инлайновых onclick/onkeydown в разметке
-// пар — так генерируемый HTML не тянет за собой логику в атрибутах.
 document.addEventListener('click', e=>{
   const slot = e.target.closest('.slot[data-group]');
   if(slot) openSlot(slot.dataset.group, Number(slot.dataset.idx));
@@ -1162,8 +1140,6 @@ document.addEventListener('keydown', e=>{
   if(slot){ e.preventDefault(); openSlot(slot.dataset.group, Number(slot.dataset.idx)); }
 });
 
-// Прокрутка ленты дат колесом мыши по горизонтали (без Shift) —
-// на десктопах без трекпада иначе до дальних дат не добраться.
 dom.rail.addEventListener('wheel', (e)=>{
   if(e.deltaY === 0) return;
   dom.rail.scrollLeft += e.deltaY;
@@ -1174,14 +1150,12 @@ function initBoard(){
   buildThemeSwitcher();
   buildRail();
   render();
+  updateActivePill();
   document.querySelectorAll('.drop-in, .rise-in').forEach(el=>{
     el.addEventListener('animationend', function handler(){
       el.classList.remove('drop-in','rise-in','d1','d2','d3');
       el.removeEventListener('animationend', handler);
     });
-    // Подстраховка на случай, если animationend не придёт (свёрнутая
-    // вкладка, урезанная анимация при prefers-reduced-motion и т.п.) —
-    // без этого элемент с opacity:0 в стилях остался бы невидимым навсегда.
     window.setTimeout(()=>{
       el.classList.remove('drop-in','rise-in','d1','d2','d3');
     }, 1500);
