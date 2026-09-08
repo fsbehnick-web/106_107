@@ -2,17 +2,29 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" id="themeColorMeta" content="#1a1512">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <script>
-// Применяем сохранённую тему как можно раньше — до отрисовки, чтобы не
-// было вспышки дефолтной темы при перезаходе на сайт.
+// Применяем сохранённую тему как можно раньше — до отрисовки, чтобы не было
+// вспышки дефолтной темы (и цвета строки браузера, который ей не соответствует)
+// при перезаходе на сайт.
 (function(){
   try{
     var saved = localStorage.getItem('schedule-theme-106-107');
-    if(saved) document.documentElement.setAttribute('data-theme', saved);
+    var resolved = saved || ((window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches)
+      // Без сохранённого выбора раньше всегда стартовала тёмная "Мокко".
+      // Теперь, если у пользователя в системе включена светлая тема,
+      // по умолчанию показываем светлую "Терракоту".
+      ? 'terracotta' : null);
+    if(resolved){
+      document.documentElement.setAttribute('data-theme', resolved);
+    }
+    var meta = document.getElementById('themeColorMeta');
+    if(meta) meta.setAttribute('content', resolved === 'terracotta' ? '#f1e3d0' : '#1a1512');
   }catch(e){}
 })();
 </script>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Расписание — группы 106 и 107</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,6 +49,13 @@
     --free: #8fbf7a;
     --shadow: 0 10px 30px -12px rgba(0,0,0,0.6);
     --ease: cubic-bezier(.22,1,.36,1);
+    /* Часто повторяющиеся пары transition. Подставляются через var() только
+       туда, где длительность совпадает 1-в-1 — ни один селектор не потерял
+       свой полный список transition-свойств (важно из-за истории с
+       !important выше), поведение не меняется, просто меньше дублирования
+       буквального текста "color .3s var(--ease)" по файлу. */
+    --t-color: color .3s var(--ease);
+    --t-bg: background-color .3s var(--ease);
   }
   /* Терракота — светлая, глина/хаки + терракотовый (в духе трендов 2026:
      Universal Khaki, terracotta & clay). */
@@ -56,15 +75,19 @@
     --free: #5f7a43;
     --shadow: 0 10px 26px -14px rgba(90,55,20,0.25);
   }
-  *{box-sizing:border-box;}
+  *{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
   body{
     margin:0;
     background: var(--bg);
     color: var(--text);
     font-family: 'Manrope', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    padding: 28px 16px 60px;
+    padding: max(28px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(60px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
     -webkit-font-smoothing: antialiased;
-    transition: background-color .4s var(--ease), color .3s var(--ease);
+    -webkit-text-size-adjust: 100%;
+    transition: background-color .4s var(--ease), var(--t-color);
   }
   .wrap{max-width: 800px; margin: 0 auto;}
 
@@ -163,6 +186,8 @@
     border: 2px solid var(--line);
     padding: 0;
     cursor: pointer;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
     background: var(--panel-2);
     background-clip: padding-box;
     transition: border-color .25s var(--ease), transform .15s var(--ease), box-shadow .25s var(--ease);
@@ -194,6 +219,10 @@
     padding: 9px 13px;
     border-radius: 10px;
     cursor: pointer;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
     text-align:center;
     line-height:1.3;
     transition: border-color .25s var(--ease), color .25s var(--ease), transform .28s cubic-bezier(.34,1.56,.64,1), box-shadow .25s var(--ease), background-color .25s var(--ease);
@@ -227,7 +256,7 @@
     margin: 0;
     letter-spacing: 1.5px;
     text-transform: uppercase;
-    transition: color .3s var(--ease), opacity .22s var(--ease);
+    transition: var(--t-color), opacity .22s var(--ease);
   }
   .day-title.swapping{ opacity: 0; }
   .today-btn{
@@ -243,6 +272,10 @@
     font-weight:700;
     letter-spacing: .3px;
     cursor:pointer;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
     opacity:0;
     pointer-events:none;
     transform: translateY(-50%) scale(.9);
@@ -268,7 +301,7 @@
     border-radius:50%;
     background: var(--g107);
     z-index:1;
-    transition: background-color .3s var(--ease);
+    transition: var(--t-bg);
   }
   .date-pill.today::before{
     content:"";
@@ -279,7 +312,7 @@
     background: var(--g107);
     animation: todayPulse 2.2s ease-out infinite;
     will-change: transform, opacity;
-    transition: background-color .3s var(--ease);
+    transition: var(--t-bg);
   }
   .date-pill.today.active::after,
   .date-pill.today.active::before{ background: var(--bg); }
@@ -325,7 +358,7 @@
     justify-content:space-between;
     align-items:center;
     position:relative;
-    transition: color .3s var(--ease);
+    transition: var(--t-color);
   }
   .col-head::before{
     content:"";
@@ -352,10 +385,14 @@
     align-items:flex-start;
     gap:10px;
     cursor: pointer;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
     animation: slotIn .4s var(--ease) both;
     animation-delay: calc(var(--i, 0) * 0.045s);
     will-change: opacity, transform;
-    transition: background-color .3s var(--ease), border-left-color .3s var(--ease), padding-left .3s var(--ease);
+    transition: var(--t-bg), border-left-color .3s var(--ease), padding-left .3s var(--ease);
   }
   .slot:hover{ background: var(--panel-2); }
   .slot:last-child{border-bottom:none;}
@@ -372,7 +409,7 @@
     font-weight:700;
     letter-spacing:.5px;
     color: var(--g107);
-    transition: color .3s var(--ease);
+    transition: var(--t-color);
   }
   .slot.past{ opacity:.5; }
 
@@ -382,10 +419,10 @@
     font-size:12px;
     font-weight:600;
     padding-top:1px;
-    transition: color .3s var(--ease);
+    transition: var(--t-color);
   }
-  .slot .what b{display:block; color: var(--text); font-size:13px; font-weight:600; transition: color .3s var(--ease);}
-  .slot .what span{color: var(--text-dim); font-size:12px; transition: color .3s var(--ease);}
+  .slot .what b{display:block; color: var(--text); font-size:13px; font-weight:600; transition: var(--t-color);}
+  .slot .what span{color: var(--text-dim); font-size:12px; transition: var(--t-color);}
   .empty-day{
     padding: 26px 14px;
     text-align:center;
@@ -398,7 +435,9 @@
   .sheet-scrim{
     position: fixed;
     inset: 0;
+    cursor: pointer;
     background: rgba(0,0,0,0.5);
+    -webkit-backdrop-filter: blur(2px);
     backdrop-filter: blur(2px);
     opacity: 0;
     pointer-events: none;
@@ -413,6 +452,7 @@
     bottom: 0;
     width: min(92vw, 460px);
     max-height: 62vh;
+    max-height: 62dvh;
     transform: translate(-50%, 100%);
     background: var(--panel);
     border: 1px solid var(--line);
@@ -438,6 +478,8 @@
     margin: 4px auto 14px;
     cursor: grab;
     touch-action: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
   }
   .sheet-close{
     position: absolute;
@@ -449,24 +491,36 @@
     color: var(--text-dim);
     font-size: 13px;
     cursor: pointer;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
     transition: color .2s var(--ease), border-color .2s var(--ease), transform .15s var(--ease);
   }
   .sheet-close:hover{ color: var(--text); border-color: var(--g106-dim); }
   .sheet-close:active{ transform: scale(.92); }
   .sheet-header{
     cursor: grab;
-    touch-action: pan-y;
+    /* Не pan-y: заголовок не прокручиваемая область, и allow-панорамирование
+       иногда даёт браузеру забрать вертикальный жест под нативный скролл
+       раньше, чем до JS дойдут pointermove — из-за этого свайп-закрытие
+       мог не сработать с первого раза на touch-устройствах. none здесь
+       ведёт себя как на .sheet-grabber и отдаёт весь жест перетаскиванию. */
+    touch-action: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
   }
   .sheet-body{
     max-height: calc(62vh - 60px);
+    max-height: calc(62dvh - 60px);
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     touch-action: pan-y;
   }
   .sheet-time{
     font-size: 13px;
     font-weight: 700;
     letter-spacing: .5px;
-    transition: color .3s var(--ease);
+    transition: var(--t-color);
   }
   .sheet-title{
     margin: 6px 0 14px;
@@ -486,7 +540,7 @@
     font-size: 14px;
     color: var(--text-dim);
     line-height: 1.4;
-    transition: color .3s var(--ease);
+    transition: var(--t-color);
   }
   .sheet-meta span::before{
     content: "";
@@ -495,7 +549,17 @@
     width: 6px; height: 6px;
     border-radius: 50%;
     background: var(--text-dim);
-    transition: background-color .3s var(--ease);
+    transition: var(--t-bg);
+  }
+
+  @media print{
+    /* Расписание логично распечатать: убираем декоративную анимацию,
+       фон и интерактивные элементы, оставляем только сами пары. */
+    body{ background:#fff !important; color:#000 !important; padding:0; }
+    .theme-switcher, .today-btn, .sheet-scrim, .detail-sheet{ display:none !important; }
+    .date-rail{ overflow:visible; flex-wrap:wrap; }
+    .col{ box-shadow:none; border:1px solid #999; break-inside: avoid; }
+    .slot{ animation:none !important; opacity:1 !important; }
   }
 
   @media (prefers-reduced-motion: reduce){
@@ -518,7 +582,7 @@
     <div class="date-rail" id="dateRail" role="tablist" aria-label="Выбор дня"></div>
     <div class="day-title-row">
       <div class="day-title" id="dayTitle" aria-live="polite"></div>
-      <button class="today-btn" id="todayBtn" onclick="jumpToToday()" title="Вернуться к сегодняшнему дню">Сегодня</button>
+      <button class="today-btn" id="todayBtn" onclick="jumpToToday()" title="Вернуться к сегодняшнему дню" tabindex="-1" aria-hidden="true">Сегодня</button>
     </div>
   </div>
 
@@ -538,7 +602,7 @@
 </div>
 
 <div class="sheet-scrim" id="sheetScrim" onclick="closeSheet()"></div>
-<div class="detail-sheet" id="detailSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" aria-hidden="true">
+<div class="detail-sheet" id="detailSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" aria-hidden="true" inert>
   <div class="sheet-grabber" id="sheetGrabber" aria-hidden="true"></div>
   <button class="sheet-close" onclick="closeSheet()" aria-label="Закрыть">✕</button>
   <div class="sheet-header" id="sheetHeader">
@@ -551,8 +615,14 @@
 </div>
 
 <script>
-// Расписание группы 106 (ВОМ23-ММИ2606)
-const g106 = {
+// Занятия, общие для обеих групп (вступительные лекции 1–2 сентября,
+// совместные пары и т.п.). Раньше они были продублированы один в один в
+// g106 и g107 — если бы поменялась аудитория или время, пришлось бы
+// исправлять в двух местах, и рано или поздно копии разошлись бы незаметно.
+// Теперь общий блок описан один раз и подмешивается в оба расписания
+// программно (см. mergeDaySchedule ниже), а own106/own107 хранят только то,
+// что у групп реально различается.
+const sharedSchedule = {
   "2026-09-01": [
     {t:"09:00–10:30", w:"Первый раз на первый курс", d:"ассист. Тихонов С.О. · ауд. 301"},
     {t:"10:40–12:10", w:"Знакомство со структурой МПГУ и ИМИ", d:"Дирекция ИМИ и представители кафедр · ауд. 402"},
@@ -564,16 +634,6 @@ const g106 = {
     {t:"12:40–14:10", w:"Геометрия", d:"лекция · доц. Никифорова А.В. · ауд. 401"},
     {t:"14:20–15:50", w:"Математический анализ", d:"лекция · проф. Матвеев Е.М. · ауд. 401"}
   ],
-  "2026-09-03": [
-    {t:"09:00–10:30", w:"Знакомство с цифровой образоват. средой МПГУ", d:"лекция · доц. Маняхина В.Г. · ауд. 301"},
-    {t:"10:40–12:10", w:"История России", d:"лекция · доц. Филина Е.И. · ауд. 402"},
-    {t:"12:40–14:10", w:"Алгебра", d:"лекция · проф. Михайлова М.В. · ауд. 401"},
-    {t:"14:20–15:50", w:"Цифровая образоват. среда МПГУ (лаб)", d:"по подгруппам", sub:[
-      {n:1, who:"Маняхина В.Г.", where:"ауд. 209"},
-      {n:2, who:"Иванова Н.Ю.", where:"ауд. 208"},
-      {n:3, who:"Овчарова П.С.", where:"ауд. 210"}
-    ]}
-  ],
   "2026-09-04": [
     {t:"10:40–12:10", w:"Учимся учиться", d:"доц. Чуйкова Н.В. · ауд. 401"},
     {t:"12:40–14:10", w:"Основы российской государственности", d:"лекция · доц. Максимова Л.Н. · ауд. 402"},
@@ -582,114 +642,153 @@ const g106 = {
   "2026-09-05": [
     {t:"09:00–15:50", w:"Встречи с кураторами-студентами", d:"весь день · День кураторов"}
   ],
-  "2026-09-06": [],
+  // Ниже — пары, которые раньше были дословно продублированы в own106 и
+  // own107 на одну и ту же дату/время (лекции для потока целиком, просто
+  // без вступительной недели их не вносили сюда с самого начала). Перенесены
+  // сюда по той же причине, что описана в комментарии выше файла.
+  "2026-09-03": [
+    {t:"09:00–10:30", w:"Знакомство с цифровой образоват. средой МПГУ", d:"лекция · доц. Маняхина В.Г. · ауд. 301"},
+    {t:"10:40–12:10", w:"История России", d:"лекция · доц. Филина Е.И. · ауд. 402"},
+    {t:"12:40–14:10", w:"Алгебра", d:"лекция · проф. Михайлова М.В. · ауд. 401"}
+  ],
   "2026-09-07": [
-    {t:"09:00–10:30", w:"Алгебра", d:"практика · ассист. Артемов Д.Ю. · ауд. 407"},
-    {t:"10:40–12:10", w:"Геометрия", d:"лекция · доц. Никифорова А.В. · ауд. 301"},
-    {t:"14:20–15:50", w:"Тренинг по военно-спортивной подготовке", d:"пр-кт Вернадского, дом 88, спорт. зал"}
+    {t:"10:40–12:10", w:"Геометрия", d:"лекция · доц. Никифорова А.В. · ауд. 301"}
   ],
   "2026-09-08": [
-    {t:"10:40–12:10", w:"Геометрия", d:"лекция · доц. Никифорова А.В. · ауд. 301"},
-    {t:"12:40–14:10", w:"Иностранный язык", d:"практика · доц. Кашпарова В.С. · ауд. 405"},
-    {t:"14:20–15:50", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · ауд. 305"}
+    {t:"10:40–12:10", w:"Геометрия", d:"лекция · доц. Никифорова А.В. · ауд. 301"}
   ],
   "2026-09-09": [
-    {t:"10:40–12:10", w:"История России", d:"лекция · доц. Филина Е.И. · ауд. 402"},
-    {t:"12:40–14:10", w:"Геометрия", d:"практика · доц. Никифорова А.В. · ауд. 207"}
+    {t:"10:40–12:10", w:"История России", d:"лекция · доц. Филина Е.И. · ауд. 402"}
   ],
   "2026-09-10": [
     {t:"09:00–10:30", w:"Математический анализ", d:"лекция · проф. Матвеев Е.М. · ауд. 401"},
     {t:"10:40–12:10", w:"Знакомство с деканатом и его функциями", d:"Машкина А.В. · ауд. 301"},
     {t:"12:40–14:10", w:"Алгебра", d:"лекция · проф. Михайлова М.В. · ауд. 401"}
+  ],
+  "2026-09-12": [
+    {t:"09:00–15:50", w:"Самостоятельные и групповые прогулки", d:"весь день · День здоровья"}
+  ]
+};
+
+// Только то, что отличается у группы 106 (ВОМ23-ММИ2606) от общего блока.
+const own106 = {
+  "2026-09-03": [
+    {t:"14:20–15:50", w:"Цифровая образоват. среда МПГУ (лаб)", d:"по подгруппам", sub:[
+      {n:1, who:"Маняхина В.Г.", where:"ауд. 209"},
+      {n:2, who:"Иванова Н.Ю.", where:"ауд. 208"},
+      {n:3, who:"Овчарова П.С.", where:"ауд. 210"}
+    ]}
+  ],
+  "2026-09-06": [],
+  "2026-09-07": [
+    {t:"09:00–10:30", w:"Алгебра", d:"практика · ассист. Артемов Д.Ю. · ауд. 407"},
+    {t:"14:20–15:50", w:"Тренинг по военно-спортивной подготовке", d:"пр-кт Вернадского, дом 88, спорт. зал"}
+  ],
+  "2026-09-08": [
+    {t:"12:40–14:10", w:"Иностранный язык", d:"практика · доц. Кашпарова В.С. · ауд. 405"},
+    {t:"14:20–15:50", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · ауд. 305"}
+  ],
+  "2026-09-09": [
+    {t:"12:40–14:10", w:"Геометрия", d:"практика · доц. Никифорова А.В. · ауд. 207"}
   ],
   "2026-09-11": [
     {t:"12:40–14:10", w:"Математический анализ", d:"практика · ассист. Морозенкова М.С. · ауд. 207"},
     {t:"14:20–15:50", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · ауд. 407"},
     {t:"16:00–17:30", w:"Речевые практики", d:"практика · ассист. Редькина Д.И. · ауд. 405"}
   ],
-  "2026-09-12": [
-    {t:"09:00–15:50", w:"Самостоятельные и групповые прогулки", d:"весь день · День здоровья"}
-  ],
   "2026-09-13": []
 };
 
-// Расписание группы 107 (ВОМ23-ММИ2607)
-const g107 = {
+// Только то, что отличается у группы 107 (ВОМ23-ММИ2607) от общего блока.
+const own107 = {
   "2026-09-01": [
-    {t:"09:00–10:30", w:"Первый раз на первый курс", d:"ассист. Тихонов С.О. · ауд. 301"},
-    {t:"10:40–12:10", w:"Знакомство со структурой МПГУ и ИМИ", d:"Дирекция ИМИ и представители кафедр · ауд. 402"},
-    {t:"12:40–14:10", w:"Знакомство с ЭБС МПГУ", d:"Курицына Т.В. · ауд. 301"},
     {t:"14:20–15:50", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · ауд. 207"}
   ],
-  "2026-09-02": [
-    {t:"09:00–10:30", w:"Знакомство со студ. самоуправлением и профсоюзом", d:"Горпенко К.Д., Корноухова Д.Д. · ауд. 402"},
-    {t:"10:40–12:10", w:"МПГУ – не только учёба", d:"Гульянц С.С., представители УВР · ауд. 402"},
-    {t:"12:40–14:10", w:"Геометрия", d:"лекция · доц. Никифорова А.В. · ауд. 401"},
-    {t:"14:20–15:50", w:"Математический анализ", d:"лекция · проф. Матвеев Е.М. · ауд. 401"}
-  ],
-  "2026-09-03": [
-    {t:"09:00–10:30", w:"Знакомство с цифровой образоват. средой МПГУ", d:"лекция · доц. Маняхина В.Г. · ауд. 301"},
-    {t:"10:40–12:10", w:"История России", d:"лекция · доц. Филина Е.И. · ауд. 402"},
-    {t:"12:40–14:10", w:"Алгебра", d:"лекция · проф. Михайлова М.В. · ауд. 401"}
-  ],
+  "2026-09-03": [],
   "2026-09-04": [
-    {t:"10:40–12:10", w:"Учимся учиться", d:"доц. Чуйкова Н.В. · ауд. 401"},
-    {t:"12:40–14:10", w:"Основы российской государственности", d:"лекция · доц. Максимова Л.Н. · ауд. 402"},
-    {t:"14:20–15:50", w:"Основы российской государственности", d:"лекция · доц. Максимова Л.Н. · ауд. 402"},
     {t:"16:00–17:30", w:"Цифровая образоват. среда МПГУ (лаб)", d:"по подгруппам", sub:[
       {n:1, who:"Маняхина В.Г.", where:"ауд. 210"},
       {n:2, who:"Иванова Н.Ю.", where:"ауд. 108"},
       {n:3, who:"Овчарова П.С.", where:"ауд. 211"}
     ]}
   ],
-  "2026-09-05": [
-    {t:"09:00–15:50", w:"Встречи с кураторами-студентами", d:"весь день · День кураторов"}
-  ],
   "2026-09-06": [],
   "2026-09-07": [
-    {t:"10:40–12:10", w:"Геометрия", d:"лекция · доц. Никифорова А.В. · ауд. 301"},
     {t:"12:40–14:10", w:"Алгебра", d:"практика · ассист. Артемов Д.Ю. · ауд. 407"}
   ],
   "2026-09-08": [
-    {t:"09:00–10:30", w:"Иностранный язык", d:"практика · доц. Кашпарова В.С. · ауд. 405"},
-    {t:"10:40–12:10", w:"Геометрия", d:"лекция · доц. Никифорова А.В. · ауд. 301"}
+    {t:"09:00–10:30", w:"Иностранный язык", d:"практика · доц. Кашпарова В.С. · ауд. 405"}
   ],
   "2026-09-09": [
     {t:"09:00–10:30", w:"Геометрия", d:"практика · доц. Никифорова А.В. · ауд. 206"},
-    {t:"10:40–12:10", w:"История России", d:"лекция · доц. Филина Е.И. · ауд. 402"},
     {t:"14:20–15:50", w:"Тренинг по военно-спортивной подготовке", d:"пр-кт Вернадского, дом 88, спорт. зал"}
-  ],
-  "2026-09-10": [
-    {t:"09:00–10:30", w:"Математический анализ", d:"лекция · проф. Матвеев Е.М. · ауд. 401"},
-    {t:"10:40–12:10", w:"Знакомство с деканатом и его функциями", d:"Машкина А.В. · ауд. 301"},
-    {t:"12:40–14:10", w:"Алгебра", d:"лекция · проф. Михайлова М.В. · ауд. 401"}
   ],
   "2026-09-11": [
     {t:"10:40–12:10", w:"Математический анализ", d:"практика · ассист. Морозенкова М.С. · ауд. 207"},
     {t:"12:40–14:10", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · ауд. 407"},
     {t:"14:20–15:50", w:"Речевые практики", d:"практика · ассист. Редькина Д.И. · ауд. 405"}
   ],
-  "2026-09-12": [
-    {t:"09:00–15:50", w:"Самостоятельные и групповые прогулки", d:"весь день · День здоровья"}
-  ],
   "2026-09-13": []
 };
 
-const dateList = [
-  ["2026-09-01","1 сент","Вт"],
-  ["2026-09-02","2 сент","Ср"],
-  ["2026-09-03","3 сент","Чт"],
-  ["2026-09-04","4 сент","Пт"],
-  ["2026-09-05","5 сент","Сб"],
-  ["2026-09-06","6 сент","Вс"],
-  ["2026-09-07","7 сент","Пн"],
-  ["2026-09-08","8 сент","Вт"],
-  ["2026-09-09","9 сент","Ср"],
-  ["2026-09-10","10 сент","Чт"],
-  ["2026-09-11","11 сент","Пт"],
-  ["2026-09-12","12 сент","Сб"],
-  ["2026-09-13","13 сент","Вс"],
-];
+// Склеивает общий блок и "свои" пары группы на конкретную дату и
+// сортирует по времени начала — так порядок в списке остаётся верным
+// независимо от того, в каком объекте физически лежит та или иная пара.
+function mergeDaySchedule(dateISO, ownMap){
+  const merged = [...(sharedSchedule[dateISO] || []), ...(ownMap[dateISO] || [])];
+  return merged.sort((a,b)=>{
+    const ra = parseRange(a.t), rb = parseRange(b.t);
+    if(!ra || !rb) return 0;
+    return ra[0]-rb[0];
+  });
+}
+
+const scheduleDates = new Set([
+  ...Object.keys(sharedSchedule),
+  ...Object.keys(own106),
+  ...Object.keys(own107)
+]);
+
+// Расписание группы 106 (ВОМ23-ММИ2606)
+const g106 = {};
+// Расписание группы 107 (ВОМ23-ММИ2607)
+const g107 = {};
+scheduleDates.forEach(iso=>{
+  g106[iso] = mergeDaySchedule(iso, own106);
+  g107[iso] = mergeDaySchedule(iso, own107);
+});
+
+// День недели больше не хранится здесь текстом — раньше "Вт"/"Ср" были
+// вписаны вручную и дублировали то, что вычисляет weekdayIndex(iso). Два
+// независимых источника правды рано или поздно разойдутся (например, при
+// опечатке в датах следующего месяца) без единой ошибки в консоли. Теперь
+// день недели всегда считается из iso — см. weekdayFor() ниже.
+// Раньше здесь были 13 строк вида ["2026-09-08","8 сент"], набранных руками:
+// число в подписи — это просто текст, никак не связанный с датой рядом с ним,
+// так что опечатка в подписи (или пропущенный день при редактировании)
+// осталась бы незамеченной, как и было с днём недели раньше (см. комментарий
+// про weekdayIndex выше). Теперь список строится из даты начала и количества
+// дней, а подпись считается из самой даты — расширить диапазон расписания
+// можно, просто увеличив SCHEDULE_DAYS (и дополнив MONTH_SHORT_RU, если
+// расписание перейдёт в следующий месяц).
+const SCHEDULE_START = "2026-09-01";
+const SCHEDULE_DAYS = 13;
+const MONTH_SHORT_RU = ["янв","февр","мар","апр","мая","июня","июля","авг","сент","окт","нояб","дек"];
+
+function isoPlusDays(iso, n){
+  const d = new Date(iso + "T00:00:00");
+  d.setDate(d.getDate() + n);
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const day = String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
+
+const dateList = Array.from({length: SCHEDULE_DAYS}, (_, i) => {
+  const iso = isoPlusDays(SCHEDULE_START, i);
+  const d = new Date(iso + "T00:00:00");
+  return [iso, `${d.getDate()} ${MONTH_SHORT_RU[d.getMonth()]}`];
+});
 
 // Даты, у которых на весь день стоит мероприятие (не обычная выходная суббота/
 // воскресенье) — им не нужно приглушение через класс .off, чтобы не выглядело
@@ -717,10 +816,19 @@ const dom = {
   sheetMeta: document.getElementById('sheetMeta'),
 };
 
+// Пары идут в Москве, поэтому "сегодня" и "сейчас" считаем по московскому
+// времени через Intl.DateTimeFormat, а не по new Date() в локальном времени
+// устройства — иначе при открытии страницы в другом часовом поясе "сегодня"
+// и подсветка текущей пары могли бы указать не на тот день/пару.
+const MOSCOW_TZ = 'Europe/Moscow';
+
 function todayISO(){
-  const d = new Date();
-  const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
-  return `${y}-${m}-${day}`;
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: MOSCOW_TZ, year:'numeric', month:'2-digit', day:'2-digit'
+  }).formatToParts(new Date());
+  const map = {};
+  parts.forEach(p=>{ map[p.type] = p.value; });
+  return `${map.year}-${map.month}-${map.day}`;
 }
 let TODAY = todayISO();
 
@@ -750,16 +858,24 @@ function lastEnd(items){
   return parts.length===2 ? parts[1].trim() : null;
 }
 
-function freeTagText(items, allDayFreeText, busyAllDayText){
-  if(items.length===0) return allDayFreeText;
+// Раньше при занятом дне сюда возвращался диапазон ПАР («10:40–15:50»), но
+// показывался он в .free-tag зелёным (--free) — тем же цветом, что и «весь
+// день свободна». Человек видел зелёный ярлык и мог прочитать его как
+// «свободна», хотя цифры означали ровно обратное. Теперь функция считает
+// реальные окна свободного времени (до первой пары и после последней), и
+// зелёный цвет снова верно описывает то, что написано.
+function freeWindowsText(items){
+  if(items.length===0) return "весь день";
   const start = firstStart(items);
   const end = lastEnd(items);
-  return (start && end) ? `${start}–${end}` : busyAllDayText;
+  if(!start || !end) return null;
+  return `с ${start} до ${end}`;
 }
 
 function buildRail(){
   const frag = document.createDocumentFragment();
-  dateList.forEach(([iso,label,wd])=>{
+  dateList.forEach(([iso,label])=>{
+    const wd = weekdayNames[weekdayIndex(iso)];
     const pill = document.createElement('div');
     const isWeekendOff = (wd==="Сб"||wd==="Вс") && !allDayEventDates.has(iso);
     pill.className = 'date-pill'
@@ -804,7 +920,10 @@ function updateActivePill(){
     activePill.classList.add('pop');
     activePill.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
   }
-  dom.todayBtn.classList.toggle('show', currentDate !== TODAY);
+  const showTodayBtn = currentDate !== TODAY;
+  dom.todayBtn.classList.toggle('show', showTodayBtn);
+  dom.todayBtn.tabIndex = showTodayBtn ? 0 : -1;
+  dom.todayBtn.setAttribute('aria-hidden', String(!showTodayBtn));
 }
 
 function goToDate(){
@@ -840,8 +959,13 @@ document.addEventListener('keydown', e=>{
 });
 
 function minutesNow(){
-  const d = new Date();
-  return d.getHours()*60 + d.getMinutes();
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: MOSCOW_TZ, hour:'2-digit', minute:'2-digit', hour12:false
+  }).formatToParts(new Date());
+  const map = {};
+  parts.forEach(p=>{ map[p.type] = p.value; });
+  const h = Number(map.hour) % 24; // на случай если движок форматирует полночь как "24:00"
+  return h*60 + Number(map.minute);
 }
 
 function parseRange(t){
@@ -1017,15 +1141,40 @@ function render(){
   const gItems = g106[currentDate] || [];
   dayItems.g106 = gItems;
   renderSlots(dom.g106Slots, gItems, "Пар нет — весь день свободна", 'g106');
-  dom.g106Free.textContent = freeTagText(gItems, "весь день", "занята весь день");
+  dom.g106Free.textContent = freeWindowsText(gItems);
 
   const hItems = g107[currentDate] || [];
   dayItems.g107 = hItems;
   renderSlots(dom.g107Slots, hItems, "Пар нет — весь день свободна", 'g107');
-  dom.g107Free.textContent = freeTagText(hItems, "весь день", "занята весь день");
+  dom.g107Free.textContent = freeWindowsText(hItems);
 }
 
 let lastFocused = null;
+
+// iOS Safari отдельная история: обычный body{overflow:hidden} не мешает
+// фону скроллиться/резиниться под модалкой, потому что там жест скролла не
+// проходит через overflow страницы. Рабочий обход — на время открытия
+// зафиксировать body через position:fixed с отрицательным top, а при
+// закрытии вернуть прежнюю прокрутку.
+let lockedScrollY = 0;
+function lockBodyScroll(){
+  lockedScrollY = window.scrollY || window.pageYOffset || 0;
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${lockedScrollY}px`;
+  document.body.style.left = '0';
+  document.body.style.right = '0';
+  document.body.style.width = '100%';
+  document.body.style.overflow = 'hidden';
+}
+function unlockBodyScroll(){
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.left = '';
+  document.body.style.right = '';
+  document.body.style.width = '';
+  document.body.style.overflow = '';
+  window.scrollTo(0, lockedScrollY);
+}
 
 function openSlot(group, idx){
   const it = dayItems[group] && dayItems[group][idx];
@@ -1043,7 +1192,8 @@ function openSlot(group, idx){
   dom.sheetScrim.classList.add('open');
   dom.sheet.classList.add('open');
   dom.sheet.setAttribute('aria-hidden','false');
-  document.body.style.overflow = 'hidden';
+  dom.sheet.inert = false;
+  lockBodyScroll();
   dom.sheet.querySelector('.sheet-close').focus({preventScroll:true});
 }
 
@@ -1052,7 +1202,8 @@ function closeSheet(){
   dom.sheetScrim.classList.remove('open');
   dom.sheet.classList.remove('open');
   dom.sheet.setAttribute('aria-hidden','true');
-  document.body.style.overflow = '';
+  dom.sheet.inert = true;
+  unlockBodyScroll();
   if(lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus({preventScroll:true});
 }
 
@@ -1128,6 +1279,9 @@ function applyTheme(id, persist){
   if(persist){
     try{ localStorage.setItem(THEME_KEY, id); }catch(e){}
   }
+  const themeMeta = document.getElementById('themeColorMeta');
+  const themeDef = THEMES.find(t=>t.id===id);
+  if(themeMeta && themeDef) themeMeta.setAttribute('content', themeDef.bg);
   dom.themeSwitcher.querySelectorAll('.theme-swatch').forEach(el=>{
     const isActive = el.dataset.theme === id;
     el.classList.toggle('active', isActive);
@@ -1159,7 +1313,11 @@ function checkDayRollover(){
   if(fresh !== TODAY){
     const wasOnToday = currentDate === TODAY;
     TODAY = fresh;
-    if(wasOnToday) currentDate = TODAY;
+    // pickInitialDate(), не голое присваивание TODAY: если реальное "сегодня"
+    // укатилось за пределы диапазона расписания (например, вкладка осталась
+    // открытой после 13 сентября), currentDate должен остаться на последнем
+    // дне расписания — иначе render() упадёт на dateList.find(...) === undefined.
+    if(wasOnToday) currentDate = pickInitialDate();
     buildRail();
     updateActivePill();
     return true;
@@ -1179,6 +1337,13 @@ document.addEventListener('keydown', e=>{
 
 dom.rail.addEventListener('wheel', (e)=>{
   if(e.deltaY === 0) return;
+  // На границах ленты дат отдаём вертикальный скролл странице, а не
+  // "проглатываем" его — иначе наведение курсора на ленту насовсем блокировало
+  // прокрутку колесом мыши всей страницы, даже когда сама лента уже
+  // докручена до конца и дальше скроллить нечего.
+  const atStart = dom.rail.scrollLeft <= 0;
+  const atEnd = dom.rail.scrollLeft >= dom.rail.scrollWidth - dom.rail.clientWidth - 1;
+  if((e.deltaY < 0 && atStart) || (e.deltaY > 0 && atEnd)) return;
   dom.rail.scrollLeft += e.deltaY;
   e.preventDefault();
 }, {passive:false});
