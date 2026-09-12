@@ -47,6 +47,15 @@
     --text: #f0e4d4;
     --text-dim: #a4907a;
     --free: #8fbf7a;
+    /* Метки чётности недели (числитель/знаменатель) для регулярного периода
+       (14.09–30.12). Специально не тёплые золото/бордо — это цвета самих
+       групп 106/107, и путать чётность недели с принадлежностью к группе
+       нельзя. Остаёмся в той же тёплой земляной гамме (оливково-табачный /
+       пыльно-сливовый), просто на другом цветовом круге. */
+    --parity-1: #9c8a4e;
+    --parity-1-soft: rgba(156,138,78,0.16);
+    --parity-2: #7d6a8f;
+    --parity-2-soft: rgba(125,106,143,0.18);
     --shadow: 0 10px 30px -12px rgba(0,0,0,0.6);
     --ease: cubic-bezier(.22,1,.36,1);
     /* Часто повторяющиеся пары transition. Подставляются через var() только
@@ -73,6 +82,10 @@
     --text: #382d1e;
     --text-dim: #83725a;
     --free: #5f7a43;
+    --parity-1: #7a6b35;
+    --parity-1-soft: rgba(122,107,53,0.12);
+    --parity-2: #6b5578;
+    --parity-2-soft: rgba(107,85,120,0.12);
     --shadow: 0 10px 26px -14px rgba(90,55,20,0.25);
   }
   *{
@@ -199,12 +212,107 @@
     box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--text-dim);
   }
 
+  /* Переключатель группы: показать обе колонки или сфокусироваться на одной.
+     Тот же язык сегментированного контрола, что и у theme-switcher, просто
+     с текстовыми подписями вместо цветных кружков — тут важно название
+     группы, а не превью палитры. */
+  .group-switcher{
+    margin-top: 12px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap: 7px;
+  }
+  .group-btn{
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .2px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: border-color .2s var(--ease), color .2s var(--ease), background-color .2s var(--ease), transform .15s var(--ease);
+  }
+  .group-btn:hover{ transform: translateY(-1px); }
+  .group-btn:active{ transform: translateY(0) scale(.95); }
+  .group-btn.active[data-group="106"]{ border-color: var(--g106); color: var(--g106); background: var(--g106-soft); }
+  .group-btn.active[data-group="107"]{ border-color: var(--g107); color: var(--g107); background: var(--g107-soft); }
+  .group-btn.active[data-group="both"]{ border-color: var(--text-dim); color: var(--text); background: var(--panel); }
+
+  /* Строка навигации по неделям — заменяет собой одну сплошную ленту дат на
+     весь семестр (108+ дней плохо скроллятся и плохо ищутся). Лента дат
+     ниже теперь показывает только текущую неделю (Пн–Вс), а сюда вынесены
+     переключение недель и быстрый переход по произвольной дате. */
+  .week-nav{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    margin-bottom: 10px;
+  }
+  .week-arrow, .calendar-btn{
+    flex: 0 0 auto;
+    width:30px; height:30px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--text-dim);
+    font-size:14px;
+    line-height:1;
+    cursor:pointer;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    display:flex; align-items:center; justify-content:center;
+    transition: color .2s var(--ease), border-color .2s var(--ease), transform .15s var(--ease), opacity .2s var(--ease), background-color .25s var(--ease);
+  }
+  .week-arrow:hover, .calendar-btn:hover{ color: var(--text); border-color: var(--g106-dim); }
+  .week-arrow:active, .calendar-btn:active{ transform: scale(.92); }
+  .week-arrow:disabled{ opacity:.35; cursor:default; }
+  .week-arrow:disabled:hover{ color: var(--text-dim); border-color: var(--line); }
+  .week-label{
+    flex: 1 1 auto;
+    min-width:0;
+    text-align:center;
+    font-size:12.5px;
+    font-weight:700;
+    color: var(--text-dim);
+    letter-spacing:.3px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    transition: var(--t-color);
+  }
+  .week-label .parity-chip{
+    flex:0 0 auto;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.4px;
+    padding:2px 8px;
+    border-radius:20px;
+  }
+  .week-label .parity-chip.p1{ color: var(--parity-1); background: var(--parity-1-soft); }
+  .week-label .parity-chip.p2{ color: var(--parity-2); background: var(--parity-2-soft); }
+
+  /* Лента дат — горизонтальная прокручиваемая полоса на 7 дней текущей
+     недели (Пн–Вс). Раньше пробовали жёсткую сетку в 7 колонок без скролла,
+     но с тремя строками в карточке (число/месяц/день недели) она выглядит
+     тесной на узких экранах — вернули скролл, карточки получили комфортную
+     минимальную ширину и переносятся за край экрана, кто не влез. */
   .date-rail{
     display:flex;
-    gap:8px;
-    overflow-x:auto;
+    gap:7px;
     padding: 4px 2px 14px;
     margin-bottom: 4px;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
   }
@@ -212,11 +320,13 @@
   .date-pill{
     position:relative;
     flex: 0 0 auto;
+    width: 58px;
+    scroll-snap-align: center;
     background: var(--panel);
     border: 1px solid var(--line);
     color: var(--text-dim);
-    font-size: 13px;
-    padding: 9px 13px;
+    font-size: 10px;
+    padding: 8px 2px 7px;
     border-radius: 10px;
     cursor: pointer;
     touch-action: manipulation;
@@ -227,18 +337,36 @@
     line-height:1.3;
     transition: border-color .25s var(--ease), color .25s var(--ease), transform .28s cubic-bezier(.34,1.56,.64,1), box-shadow .25s var(--ease), background-color .25s var(--ease);
   }
-  .date-pill:hover{ transform: translateY(-3px); border-color: var(--g106-dim); will-change: transform; }
+  .date-pill:hover{ transform: translateY(-2px); border-color: var(--g106-dim); will-change: transform; }
   .date-pill:active{ transform: translateY(0) scale(.96); }
-  .date-pill b{display:block; font-size:15.5px; color: var(--text); font-weight:700; transition: color .25s var(--ease);}
+  .date-pill b{display:block; font-size:16px; color: var(--text); font-weight:800; margin-bottom:1px; transition: color .25s var(--ease);}
+  .date-pill .pill-month{display:block; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color: var(--text-dim); margin-bottom:3px; transition: color .25s var(--ease);}
   .date-pill.active{
     border-color: var(--g106);
     color: var(--g106);
     background: var(--g106-soft);
     box-shadow: 0 6px 16px -8px rgba(0,0,0,0.35);
   }
-  .date-pill.active b{color: var(--g106);}
+  .date-pill.active b, .date-pill.active .pill-month{color: var(--g106);}
   .date-pill.off b{color: var(--text-dim);}
   .date-pill.pop{ animation: pillPop .4s cubic-bezier(.34,1.56,.64,1); }
+
+  /* Бейдж чётности недели на плашке даты — только для регулярного периода
+     (14.09+). Цвет ЗАВЕДОМО дублируется буквой (Ч/З), а не полагается
+     только на оттенок — иначе не различить дальтонику и не считать при
+     печати в ч/б. Верхний левый угол: верхний правый уже занят точкой
+     "сегодня" (.date-pill.today), так что коллизии нет. */
+  .date-pill .parity-tag{
+    position:absolute;
+    top:4px; left:5px;
+    font-size:7px;
+    font-weight:800;
+    letter-spacing:.1px;
+    line-height:1;
+    transition: var(--t-color);
+  }
+  .date-pill .parity-tag.p1{ color: var(--parity-1); }
+  .date-pill .parity-tag.p2{ color: var(--parity-2); }
 
   .day-title-row{
     display:flex;
@@ -259,6 +387,19 @@
     transition: var(--t-color), opacity .22s var(--ease);
   }
   .day-title.swapping{ opacity: 0; }
+  .day-title-chip{
+    display:inline-block;
+    margin-left:8px;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.4px;
+    text-transform:none;
+    padding:2px 9px;
+    border-radius:20px;
+    vertical-align:middle;
+  }
+  .day-title-chip.p1{ color: var(--parity-1); background: var(--parity-1-soft); }
+  .day-title-chip.p2{ color: var(--parity-2); background: var(--parity-2-soft); }
   .today-btn{
     position:absolute;
     right:0;
@@ -296,8 +437,8 @@
   .date-pill.today::after{
     content:"";
     position:absolute;
-    top:6px; right:6px;
-    width:6px; height:6px;
+    top:5px; right:5px;
+    width:4px; height:4px;
     border-radius:50%;
     background: var(--g107);
     z-index:1;
@@ -306,8 +447,8 @@
   .date-pill.today::before{
     content:"";
     position:absolute;
-    top:6px; right:6px;
-    width:6px; height:6px;
+    top:5px; right:5px;
+    width:4px; height:4px;
     border-radius:50%;
     background: var(--g107);
     animation: todayPulse 2.2s ease-out infinite;
@@ -336,6 +477,11 @@
   @media (max-width: 560px){
     .columns{grid-template-columns: 1fr;}
   }
+  /* Режим "одна группа": переключатель group-switcher скрывает вторую
+     колонку и растягивает первую на всю ширину, независимо от того, что бы
+     сделал брейкпоинт выше по ширине экрана. */
+  .columns.single{ grid-template-columns: 1fr; }
+  .col.hidden{ display:none; }
 
   .col{
     background: var(--panel);
@@ -373,6 +519,56 @@
   .col-head .free-tag{
     font-size:11px;
     color: var(--free);
+    font-weight:600;
+  }
+
+  /* Ленточный (agenda) режим для одиночной группы: вместо одного дня —
+     непрерывная прокручиваемая лента ближайших дней внутри колонки. Каждый
+     день — свой мини-заголовок (дата + день недели) и свои пары под ним. */
+  .feed-day{
+    border-bottom: 1px solid var(--line);
+  }
+  .feed-day:last-child{ border-bottom:none; }
+  .feed-day-head{
+    padding: 9px 16px 5px;
+    font-size: 11px;
+    font-weight:800;
+    letter-spacing:.6px;
+    text-transform:uppercase;
+    color: var(--text-dim);
+    background: var(--panel-2);
+    display:flex;
+    align-items:center;
+    gap:8px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    transition: var(--t-color), var(--t-bg);
+  }
+  .feed-day-head.is-today{ color: var(--g107); }
+  .feed-day-head .fd-chip{
+    font-size:9px;
+    font-weight:800;
+    padding:1px 7px;
+    border-radius:20px;
+    text-transform:none;
+    letter-spacing:.3px;
+  }
+  .feed-day-head .fd-chip.p1{ color: var(--parity-1); background: var(--parity-1-soft); }
+  .feed-day-head .fd-chip.p2{ color: var(--parity-2); background: var(--parity-2-soft); }
+  .feed-day-head .fd-free{
+    margin-left: auto;
+    color: var(--free);
+    font-weight:700;
+    font-size:10px;
+    text-transform:none;
+    letter-spacing:.2px;
+    white-space:nowrap;
+  }
+  .feed-empty{
+    padding: 14px 16px;
+    color: var(--free);
+    font-size:12.5px;
     font-weight:600;
   }
 
@@ -552,12 +748,150 @@
     transition: var(--t-bg);
   }
 
+  /* Шторка-календарь для быстрого перехода на произвольную дату в диапазоне
+     01.09–30.12 — тот же компонент .detail-sheet (анимация выезда, свайп
+     закрытия), просто выше и с другим содержимым внутри .sheet-body. */
+  .detail-sheet.cal-sheet{
+    max-height: 78vh;
+    max-height: 78dvh;
+  }
+  .detail-sheet.cal-sheet .sheet-body{
+    max-height: calc(78vh - 60px);
+    max-height: calc(78dvh - 60px);
+  }
+  .cal-month{ margin-bottom: 18px; }
+  .cal-month:last-child{ margin-bottom: 4px; }
+  .cal-month-title{
+    font-size:12.5px;
+    font-weight:800;
+    color: var(--text-dim);
+    text-transform:uppercase;
+    letter-spacing:1.2px;
+    margin: 0 0 10px;
+    transition: var(--t-color);
+  }
+  .cal-grid{
+    display:grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap:6px;
+  }
+  .cal-day{
+    position:relative;
+    border:1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--text);
+    font-family:inherit;
+    border-radius:9px;
+    font-size:12.5px;
+    font-weight:700;
+    padding:8px 0 7px;
+    cursor:pointer;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select:none;
+    user-select:none;
+    transition: border-color .2s var(--ease), color .2s var(--ease), background-color .2s var(--ease), transform .15s var(--ease);
+  }
+  .cal-day:hover{ border-color: var(--g106-dim); transform: translateY(-1px); }
+  .cal-day:active{ transform: translateY(0) scale(.94); }
+  .cal-day.current{ border-color: var(--g106); color: var(--g106); background: var(--g106-soft); }
+  .cal-day.p1{ box-shadow: inset 0 -3px 0 var(--parity-1); }
+  .cal-day.p2{ box-shadow: inset 0 -3px 0 var(--parity-2); }
+  .cal-day.holiday{ opacity:.55; border-style: dashed; }
+  .cal-day.today::after{
+    content:"";
+    position:absolute;
+    bottom:4px; left:50%;
+    transform: translateX(-50%);
+    width:4px; height:4px;
+    border-radius:50%;
+    background: var(--g107);
+  }
+
+  /* Плавающая кнопка "наверх" — появляется после прокрутки вниз, полезна
+     в первую очередь в ленточном режиме с длинной лентой дней, но работает
+     в любом режиме, раз страница прокручена достаточно далеко. */
+  .scroll-top-btn{
+    position: fixed;
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(20px, env(safe-area-inset-bottom) + 12px);
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--text-dim);
+    font-size: 17px;
+    line-height: 1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    box-shadow: var(--shadow);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px) scale(.9);
+    z-index: 500;
+    transition: opacity .25s var(--ease), transform .25s var(--ease), border-color .2s var(--ease), color .2s var(--ease), background-color .3s var(--ease), box-shadow .3s var(--ease);
+  }
+  .scroll-top-btn.show{
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+  }
+  .scroll-top-btn:hover{ color: var(--text); border-color: var(--g106-dim); }
+  .scroll-top-btn:active{ transform: translateY(0) scale(.92); }
+
+  /* Плавающая кнопка "к сегодня" — рядом с кнопкой "наверх", только в
+     ленточном режиме (в обычном режиме для этого уже есть today-btn рядом
+     с заголовком дня). Пилюля пошире круглой кнопки — нужен текст, а не
+     только иконка, иначе назначение неочевидно. */
+  .scroll-today-btn{
+    position: fixed;
+    right: max(16px, env(safe-area-inset-right));
+    bottom: calc(max(20px, env(safe-area-inset-bottom) + 12px) + 52px);
+    padding: 0 16px;
+    height: 38px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--g107);
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: .2px;
+    white-space: nowrap;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    box-shadow: var(--shadow);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px) scale(.9);
+    z-index: 500;
+    transition: opacity .25s var(--ease), transform .25s var(--ease), border-color .2s var(--ease), background-color .3s var(--ease), box-shadow .3s var(--ease);
+  }
+  .scroll-today-btn.show{
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+  }
+  .scroll-today-btn:hover{ border-color: var(--g107-dim); }
+  .scroll-today-btn:active{ transform: translateY(0) scale(.94); }
+
   @media print{
     /* Расписание логично распечатать: убираем декоративную анимацию,
        фон и интерактивные элементы, оставляем только сами пары. */
     body{ background:#fff !important; color:#000 !important; padding:0; }
-    .theme-switcher, .today-btn, .sheet-scrim, .detail-sheet{ display:none !important; }
-    .date-rail{ overflow:visible; flex-wrap:wrap; }
+    .theme-switcher, .group-switcher, .today-btn, .week-nav, .sheet-scrim, .detail-sheet, .scroll-top-btn, .scroll-today-btn{ display:none !important; }
+    .date-rail{ overflow:visible; }
     .col{ box-shadow:none; border:1px solid #999; break-inside: avoid; }
     .slot{ animation:none !important; opacity:1 !important; }
   }
@@ -574,20 +908,26 @@
   <div class="board-header">
     <div class="kicker drop-in d1">Расписание</div>
     <h1 class="drop-in d2">Группы 106 и 107</h1>
-    <p class="drop-in d3">01.03.01 Математика · очная форма обучения · 1–13 сентября 2026 · Краснопрудная ул., д. 14</p>
     <div class="theme-switcher drop-in d3" id="themeSwitcher" role="group" aria-label="Выбор темы оформления"></div>
+    <div class="group-switcher drop-in d3" id="groupSwitcher" role="group" aria-label="Выбор группы"></div>
   </div>
 
   <div class="rise-in d1">
+    <div class="week-nav" id="weekNav">
+      <button class="week-arrow" id="weekPrev" onclick="shiftWeek(-1)" aria-label="Предыдущая неделя">‹</button>
+      <div class="week-label" id="weekLabel" aria-live="polite"></div>
+      <button class="week-arrow" id="weekNext" onclick="shiftWeek(1)" aria-label="Следующая неделя">›</button>
+      <button class="calendar-btn" id="calendarBtn" onclick="openCalSheet()" aria-label="Выбрать дату" title="Выбрать дату">📅</button>
+    </div>
     <div class="date-rail" id="dateRail" role="tablist" aria-label="Выбор дня"></div>
-    <div class="day-title-row">
+    <div class="day-title-row" id="dayTitleRow">
       <div class="day-title" id="dayTitle" aria-live="polite"></div>
       <button class="today-btn" id="todayBtn" onclick="jumpToToday()" title="Вернуться к сегодняшнему дню" tabindex="-1" aria-hidden="true">Сегодня</button>
     </div>
   </div>
 
   <div class="content-swap rise-in d2" id="daySwap">
-    <div class="columns">
+    <div class="columns" id="columnsWrap">
       <div class="col g106">
         <div class="col-head"><span>106 · ВОМ23-ММИ2606</span><span class="free-tag" id="g106Free"></span></div>
         <div id="g106Slots"></div>
@@ -613,6 +953,22 @@
     <div class="sheet-meta" id="sheetMeta"></div>
   </div>
 </div>
+
+<div class="sheet-scrim" id="calScrim" onclick="closeCalSheet()"></div>
+<div class="detail-sheet cal-sheet" id="calSheet" role="dialog" aria-modal="true" aria-labelledby="calSheetTitle" aria-hidden="true" inert>
+  <div class="sheet-grabber" id="calGrabber" aria-hidden="true"></div>
+  <button class="sheet-close" onclick="closeCalSheet()" aria-label="Закрыть">✕</button>
+  <div class="sheet-header" id="calHeader">
+    <div class="sheet-time">Выбор даты</div>
+    <h3 class="sheet-title" id="calSheetTitle">1 сентября – 30 декабря 2026</h3>
+  </div>
+  <div class="sheet-body">
+    <div id="calBody"></div>
+  </div>
+</div>
+
+<button class="scroll-today-btn" id="scrollTodayBtn" onclick="scrollToTodayInFeed()" aria-label="К сегодняшнему дню" title="К сегодняшнему дню">Сегодня</button>
+<button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToPageTop()" aria-label="Наверх" title="Наверх">↑</button>
 
 <script>
 // Занятия, общие для обеих групп (вступительные лекции 1–2 сентября,
@@ -758,22 +1114,13 @@ scheduleDates.forEach(iso=>{
   g107[iso] = mergeDaySchedule(iso, own107);
 });
 
-// День недели больше не хранится здесь текстом — раньше "Вт"/"Ср" были
-// вписаны вручную и дублировали то, что вычисляет weekdayIndex(iso). Два
-// независимых источника правды рано или поздно разойдутся (например, при
-// опечатке в датах следующего месяца) без единой ошибки в консоли. Теперь
-// день недели всегда считается из iso — см. weekdayFor() ниже.
-// Раньше здесь были 13 строк вида ["2026-09-08","8 сент"], набранных руками:
-// число в подписи — это просто текст, никак не связанный с датой рядом с ним,
-// так что опечатка в подписи (или пропущенный день при редактировании)
-// осталась бы незамеченной, как и было с днём недели раньше (см. комментарий
-// про weekdayIndex выше). Теперь список строится из даты начала и количества
-// дней, а подпись считается из самой даты — расширить диапазон расписания
-// можно, просто увеличив SCHEDULE_DAYS (и дополнив MONTH_SHORT_RU, если
-// расписание перейдёт в следующий месяц).
 const SCHEDULE_START = "2026-09-01";
-const SCHEDULE_DAYS = 13;
-const MONTH_SHORT_RU = ["янв","февр","мар","апр","мая","июня","июля","авг","сент","окт","нояб","дек"];
+const OVERALL_START = "2026-09-01";
+const OVERALL_END = "2026-12-30";
+const REGULAR_START = "2026-09-14";
+const REGULAR_END = OVERALL_END;
+const MONTH_SHORT_RU = ["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
+const MONTH_FULL_RU = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
 
 function isoPlusDays(iso, n){
   const d = new Date(iso + "T00:00:00");
@@ -784,29 +1131,202 @@ function isoPlusDays(iso, n){
   return `${y}-${m}-${day}`;
 }
 
-const dateList = Array.from({length: SCHEDULE_DAYS}, (_, i) => {
-  const iso = isoPlusDays(SCHEDULE_START, i);
+function formatDateLabel(iso){
   const d = new Date(iso + "T00:00:00");
-  return [iso, `${d.getDate()} ${MONTH_SHORT_RU[d.getMonth()]}`];
-});
+  return `${d.getDate()} ${MONTH_SHORT_RU[d.getMonth()]}`;
+}
+
+function dayNum(iso){
+  return new Date(iso + "T00:00:00").getDate();
+}
+function monthShort(iso){
+  return MONTH_SHORT_RU[new Date(iso + "T00:00:00").getMonth()];
+}
+
+function formatWeekRange(startIso, endIso){
+  const s = new Date(startIso + "T00:00:00");
+  const e = new Date(endIso + "T00:00:00");
+  if(s.getMonth() === e.getMonth()){
+    return `${s.getDate()}–${e.getDate()} ${MONTH_SHORT_RU[s.getMonth()]}`;
+  }
+  return `${s.getDate()} ${MONTH_SHORT_RU[s.getMonth()]} – ${e.getDate()} ${MONTH_SHORT_RU[e.getMonth()]}`;
+}
+
+function buildDateList(){
+  const list = [];
+  let cursor = OVERALL_START;
+  while(cursor <= OVERALL_END){
+    list.push([cursor, formatDateLabel(cursor)]);
+    cursor = isoPlusDays(cursor, 1);
+  }
+  return list;
+}
+const dateList = buildDateList();
 
 // Даты, у которых на весь день стоит мероприятие (не обычная выходная суббота/
 // воскресенье) — им не нужно приглушение через класс .off, чтобы не выглядело
 // так, будто в этот день вообще ничего нет.
 const allDayEventDates = new Set(["2026-09-05","2026-09-12"]);
 
+// Праздничные (нерабочие) дни внутри всего диапазона расписания — учебных
+// занятий в эти даты нет независимо от того, что бы сгенерировал недельный
+// шаблон по дню недели и чётности. В интервале 01.09–30.12.2026 это один
+// федеральный праздник; словарь "дата → название" сделан расширяемым на
+// случай, если добавятся другие нерабочие/каникулярные дни.
+const HOLIDAYS = {
+  "2026-11-04": "День народного единства"
+};
+function isHoliday(dateISO){
+  return Object.prototype.hasOwnProperty.call(HOLIDAYS, dateISO);
+}
+
 const weekdayNames = ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"];
+
+const weeklyTemplate = {
+  g106: {
+    1: [
+      {t:"09:00–10:30", week:"all", w:"Физическая культура и спорт", d:"практика · ул. Кибальчича, д. 16"},
+      {t:"12:40–14:10", week:"all", w:"Алгебра", d:"практика · ассист. Артемов Д.Ю. · ауд. 207"},
+      {t:"14:20–15:50", week:"all", w:"Иностранный язык", d:"практика · доц. Кашпарова В.С. · ауд. 405"}
+    ],
+    2: [
+      {t:"10:40–12:10", week:"all", w:"Системное и прикладное ПО (лаб)", d:"по подгруппам", sub:[
+        {label:"1 гр", who:"доц. Иванова Н.Ю.", where:"ауд. 211"},
+        {label:"2 гр", who:"ст. пр. Овчарова П.С.", where:"ауд. 105"},
+        {label:"3 гр", who:"доц. Маняхина В.Г.", where:"ауд. 208"}
+      ]},
+      {t:"12:40–14:10", week:"all", w:"Геометрия", d:"практика · доц. Никифорова А.В. · ауд. 206"}
+    ],
+    3: [
+      {t:"10:40–12:10", week:"all", w:"Математический анализ", d:"лекция · проф. Матвеев Е.М. · ауд. 401"},
+      {t:"12:40–14:10", week:"all", w:"Геометрия", d:"лекция · доц. Никифорова А.В. · ауд. 401"},
+      {t:"14:20–15:50", week:2, w:"Вводный курс математики", d:"практика · доц. Сергеева И.Е. · ауд. 401"}
+    ],
+    4: [
+      {t:"10:40–12:10", week:"all", w:"История", d:"практика · доц. Филина Е.И. · ауд. 402"},
+      {t:"12:40–14:10", week:"all", w:"Алгебра", d:"лекция · проф. Михайлова М.В. · ауд. 401"},
+      {t:"14:20–15:50", week:"all", w:"История", d:"лекция · доц. Филина Е.И. · ауд. 402"}
+    ],
+    5: [
+      {t:"10:40–12:10", week:1, w:"Основы российской государственности", d:"лекция · доц. Максимова Л.Н. · ауд. 402"},
+      {t:"10:40–12:10", week:2, w:"Системное и прикладное ПО", d:"лекция · доц. Маняхина В.Г. · ауд. 402"},
+      {t:"12:40–14:10", week:"all", w:"Математический анализ", d:"практика · ассист. Морозенкова М.С. · ауд. 407"},
+      {t:"14:20–15:50", week:"all", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · ауд. 207"},
+      {t:"16:00–17:30", week:"all", w:"Речевые практики", d:"практика · ассист. Редькина Д.А. · ауд. 407"}
+    ],
+    6: [
+      {t:"09:00–10:30", week:1, until:"2026-11-28", w:"Учебная практика", d:"практика · ст. пр. Окорочков И.В. · аудитория не указана"},
+      {t:"10:40–12:10", week:1, until:"2026-11-28", w:"Учебная практика", d:"практика · ст. пр. Окорочков И.В. · аудитория не указана"}
+    ]
+  },
+  g107: {
+    1: [
+      {t:"12:40–14:10", week:"all", w:"Геометрия", d:"практика · доц. Никифорова А.В. · ауд. 206"},
+      {t:"14:20–15:50", week:"all", w:"Алгебра", d:"практика · ассист. Артемов Д.Ю. · ауд. 207"},
+      {t:"16:00–17:30", week:"all", w:"История", d:"практика · доц. Филина Е.И. · ауд. 402"}
+    ],
+    2: [
+      {t:"09:00–10:30", week:"all", w:"Системное и прикладное ПО (лаб)", d:"по подгруппам", sub:[
+        {label:"1 гр", who:"доц. Иванова Н.Ю.", where:"ауд. 211"},
+        {label:"2 гр", who:"ст. пр. Овчарова П.С.", where:"ауд. 105"},
+        {label:"3 гр", who:"доц. Маняхина В.Г.", where:"ауд. 208"}
+      ]},
+      {t:"10:40–12:10", week:"all", w:"Иностранный язык", d:"по подгруппам", sub:[
+        {label:"англ.", who:"доц. Кашпарова В.С.", where:"ауд. 405"},
+        {label:"фр./нем.", who:"", where:"ауд. 308"}
+      ]}
+    ],
+    3: [
+      {t:"10:40–12:10", week:"all", w:"Математический анализ", d:"лекция · проф. Матвеев Е.М. · ауд. 401"},
+      {t:"12:40–14:10", week:"all", w:"Геометрия", d:"лекция · доц. Никифорова А.В. · ауд. 401"},
+      {t:"14:20–15:50", week:2, w:"Вводный курс математики", d:"практика · доц. Сергеева И.Е. · ауд. 401"}
+    ],
+    4: [
+      {t:"09:00–10:30", week:"all", w:"Физическая культура и спорт", d:"практика · ул. Кибальчича, д. 16"},
+      {t:"12:40–14:10", week:"all", w:"Алгебра", d:"лекция · проф. Михайлова М.В. · ауд. 401"},
+      {t:"14:20–15:50", week:"all", w:"История", d:"лекция · доц. Филина Е.И. · ауд. 402"}
+    ],
+    5: [
+      {t:"09:00–10:30", week:"all", w:"Математический анализ", d:"практика · ассист. Морозенкова М.С. · ауд. 407"},
+      {t:"10:40–12:10", week:1, w:"Основы российской государственности", d:"лекция · доц. Максимова Л.Н. · ауд. 402"},
+      {t:"10:40–12:10", week:2, w:"Системное и прикладное ПО", d:"лекция · доц. Маняхина В.Г. · ауд. 402"},
+      {t:"12:40–14:10", week:"all", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · ауд. 207"},
+      {t:"14:20–15:50", week:"all", w:"Речевые практики", d:"практика · ассист. Редькина Д.А. · ауд. 407"}
+    ],
+    6: [
+      {t:"09:00–10:30", week:2, until:"2026-12-05", w:"Учебная практика", d:"практика · ст. пр. Окорочков И.В. · ауд. 410"},
+      {t:"10:40–12:10", week:2, until:"2026-12-05", w:"Учебная практика", d:"практика · ст. пр. Окорочков И.В. · ауд. 410"}
+    ]
+  }
+};
+
+const singleExceptions = {
+  g106: {
+    "2026-09-19": [
+      {t:"12:40–14:10", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · аудитория не указана"},
+      {t:"14:20–15:50", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · аудитория не указана"}
+    ]
+  },
+  g107: {
+    "2026-09-26": [
+      {t:"12:40–14:10", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · аудитория не указана"},
+      {t:"14:20–15:50", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · аудитория не указана"}
+    ]
+  }
+};
+
+const REGULAR_ANCHOR = "2026-09-14"; // понедельник, неделя-числитель
+
+function weekTypeFor(dateISO){
+  const anchor = new Date(REGULAR_ANCHOR + "T00:00:00");
+  const d = new Date(dateISO + "T00:00:00");
+  const diffDays = Math.round((d - anchor) / 86400000);
+  const weekIndex = Math.floor(diffDays / 7);
+  const evenWeek = ((weekIndex % 2) + 2) % 2 === 0; // корректный модуль и для дат до анкера
+  return evenWeek ? 1 : 2;
+}
+
+function buildRegularDaySchedule(group, dateISO){
+  const weekday = weekdayIndex(dateISO);
+  const dayTemplate = (weeklyTemplate[group] && weeklyTemplate[group][weekday]) || [];
+  const parity = weekTypeFor(dateISO);
+  const fromTemplate = dayTemplate.filter(it=>{
+    if(it.week !== "all" && it.week !== parity) return false;
+    if(it.until && dateISO > it.until) return false;
+    return true;
+  });
+  const oneOff = (singleExceptions[group] && singleExceptions[group][dateISO]) || [];
+  return [...fromTemplate, ...oneOff].sort((a,b)=>{
+    const ra = parseRange(a.t), rb = parseRange(b.t);
+    if(!ra || !rb) return 0;
+    return ra[0]-rb[0];
+  });
+}
+
+function getDaySchedule(group, dateISO){
+  if(isHoliday(dateISO)) return [];
+  if(dateISO < REGULAR_START){
+    const store = group === 'g106' ? g106 : g107;
+    return store[dateISO] || [];
+  }
+  if(dateISO > REGULAR_END) return [];
+  return buildRegularDaySchedule(group, dateISO);
+}
 
 const dom = {
   rail: document.getElementById('dateRail'),
   dayTitle: document.getElementById('dayTitle'),
+  dayTitleRow: document.getElementById('dayTitleRow'),
+  weekNav: document.getElementById('weekNav'),
   todayBtn: document.getElementById('todayBtn'),
   daySwap: document.getElementById('daySwap'),
+  columnsWrap: document.getElementById('columnsWrap'),
   g106Slots: document.getElementById('g106Slots'),
   g106Free: document.getElementById('g106Free'),
   g107Slots: document.getElementById('g107Slots'),
   g107Free: document.getElementById('g107Free'),
   themeSwitcher: document.getElementById('themeSwitcher'),
+  groupSwitcher: document.getElementById('groupSwitcher'),
   sheetScrim: document.getElementById('sheetScrim'),
   sheet: document.getElementById('detailSheet'),
   sheetGrabber: document.getElementById('sheetGrabber'),
@@ -814,12 +1334,19 @@ const dom = {
   sheetTime: document.getElementById('sheetTime'),
   sheetTitle: document.getElementById('sheetTitle'),
   sheetMeta: document.getElementById('sheetMeta'),
+  weekPrev: document.getElementById('weekPrev'),
+  weekNext: document.getElementById('weekNext'),
+  weekLabel: document.getElementById('weekLabel'),
+  calendarBtn: document.getElementById('calendarBtn'),
+  calScrim: document.getElementById('calScrim'),
+  calSheet: document.getElementById('calSheet'),
+  calGrabber: document.getElementById('calGrabber'),
+  calHeader: document.getElementById('calHeader'),
+  calBody: document.getElementById('calBody'),
+  scrollTopBtn: document.getElementById('scrollTopBtn'),
+  scrollTodayBtn: document.getElementById('scrollTodayBtn'),
 };
 
-// Пары идут в Москве, поэтому "сегодня" и "сейчас" считаем по московскому
-// времени через Intl.DateTimeFormat, а не по new Date() в локальном времени
-// устройства — иначе при открытии страницы в другом часовом поясе "сегодня"
-// и подсветка текущей пары могли бы указать не на тот день/пару.
 const MOSCOW_TZ = 'Europe/Moscow';
 
 function todayISO(){
@@ -844,6 +1371,12 @@ function weekdayIndex(dateStr){
   return d.getDay();
 }
 
+function getWeekStart(iso){
+  const wd = weekdayIndex(iso); // 0=Вс..6=Сб
+  const mondayOffset = wd === 0 ? -6 : 1 - wd;
+  return isoPlusDays(iso, mondayOffset);
+}
+
 function firstStart(items){
   if(!items || items.length===0) return null;
   const first = items[0];
@@ -858,12 +1391,6 @@ function lastEnd(items){
   return parts.length===2 ? parts[1].trim() : null;
 }
 
-// Раньше при занятом дне сюда возвращался диапазон ПАР («10:40–15:50»), но
-// показывался он в .free-tag зелёным (--free) — тем же цветом, что и «весь
-// день свободна». Человек видел зелёный ярлык и мог прочитать его как
-// «свободна», хотя цифры означали ровно обратное. Теперь функция считает
-// реальные окна свободного времени (до первой пары и после последней), и
-// зелёный цвет снова верно описывает то, что написано.
 function freeWindowsText(items){
   if(items.length===0) return "весь день";
   const start = firstStart(items);
@@ -872,31 +1399,82 @@ function freeWindowsText(items){
   return `с ${start} до ${end}`;
 }
 
+// Текущий режим отображения групп: 'both' | '106' | '107'.
+let groupView = 'both';
+
 function buildRail(){
+  const weekStart = getWeekStart(currentDate);
   const frag = document.createDocumentFragment();
-  dateList.forEach(([iso,label])=>{
+  for(let i=0;i<7;i++){
+    const iso = isoPlusDays(weekStart, i);
+    if(iso < OVERALL_START || iso > OVERALL_END) continue;
     const wd = weekdayNames[weekdayIndex(iso)];
+    const g106Items = getDaySchedule('g106', iso);
+    const g107Items = getDaySchedule('g107', iso);
+    const isEmptyDay = g106Items.length===0 && g107Items.length===0 && !allDayEventDates.has(iso);
+    const isRegular = iso >= REGULAR_START;
+    const parity = isRegular ? weekTypeFor(iso) : null;
+    const holidayName = HOLIDAYS[iso];
     const pill = document.createElement('div');
-    const isWeekendOff = (wd==="Сб"||wd==="Вс") && !allDayEventDates.has(iso);
     pill.className = 'date-pill'
       + (iso===currentDate ? ' active':'')
-      + (isWeekendOff ? ' off':'')
+      + (isEmptyDay ? ' off':'')
       + (iso===TODAY ? ' today':'');
     pill.dataset.iso = iso;
     pill.setAttribute('role','tab');
     pill.setAttribute('aria-selected', iso===currentDate ? 'true':'false');
     pill.tabIndex = iso===currentDate ? 0 : -1;
-    pill.title = iso===TODAY ? `${label} — сегодня` : label;
-    pill.innerHTML = `<b>${label}</b>${wd}`;
+    pill.title = (iso===TODAY ? `${dayNum(iso)} ${monthShort(iso)} — сегодня` : `${dayNum(iso)} ${monthShort(iso)}`)
+      + (isRegular ? ` · ${parity===1?'числитель':'знаменатель'}` : '')
+      + (holidayName ? ` · ${holidayName}` : '');
+    const parityTagHtml = isRegular
+      ? `<span class="parity-tag ${parity===1?'p1':'p2'}">${parity===1?'Ч':'З'}</span>`
+      : '';
+    pill.innerHTML = `${parityTagHtml}<b>${dayNum(iso)}</b><span class="pill-month">${monthShort(iso)}</span>${wd}`;
     const select = ()=>{ if(iso!==currentDate){ currentDate = iso; goToDate(); } };
     pill.onclick = select;
     pill.onkeydown = (e)=>{
       if(e.key==='Enter' || e.key===' '){ e.preventDefault(); select(); }
     };
     frag.appendChild(pill);
-  });
+  }
   dom.rail.innerHTML = "";
   dom.rail.appendChild(frag);
+}
+
+function updateWeekNav(){
+  const weekStart = getWeekStart(currentDate);
+  const weekEnd = isoPlusDays(weekStart, 6);
+  const prevWeekEnd = isoPlusDays(weekStart, -1);
+  const nextWeekStart = isoPlusDays(weekStart, 7);
+  dom.weekPrev.disabled = prevWeekEnd < OVERALL_START;
+  dom.weekNext.disabled = nextWeekStart > OVERALL_END;
+  const isRegular = weekStart >= REGULAR_START;
+  const rangeLabel = formatWeekRange(weekStart, weekEnd);
+  const chipHtml = isRegular
+    ? `<span class="parity-chip ${weekTypeFor(weekStart)===1?'p1':'p2'}">${weekTypeFor(weekStart)===1?'Ч':'З'}</span>`
+    : '';
+  dom.weekLabel.innerHTML = `${rangeLabel}${chipHtml}`;
+}
+
+function shiftWeek(delta){
+  const weekStart = getWeekStart(currentDate);
+  const weekdayOffset = Math.round((new Date(currentDate+"T00:00:00") - new Date(weekStart+"T00:00:00")) / 86400000);
+  const targetWeekStart = isoPlusDays(weekStart, delta*7);
+  let target = isoPlusDays(targetWeekStart, weekdayOffset);
+  if(target < OVERALL_START) target = OVERALL_START;
+  if(target > OVERALL_END) target = OVERALL_END;
+  if(target === currentDate) return;
+  currentDate = target;
+  goToDate();
+}
+
+function stepDay(delta){
+  const idx = dateList.findIndex(d=>d[0]===currentDate);
+  const next = idx + delta;
+  if(next < 0 || next >= dateList.length) return;
+  currentDate = dateList[next][0];
+  goToDate();
 }
 
 function replayAnim(el){
@@ -927,7 +1505,15 @@ function updateActivePill(){
 }
 
 function goToDate(){
+  if(groupView !== 'both'){
+    // В ленточном режиме навигация — это сам скролл; выбранная дата служит
+    // только якорем, откуда лента начинает строиться при следующем render().
+    render();
+    return;
+  }
+  buildRail();
   updateActivePill();
+  updateWeekNav();
   dom.daySwap.classList.add('swapping');
   dom.dayTitle.classList.add('swapping');
   window.setTimeout(()=>{
@@ -949,13 +1535,10 @@ function jumpToToday(){
 
 document.addEventListener('keydown', e=>{
   if(e.target && ['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
-  if(dom.sheet.classList.contains('open')) return;
+  if(dom.sheet.classList.contains('open') || dom.calSheet.classList.contains('open')) return;
+  if(groupView !== 'both') return;
   if(e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-  const idx = dateList.findIndex(d=>d[0]===currentDate);
-  const next = idx + (e.key==='ArrowRight' ? 1 : -1);
-  if(next < 0 || next >= dateList.length) return;
-  currentDate = dateList[next][0];
-  goToDate();
+  stepDay(e.key==='ArrowRight' ? 1 : -1);
 });
 
 function minutesNow(){
@@ -1036,10 +1619,6 @@ function formatLeft(mins){
   return h>0 ? `${h}ч ${m}м` : `${m}м`;
 }
 
-// Считает индекс "текущей" и "следующей" пары для момента времени `now`
-// (в минутах от полуночи). Вынесено отдельно, чтобы использовать и при
-// полной отрисовке дня, и при лёгком ежеминутном обновлении без
-// пересоздания DOM-узлов.
 function computeLiveIndices(items, now){
   let nowIdx = -1, nextIdx = -1, nextStart = Infinity;
   for(let i=0;i<items.length;i++){
@@ -1058,6 +1637,28 @@ function computeLiveIndices(items, now){
   return {nowIdx, nextIdx};
 }
 
+function slotHtml(it, i, group, isLive, now){
+  const range = isLive ? parseRange(it.t) : null;
+  let cls = "slot";
+  let timeLeftHtml = '';
+  if(range){
+    if(now >= range[0] && now <= range[1]){
+      cls += " now";
+      const minutesLeft = range[1]-now;
+      timeLeftHtml = `<div class="time-left">${minutesLeft>0?formatLeft(minutesLeft):'<1м'}</div>`;
+    } else if(now > range[1]){
+      cls += " past";
+    }
+  }
+  const ariaLabel = `${it.t}, ${it.w}`;
+  return `
+    <div class="${cls}" style="--i:${i}" data-group="${group}" data-idx="${i}"
+         tabindex="0" role="button" aria-haspopup="dialog" aria-label="${ariaLabel}">
+      <div class="time">${it.t}${timeLeftHtml}</div>
+      <div class="what"><b>${it.w}</b><span>${cleanShortDesc(it.d)}</span></div>
+    </div>`;
+}
+
 function renderSlots(container, items, emptyText, group){
   if(items.length===0){
     container.innerHTML = `<div class="empty-day">${emptyText}</div>`;
@@ -1065,38 +1666,9 @@ function renderSlots(container, items, emptyText, group){
   }
   const isToday = currentDate === TODAY;
   const now = isToday ? minutesNow() : null;
-  const {nowIdx, nextIdx} = isToday ? computeLiveIndices(items, now) : {nowIdx:-1, nextIdx:-1};
-
-  container.innerHTML = items.map((it,i)=>{
-    const range = isToday ? parseRange(it.t) : null;
-    let cls = "slot";
-    if(range){
-      if(i === nowIdx) cls += " now";
-      else if(now > range[1]) cls += " past";
-    }
-    let timeLeftHtml = '';
-    if(range && i === nowIdx){
-      const minutesLeft = range[1] - now;
-      timeLeftHtml = `<div class="time-left">${minutesLeft > 0 ? formatLeft(minutesLeft) : '<1м'}</div>`;
-    } else if(range && i === nextIdx){
-      const minutesUntil = range[0] - now;
-      timeLeftHtml = `<div class="time-left">${minutesUntil > 0 ? formatLeft(minutesUntil) : '<1м'}</div>`;
-    }
-    const ariaLabel = `${it.t}, ${it.w}`;
-    return `
-      <div class="${cls}" style="--i:${i}" data-group="${group}" data-idx="${i}"
-           tabindex="0" role="button" aria-haspopup="dialog" aria-label="${ariaLabel}">
-        <div class="time">${it.t}${timeLeftHtml}</div>
-        <div class="what"><b>${it.w}</b><span>${cleanShortDesc(it.d)}</span></div>
-      </div>`;
-  }).join("");
+  container.innerHTML = items.map((it,i)=> slotHtml(it, i, group, isToday, now)).join("");
 }
 
-// Ежеминутное обновление "сейчас/далее/прошло" БЕЗ пересоздания DOM-узлов.
-// Раньше это делал полный render(), который каждую минуту перегенерировал
-// innerHTML всех пар — а значит заново запускал анимацию их появления
-// (slotIn), создавая заметный глитч на весь список раз в 60 секунд.
-// Здесь только точечно правим классы и текст оставшегося времени.
 function refreshLiveIndicators(container, items){
   if(currentDate !== TODAY || !items.length) return;
   const now = minutesNow();
@@ -1132,30 +1704,90 @@ function refreshLiveIndicators(container, items){
   });
 }
 
+// Ленточный (agenda) режим строит ленту по всему диапазону расписания
+// (с 1 сентября), а не только вперёд от текущей даты — так пролистать
+// назад к началу семестра можно тем же скроллом, а не только вперёд.
+function renderFeed(container, group){
+  let html = '';
+  for(let idx=0; idx<dateList.length; idx++){
+    const iso = dateList[idx][0];
+    const items = getDaySchedule(group, iso);
+    const wd = weekdayNames[weekdayIndex(iso)];
+    const isRegular = iso >= REGULAR_START;
+    const parity = isRegular ? weekTypeFor(iso) : null;
+    const holidayName = HOLIDAYS[iso];
+    const isToday = iso === TODAY;
+    const chipHtml = holidayName
+      ? `<span class="fd-chip p2">${holidayName}</span>`
+      : (isRegular ? `<span class="fd-chip ${parity===1?'p1':'p2'}">${parity===1?'Ч':'З'}</span>` : '');
+    const freeText = holidayName ? "выходной" : freeWindowsText(items);
+    const freeHtml = freeText ? `<span class="fd-free">${freeText}</span>` : '';
+    html += `<div class="feed-day" data-iso="${iso}">`;
+    html += `<div class="feed-day-head${isToday?' is-today':''}"><span>${dayNum(iso)} ${monthShort(iso)} · ${wd}${isToday?' · сегодня':''}</span>${chipHtml}${freeHtml}</div>`;
+    if(holidayName){
+      html += `<div class="feed-empty">${holidayName} — занятий нет</div>`;
+    } else if(items.length===0){
+      html += `<div class="feed-empty">Пар нет — весь день свободна</div>`;
+    } else {
+      const now = isToday ? minutesNow() : null;
+      html += items.map((it,i)=> slotHtml(it, i, group, isToday, now)).join("");
+    }
+    html += `</div>`;
+  }
+  container.innerHTML = html;
+  container.dataset.feedGroup = group;
+  const anchorIso = dateList.some(d=>d[0]===TODAY) ? TODAY : currentDate;
+  const anchorBlock = container.querySelector(`.feed-day[data-iso="${anchorIso}"]`);
+  if(anchorBlock){
+    requestAnimationFrame(()=>{
+      anchorBlock.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  }
+}
+
+function refreshFeedLiveIndicators(container, group){
+  const todayBlock = container.querySelector(`.feed-day[data-iso="${TODAY}"]`);
+  if(!todayBlock) return;
+  const items = getDaySchedule(group, TODAY);
+  refreshLiveIndicators(todayBlock, items);
+}
+
 function render(){
+  if(groupView !== 'both'){
+    const group = groupView === '106' ? 'g106' : 'g107';
+    const container = group === 'g106' ? dom.g106Slots : dom.g107Slots;
+    renderFeed(container, group);
+    return;
+  }
+
   const wIdx = weekdayIndex(currentDate);
-  dom.dayTitle.textContent =
-    dateList.find(d=>d[0]===currentDate)[1] + " · " + weekdayNames[wIdx]
-    + (currentDate===TODAY ? " · сегодня" : "");
+  const label = dateList.find(d=>d[0]===currentDate)[1];
+  const parity = currentDate >= REGULAR_START ? weekTypeFor(currentDate) : null;
+  const holidayName = HOLIDAYS[currentDate];
+  const holidayHtml = holidayName
+    ? ` <span class="day-title-chip p2">${holidayName}</span>`
+    : '';
+  const parityHtml = (parity && !holidayName)
+    ? ` <span class="day-title-chip ${parity===1?'p1':'p2'}">${parity===1?'Числитель':'Знаменатель'}</span>`
+    : '';
+  dom.dayTitle.innerHTML =
+    `${label} · ${weekdayNames[wIdx]}${currentDate===TODAY ? ' · сегодня' : ''}${parityHtml}${holidayHtml}`;
 
-  const gItems = g106[currentDate] || [];
+  const emptyText = holidayName ? `${holidayName} — занятий нет` : "Пар нет — весь день свободна";
+
+  const gItems = getDaySchedule('g106', currentDate);
   dayItems.g106 = gItems;
-  renderSlots(dom.g106Slots, gItems, "Пар нет — весь день свободна", 'g106');
-  dom.g106Free.textContent = freeWindowsText(gItems);
+  renderSlots(dom.g106Slots, gItems, emptyText, 'g106');
+  dom.g106Free.textContent = holidayName ? "выходной" : freeWindowsText(gItems);
 
-  const hItems = g107[currentDate] || [];
+  const hItems = getDaySchedule('g107', currentDate);
   dayItems.g107 = hItems;
-  renderSlots(dom.g107Slots, hItems, "Пар нет — весь день свободна", 'g107');
-  dom.g107Free.textContent = freeWindowsText(hItems);
+  renderSlots(dom.g107Slots, hItems, emptyText, 'g107');
+  dom.g107Free.textContent = holidayName ? "выходной" : freeWindowsText(hItems);
 }
 
 let lastFocused = null;
 
-// iOS Safari отдельная история: обычный body{overflow:hidden} не мешает
-// фону скроллиться/резиниться под модалкой, потому что там жест скролла не
-// проходит через overflow страницы. Рабочий обход — на время открытия
-// зафиксировать body через position:fixed с отрицательным top, а при
-// закрытии вернуть прежнюю прокрутку.
 let lockedScrollY = 0;
 function lockBodyScroll(){
   lockedScrollY = window.scrollY || window.pageYOffset || 0;
@@ -1176,8 +1808,20 @@ function unlockBodyScroll(){
   window.scrollTo(0, lockedScrollY);
 }
 
-function openSlot(group, idx){
-  const it = dayItems[group] && dayItems[group][idx];
+function openSlot(group, idx, sourceEl){
+  // В ленточном режиме на странице может быть несколько .slot с одинаковым
+  // data-idx (по одному на каждый день ленты) — поэтому пара определяется
+  // по дню, к которому реально принадлежит нажатый элемент, а не по
+  // текущему currentDate.
+  let items;
+  if(groupView !== 'both' && sourceEl){
+    const dayBlock = sourceEl.closest('.feed-day');
+    const iso = dayBlock ? dayBlock.dataset.iso : currentDate;
+    items = getDaySchedule(group, iso);
+  } else {
+    items = dayItems[group];
+  }
+  const it = items && items[idx];
   if(!it) return;
   lastFocused = document.activeElement;
 
@@ -1186,7 +1830,13 @@ function openSlot(group, idx){
   dom.sheetTime.textContent = it.t;
   dom.sheetTitle.textContent = it.w;
   dom.sheetMeta.innerHTML = it.sub && it.sub.length
-    ? it.sub.map(s=>`<span>${s.n} гр: ${expandMetaPart(s.who)} · ${s.where}</span>`).join("")
+    ? it.sub.map(s=>{
+        const prefix = s.label != null ? s.label : (s.n != null ? `${s.n} гр` : '');
+        const whoWhere = [s.who ? expandMetaPart(s.who) : null, s.where || null]
+          .filter(Boolean).join(' · ');
+        const line = whoWhere ? `${prefix}: ${whoWhere}` : prefix;
+        return `<span>${line}</span>`;
+      }).join("")
     : it.d.split("·").map(part=>`<span>${expandMetaPart(part)}</span>`).join("");
 
   dom.sheetScrim.classList.add('open');
@@ -1207,10 +1857,86 @@ function closeSheet(){
   if(lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus({preventScroll:true});
 }
 
+function buildCalendarBody(){
+  const frag = document.createDocumentFragment();
+  let currentMonthKey = null;
+  let gridEl = null;
+  dateList.forEach(([iso, label])=>{
+    const d = new Date(iso + "T00:00:00");
+    const wd = d.getDay(); // 0=Вс..6=Сб
+    const wdIdx = wd === 0 ? 6 : wd - 1; // 0=Пн..6=Вс, совпадает с колонками 7-колоночной сетки
+    const monthKey = `${d.getFullYear()}-${d.getMonth()}`;
+    if(monthKey !== currentMonthKey){
+      currentMonthKey = monthKey;
+      const monthBlock = document.createElement('div');
+      monthBlock.className = 'cal-month';
+      const title = document.createElement('div');
+      title.className = 'cal-month-title';
+      title.textContent = `${MONTH_FULL_RU[d.getMonth()]} ${d.getFullYear()}`;
+      monthBlock.appendChild(title);
+      gridEl = document.createElement('div');
+      gridEl.className = 'cal-grid';
+      monthBlock.appendChild(gridEl);
+      frag.appendChild(monthBlock);
+      for(let p=0;p<wdIdx;p++){
+        gridEl.appendChild(document.createElement('div'));
+      }
+    }
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    let cls = 'cal-day';
+    if(iso === currentDate) cls += ' current';
+    if(iso === TODAY) cls += ' today';
+    if(iso >= REGULAR_START) cls += weekTypeFor(iso) === 1 ? ' p1' : ' p2';
+    const holidayName = HOLIDAYS[iso];
+    if(holidayName) cls += ' holiday';
+    btn.className = cls;
+    btn.textContent = String(d.getDate());
+    btn.setAttribute('aria-label', `${label}${iso===TODAY ? ' — сегодня' : ''}${holidayName ? ' · ' + holidayName : ''}`);
+    if(holidayName) btn.title = holidayName;
+    btn.onclick = ()=>{
+      currentDate = iso;
+      closeCalSheet();
+      goToDate();
+    };
+    gridEl.appendChild(btn);
+  });
+  dom.calBody.innerHTML = '';
+  dom.calBody.appendChild(frag);
+}
+
+function openCalSheet(){
+  buildCalendarBody();
+  lastFocused = document.activeElement;
+  dom.calScrim.classList.add('open');
+  dom.calSheet.classList.add('open');
+  dom.calSheet.setAttribute('aria-hidden','false');
+  dom.calSheet.inert = false;
+  lockBodyScroll();
+  dom.calSheet.querySelector('.sheet-close').focus({preventScroll:true});
+}
+
+function closeCalSheet(){
+  if(!dom.calSheet.classList.contains('open')) return;
+  dom.calScrim.classList.remove('open');
+  dom.calSheet.classList.remove('open');
+  dom.calSheet.setAttribute('aria-hidden','true');
+  dom.calSheet.inert = true;
+  unlockBodyScroll();
+  if(lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus({preventScroll:true});
+}
+
 document.addEventListener('keydown', e=>{
-  if(e.key === 'Escape'){ closeSheet(); return; }
-  if(e.key === 'Tab' && dom.sheet.classList.contains('open')){
-    const focusable = dom.sheet.querySelectorAll(
+  if(e.key === 'Escape'){
+    if(dom.calSheet.classList.contains('open')) closeCalSheet();
+    else if(dom.sheet.classList.contains('open')) closeSheet();
+    return;
+  }
+  if(e.key === 'Tab'){
+    const openSheetEl = dom.calSheet.classList.contains('open') ? dom.calSheet
+      : (dom.sheet.classList.contains('open') ? dom.sheet : null);
+    if(!openSheetEl) return;
+    const focusable = openSheetEl.querySelectorAll(
       'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     );
     if(focusable.length === 0) return;
@@ -1223,7 +1949,7 @@ document.addEventListener('keydown', e=>{
   }
 });
 
-(function initSheetDrag(){
+function initSheetDrag(sheetEl, grabberEl, headerEl, closeFn){
   const DRAG_THRESHOLD = 6;
   let tracking = false, dragging = false, startY = 0, sheetHeight = 0;
 
@@ -1231,7 +1957,7 @@ document.addEventListener('keydown', e=>{
     tracking = true;
     dragging = false;
     startY = y;
-    sheetHeight = dom.sheet.getBoundingClientRect().height;
+    sheetHeight = sheetEl.getBoundingClientRect().height;
   };
   const move = (y)=>{
     if(!tracking) return;
@@ -1239,9 +1965,9 @@ document.addEventListener('keydown', e=>{
     if(!dragging){
       if(Math.abs(delta) < DRAG_THRESHOLD) return;
       dragging = true;
-      dom.sheet.classList.add('dragging');
+      sheetEl.classList.add('dragging');
     }
-    dom.sheet.style.transform = `translate(-50%, ${Math.max(0, delta)}px)`;
+    sheetEl.style.transform = `translate(-50%, ${Math.max(0, delta)}px)`;
   };
   const end = (y)=>{
     if(!tracking) return;
@@ -1249,20 +1975,57 @@ document.addEventListener('keydown', e=>{
     const delta = Math.max(0, y - startY);
     if(dragging){
       dragging = false;
-      dom.sheet.classList.remove('dragging');
-      dom.sheet.style.transform = '';
-      if(delta > sheetHeight * 0.28) closeSheet();
+      sheetEl.classList.remove('dragging');
+      sheetEl.style.transform = '';
+      if(delta > sheetHeight * 0.28) closeFn();
     }
   };
-  dom.sheetGrabber.addEventListener('pointerdown', e=>beginTrack(e.clientY));
-  dom.sheetHeader.addEventListener('pointerdown', e=>beginTrack(e.clientY));
+  grabberEl.addEventListener('pointerdown', e=>beginTrack(e.clientY));
+  headerEl.addEventListener('pointerdown', e=>beginTrack(e.clientY));
   window.addEventListener('pointermove', e=>{ if(tracking) move(e.clientY); });
   window.addEventListener('pointerup', e=>end(e.clientY));
   window.addEventListener('pointercancel', ()=>{
     tracking = false; dragging = false;
-    dom.sheet.classList.remove('dragging'); dom.sheet.style.transform = '';
+    sheetEl.classList.remove('dragging'); sheetEl.style.transform = '';
   });
-})();
+}
+initSheetDrag(dom.sheet, dom.sheetGrabber, dom.sheetHeader, closeSheet);
+initSheetDrag(dom.calSheet, dom.calGrabber, dom.calHeader, closeCalSheet);
+
+// Свайп влево/вправо: по ленте дат — смена недели (та же функция, что и у
+// стрелочек рядом), по блоку с парами — смена дня (та же функция, что и у
+// стрелок клавиатуры). Активно только в обычном (не ленточном) режиме —
+// в ленточном режиме навигация уже выполняется вертикальным скроллом.
+// preventDefault нигде не вызывается, поэтому обычный вертикальный скролл
+// страницы не ломается — решение "это был свайп" принимается уже
+// постфактум, по итоговому смещению между pointerdown и pointerup, а не
+// перехватом жеста на лету.
+function initSwipe(el, {onLeft, onRight, threshold = 46, restraint = 70} = {}){
+  let tracking = false, startX = 0, startY = 0;
+  el.addEventListener('pointerdown', e=>{
+    if(e.pointerType === 'mouse' && e.button !== 0) return;
+    tracking = true;
+    startX = e.clientX;
+    startY = e.clientY;
+  });
+  const finish = (e)=>{
+    if(!tracking) return;
+    tracking = false;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    if(Math.abs(dx) >= threshold && Math.abs(dy) <= restraint){
+      if(dx < 0) onLeft && onLeft();
+      else onRight && onRight();
+    }
+  };
+  el.addEventListener('pointerup', finish);
+  el.addEventListener('pointercancel', ()=>{ tracking = false; });
+}
+initSwipe(dom.rail, { onLeft: ()=>shiftWeek(1), onRight: ()=>shiftWeek(-1) });
+initSwipe(dom.daySwap, {
+  onLeft: ()=>{ if(groupView==='both') stepDay(1); },
+  onRight: ()=>{ if(groupView==='both') stepDay(-1); }
+});
 
 const THEME_KEY = 'schedule-theme-106-107';
 const THEMES = [
@@ -1308,18 +2071,91 @@ function buildThemeSwitcher(){
   applyTheme(currentThemeId(), false);
 }
 
+// Переключатель группы (106 / 107 / обе) — какая колонка(и) показывается в
+// content-swap. Хранится отдельно от темы, но по тому же принципу:
+// применяем сохранённый выбор сразу при построении интерфейса.
+// При выборе одной группы (106/107) интерфейс переходит в ленточный
+// (agenda) режим: лента дат недели и заголовок дня скрываются (навигация
+// по ним больше не нужна — пролистывание идёт скроллом внутри самой
+// ленты), а колонка выбранной группы растягивается на всю ширину и
+// показывает подряд несколько дней вперёд.
+const GROUP_KEY = 'schedule-group-view-106-107';
+const GROUP_VIEWS = [
+  {id:'both', label:'Обе'},
+  {id:'106',  label:'106'},
+  {id:'107',  label:'107'},
+];
+
+function currentGroupView(){
+  try{
+    const saved = localStorage.getItem(GROUP_KEY);
+    if(saved && GROUP_VIEWS.some(g=>g.id===saved)) return saved;
+  }catch(e){}
+  return 'both';
+}
+
+function applyGroupView(view, persist){
+  groupView = view;
+  if(persist){
+    try{ localStorage.setItem(GROUP_KEY, view); }catch(e){}
+  }
+  dom.columnsWrap.classList.toggle('single', view !== 'both');
+  document.querySelector('.col.g106').classList.toggle('hidden', view === '107');
+  document.querySelector('.col.g107').classList.toggle('hidden', view === '106');
+  dom.groupSwitcher.querySelectorAll('.group-btn').forEach(btn=>{
+    const isActive = btn.dataset.group === view;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-pressed', String(isActive));
+  });
+
+  const isFeed = view !== 'both';
+  dom.weekNav.style.display = isFeed ? 'none' : '';
+  dom.rail.style.display = isFeed ? 'none' : '';
+  dom.dayTitleRow.style.display = isFeed ? 'none' : '';
+  dom.scrollTodayBtn.classList.toggle('show', isFeed);
+  if(isFeed){
+    dom.g106Free.textContent = '';
+    dom.g107Free.textContent = '';
+  }
+
+  if(isFeed){
+    render();
+  } else {
+    buildRail();
+    updateActivePill();
+    updateWeekNav();
+    render();
+  }
+}
+
+function buildGroupSwitcher(){
+  const frag = document.createDocumentFragment();
+  GROUP_VIEWS.forEach(g=>{
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'group-btn';
+    btn.dataset.group = g.id;
+    btn.textContent = g.label;
+    btn.setAttribute('aria-pressed', 'false');
+    btn.onclick = ()=> applyGroupView(g.id, true);
+    frag.appendChild(btn);
+  });
+  dom.groupSwitcher.innerHTML = '';
+  dom.groupSwitcher.appendChild(frag);
+  applyGroupView(currentGroupView(), false);
+}
+
 function checkDayRollover(){
   const fresh = todayISO();
   if(fresh !== TODAY){
     const wasOnToday = currentDate === TODAY;
     TODAY = fresh;
-    // pickInitialDate(), не голое присваивание TODAY: если реальное "сегодня"
-    // укатилось за пределы диапазона расписания (например, вкладка осталась
-    // открытой после 13 сентября), currentDate должен остаться на последнем
-    // дне расписания — иначе render() упадёт на dateList.find(...) === undefined.
     if(wasOnToday) currentDate = pickInitialDate();
-    buildRail();
-    updateActivePill();
+    if(groupView === 'both'){
+      buildRail();
+      updateActivePill();
+      updateWeekNav();
+    }
     return true;
   }
   return false;
@@ -1327,32 +2163,38 @@ function checkDayRollover(){
 
 document.addEventListener('click', e=>{
   const slot = e.target.closest('.slot[data-group]');
-  if(slot) openSlot(slot.dataset.group, Number(slot.dataset.idx));
+  if(slot) openSlot(slot.dataset.group, Number(slot.dataset.idx), slot);
 });
 document.addEventListener('keydown', e=>{
   if(e.key !== 'Enter' && e.key !== ' ') return;
   const slot = e.target.closest && e.target.closest('.slot[data-group]');
-  if(slot){ e.preventDefault(); openSlot(slot.dataset.group, Number(slot.dataset.idx)); }
+  if(slot){ e.preventDefault(); openSlot(slot.dataset.group, Number(slot.dataset.idx), slot); }
 });
 
-dom.rail.addEventListener('wheel', (e)=>{
-  if(e.deltaY === 0) return;
-  // На границах ленты дат отдаём вертикальный скролл странице, а не
-  // "проглатываем" его — иначе наведение курсора на ленту насовсем блокировало
-  // прокрутку колесом мыши всей страницы, даже когда сама лента уже
-  // докручена до конца и дальше скроллить нечего.
-  const atStart = dom.rail.scrollLeft <= 0;
-  const atEnd = dom.rail.scrollLeft >= dom.rail.scrollWidth - dom.rail.clientWidth - 1;
-  if((e.deltaY < 0 && atStart) || (e.deltaY > 0 && atEnd)) return;
-  dom.rail.scrollLeft += e.deltaY;
-  e.preventDefault();
-}, {passive:false});
+function scrollToPageTop(){
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function scrollToTodayInFeed(){
+  if(groupView === 'both') return;
+  const group = groupView === '106' ? 'g106' : 'g107';
+  const container = group === 'g106' ? dom.g106Slots : dom.g107Slots;
+  const anchorIso = dateList.some(d=>d[0]===TODAY) ? TODAY : currentDate;
+  const target = container.querySelector(`.feed-day[data-iso="${anchorIso}"]`);
+  if(target) target.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+const SCROLL_TOP_THRESHOLD = 400;
+function updateScrollTopBtn(){
+  const y = window.scrollY || window.pageYOffset || 0;
+  dom.scrollTopBtn.classList.toggle('show', y > SCROLL_TOP_THRESHOLD);
+}
+window.addEventListener('scroll', updateScrollTopBtn, {passive:true});
 
 function initBoard(){
   buildThemeSwitcher();
-  buildRail();
-  render();
-  updateActivePill();
+  buildGroupSwitcher();
+  updateScrollTopBtn();
   document.querySelectorAll('.drop-in, .rise-in').forEach(el=>{
     el.addEventListener('animationend', function handler(){
       el.classList.remove('drop-in','rise-in','d1','d2','d3');
@@ -1365,11 +2207,14 @@ function initBoard(){
   const liveTick = ()=>{
     const dayChanged = checkDayRollover();
     if(dayChanged){
-      render(); // день сменился — набор пар другой, нужна полная перерисовка
-    } else {
-      // тот же день — точечно освежаем "сейчас/далее", не трогая DOM пар
+      render();
+    } else if(groupView === 'both'){
       refreshLiveIndicators(dom.g106Slots, dayItems.g106);
       refreshLiveIndicators(dom.g107Slots, dayItems.g107);
+    } else {
+      const group = groupView === '106' ? 'g106' : 'g107';
+      const container = group === 'g106' ? dom.g106Slots : dom.g107Slots;
+      refreshFeedLiveIndicators(container, group);
     }
   };
   window.setInterval(liveTick, 60000);
@@ -1382,3 +2227,4 @@ initBoard();
 </script>
 </body>
 </html>
+
