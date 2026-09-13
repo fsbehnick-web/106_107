@@ -185,12 +185,27 @@
     color: var(--text-dim);
     font-size: 13.5px;
   }
+  /* Раньше жил внутри board-header, по центру под заголовком. Теперь это
+     плавающий контрол в верхнем правом углу окна — тот же язык, что у
+     scroll-top-btn/scroll-today-btn (панель с рамкой и тенью), только
+     сверху, а не снизу — так тема доступна в один тап независимо от того,
+     насколько далеко прокручена страница. */
   .theme-switcher{
-    margin-top: 16px;
+    position: fixed;
+    top: max(14px, env(safe-area-inset-top));
+    right: max(14px, env(safe-area-inset-right));
+    z-index: 60;
+    margin-top: 0;
     display:flex;
     justify-content:center;
     align-items:center;
-    gap: 9px;
+    gap: 8px;
+    padding: 6px 8px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    transition: background-color .35s var(--ease), border-color .35s var(--ease), box-shadow .35s var(--ease);
   }
   .theme-swatch{
     width: 26px;
@@ -885,6 +900,43 @@
   }
   .scroll-today-btn:hover{ border-color: var(--g107-dim); }
   .scroll-today-btn:active{ transform: translateY(0) scale(.94); }
+
+  /* Адаптация для широких экранов: больше воздуха в сетке и карточках,
+     чуть более просторная типографика для чтения с расстояния ноутбука,
+     и деталь пары открывается по центру экрана как обычный диалог, а не
+     мобильной шторкой снизу — тянуть её за ручку на десктопе незачем,
+     поэтому сама ручка прячется, а перетаскивание отключается в JS
+     (см. isDesktopSheetLayout в initSheetDrag). */
+  @media (min-width: 900px){
+    .wrap{ max-width: 920px; }
+    .columns{ gap: 18px; }
+    .col{ border-radius: 16px; }
+    .col-head{ padding: 15px 20px; font-size: 15px; }
+    .slot{ padding: 12px 20px; }
+    .feed-day-head{ padding: 11px 20px 6px; }
+    .theme-switcher{ padding: 7px 9px; gap: 9px; }
+    .theme-swatch{ width: 28px; height: 28px; }
+
+    .detail-sheet{
+      left: 50%;
+      top: 50%;
+      bottom: auto;
+      border-radius: 20px;
+      border-bottom: 1px solid var(--line);
+      transform: translate(-50%, calc(-50% + 16px));
+      opacity: 0;
+      pointer-events: none;
+      box-shadow: 0 24px 60px -20px rgba(0,0,0,0.55);
+      transition: transform .3s var(--ease), opacity .3s var(--ease);
+    }
+    .detail-sheet.open{
+      transform: translate(-50%, -50%);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .sheet-grabber{ display: none; }
+    .sheet-header{ cursor: default; }
+  }
 
   @media print{
     /* Расписание логично распечатать: убираем декоративную анимацию,
@@ -1949,6 +2001,15 @@ document.addEventListener('keydown', e=>{
   }
 });
 
+// На широких экранах шторка становится центрированным диалогом (см. CSS,
+// @media (min-width: 900px)) — тянуть её за ручку вниз там не нужно и
+// физически бессмысленно (нет "низа экрана", к которому она едет), поэтому
+// перетаскивание в этом режиме не запускается вовсе.
+const DESKTOP_SHEET_QUERY = '(min-width: 900px)';
+function isDesktopSheetLayout(){
+  return window.matchMedia(DESKTOP_SHEET_QUERY).matches;
+}
+
 function initSheetDrag(sheetEl, grabberEl, headerEl, closeFn){
   const DRAG_THRESHOLD = 6;
   let tracking = false, dragging = false, startY = 0, sheetHeight = 0;
@@ -1980,8 +2041,8 @@ function initSheetDrag(sheetEl, grabberEl, headerEl, closeFn){
       if(delta > sheetHeight * 0.28) closeFn();
     }
   };
-  grabberEl.addEventListener('pointerdown', e=>beginTrack(e.clientY));
-  headerEl.addEventListener('pointerdown', e=>beginTrack(e.clientY));
+  grabberEl.addEventListener('pointerdown', e=>{ if(!isDesktopSheetLayout()) beginTrack(e.clientY); });
+  headerEl.addEventListener('pointerdown', e=>{ if(!isDesktopSheetLayout()) beginTrack(e.clientY); });
   window.addEventListener('pointermove', e=>{ if(tracking) move(e.clientY); });
   window.addEventListener('pointerup', e=>end(e.clientY));
   window.addEventListener('pointercancel', ()=>{
@@ -2226,5 +2287,4 @@ function initBoard(){
 initBoard();
 </script>
 </body>
-</html>
-
+  </html>
