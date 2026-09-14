@@ -507,6 +507,18 @@
   }
   .date-pill.today.active::after,
   .date-pill.today.active::before{ background: var(--bg); }
+  /* Фоновая подсветка "сегодня" в ленте дат — раньше сегодняшний день был
+     виден только по маленькой точке в углу, что легко не заметить с первого
+     взгляда. Работает лишь пока плашка не выбрана (.active уже даёт свой,
+     более сильный акцент цвета группы 106, и смешивать два акцента разом
+     не нужно). */
+  .date-pill.today:not(.active){
+    background: var(--g107-soft);
+    border-color: var(--g107);
+    color: var(--g107);
+  }
+  .date-pill.today:not(.active) b,
+  .date-pill.today:not(.active) .pill-month{ color: var(--g107); }
   @keyframes todayPulse{
     0%{ transform: scale(1); opacity:.5; }
     70%{ transform: scale(2.6); opacity:0; }
@@ -579,6 +591,11 @@
      день — свой мини-заголовок (дата + день недели) и свои пары под ним. */
   .feed-day{
     border-bottom: 1px solid var(--line);
+    /* Смещает точку прицеливания scrollIntoView({block:'start'}) вниз, чтобы
+       переход "к сегодня" не упирал день в самый верх экрана, а оставлял
+       сверху зазор (там всё равно плавает theme-switcher). См. renderFeed()
+       и scrollToTodayInFeed() в скрипте ниже. */
+    scroll-margin-top: 92px;
   }
   .feed-day:last-child{ border-bottom:none; }
   .feed-day-head{
@@ -597,7 +614,7 @@
     z-index: 2;
     transition: var(--t-color), var(--t-bg);
   }
-  .feed-day-head.is-today{ color: var(--g107); }
+  .feed-day-head.is-today{ color: var(--g107); background: var(--g107-soft); }
   .feed-day-head .fd-chip{
     font-size:9px;
     font-weight:800;
@@ -964,6 +981,12 @@
     .feed-day-head{ padding: 11px 20px 6px; }
     .theme-switcher{ padding: 7px 9px; gap: 9px; }
     .theme-swatch{ width: 28px; height: 28px; }
+    /* Кнопки дат в ленте недели — на десктопе места достаточно, и узкие
+       58px-плашки с мобильных экранов выглядят зажатыми рядом с крупной
+       десктопной типографикой остального интерфейса. */
+    .date-pill{ width: 76px; padding: 10px 4px 9px; }
+    .date-pill b{ font-size: 18px; }
+    .date-pill .pill-month{ font-size: 10px; }
 
     .detail-sheet{
       left: 50%;
