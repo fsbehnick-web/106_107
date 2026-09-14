@@ -9,17 +9,10 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="format-detection" content="telephone=no">
 <script>
-// Применяем сохранённую тему как можно раньше — до отрисовки, чтобы не было
-// вспышки дефолтной темы (и цвета строки браузера, который ей не соответствует)
-// при перезаходе на сайт.
 (function(){
   try{
     var saved = localStorage.getItem('schedule-theme-106-107');
-    var resolved = saved || ((window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches)
-      // Без сохранённого выбора раньше всегда стартовала тёмная "Мокко".
-      // Теперь, если у пользователя в системе включена светлая тема,
-      // по умолчанию показываем светлую "Терракоту".
-      ? 'terracotta' : null);
+    var resolved = saved || ((window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'terracotta' : null);
     if(resolved){
       document.documentElement.setAttribute('data-theme', resolved);
     }
@@ -33,9 +26,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  /* Мокко — базовая тема (без data-theme), тёмная: эспрессо-шоколад +
-     карамель + бордо, в духе трендов 2026 (Pantone Mocha Mousse,
-     Benjamin Moore Silhouette). */
   :root{
     color-scheme: dark;
     --bg: #1a1512;
@@ -51,27 +41,15 @@
     --text: #f0e4d4;
     --text-dim: #a4907a;
     --free: #8fbf7a;
-    /* Метки чётности недели (числитель/знаменатель) для регулярного периода
-       (14.09–30.12). Специально не тёплые золото/бордо — это цвета самих
-       групп 106/107, и путать чётность недели с принадлежностью к группе
-       нельзя. Остаёмся в той же тёплой земляной гамме (оливково-табачный /
-       пыльно-сливовый), просто на другом цветовом круге. */
     --parity-1: #9c8a4e;
     --parity-1-soft: rgba(156,138,78,0.16);
     --parity-2: #7d6a8f;
     --parity-2-soft: rgba(125,106,143,0.18);
     --shadow: 0 10px 30px -12px rgba(0,0,0,0.6);
     --ease: cubic-bezier(.22,1,.36,1);
-    /* Часто повторяющиеся пары transition. Подставляются через var() только
-       туда, где длительность совпадает 1-в-1 — ни один селектор не потерял
-       свой полный список transition-свойств (важно из-за истории с
-       !important выше), поведение не меняется, просто меньше дублирования
-       буквального текста "color .3s var(--ease)" по файлу. */
     --t-color: color .3s var(--ease);
     --t-bg: background-color .3s var(--ease);
   }
-  /* Терракота — светлая, глина/хаки + терракотовый (в духе трендов 2026:
-     Universal Khaki, terracotta & clay). */
   :root[data-theme="terracotta"]{
     color-scheme: light;
     --bg: #f1e3d0;
@@ -85,8 +63,8 @@
     --g107-dim: #8a3e24;
     --g107-soft: rgba(177,81,47,0.12);
     --text: #382d1e;
-    --text-dim: #83725a;
-    --free: #5f7a43;
+    --text-dim: #6f604c;
+    --free: #52693a;
     --parity-1: #7a6b35;
     --parity-1-soft: rgba(122,107,53,0.12);
     --parity-2: #6b5578;
@@ -97,17 +75,11 @@
     box-sizing:border-box;
     -webkit-tap-highlight-color: transparent;
   }
-  /* Сброс нативного вида кнопок: без этого iOS/Android иногда подмешивают
-     свой градиент/скругление поверх явно заданных стилей, а шрифт кнопки
-     по умолчанию не наследуется от body ни в одном браузере. */
   button{
     font: inherit;
     -webkit-appearance: none;
     appearance: none;
   }
-  /* Видимый фокус для клавиатурной навигации на ПК — не трогаем обычный
-     мышиный/тач-тап (тач и клик не ставят :focus-visible), но Tab даёт
-     чёткую рамку в цвет акцента вместо (не)заметного браузерного дефолта. */
   button:focus-visible,
   .slot:focus-visible,
   .date-pill:focus-visible,
@@ -126,13 +98,6 @@
     transition: background-color .4s var(--ease), var(--t-color);
   }
   .wrap{max-width: 800px; margin: 0 auto;}
-
-  /* Раньше здесь было общее правило transition с !important на несколько
-     селекторов сразу. В CSS !important заменяет ВЕСЬ список transition-свойств
-     целиком, а не объединяется с локальными правилами — из-за этого подъём
-     карточек при hover, пульсация активной даты и подсветка "текущей пары"
-     переставали анимироваться. Теперь каждый селектор ниже сам перечисляет
-     полный список нужных ему transition-свойств (цвета темы + свои эффекты). */
 
   @keyframes dropIn{
     from{ opacity:0; transform: translateY(-10px); }
@@ -208,11 +173,6 @@
     color: var(--text-dim);
     font-size: 13.5px;
   }
-  /* Раньше жил внутри board-header, по центру под заголовком. Теперь это
-     плавающий контрол в верхнем правом углу окна — тот же язык, что у
-     scroll-top-btn/scroll-today-btn (панель с рамкой и тенью), только
-     сверху, а не снизу — так тема доступна в один тап независимо от того,
-     насколько далеко прокручена страница. */
   .theme-switcher{
     position: fixed;
     top: max(14px, env(safe-area-inset-top));
@@ -244,7 +204,7 @@
     transition: border-color .25s var(--ease), transform .15s var(--ease), box-shadow .25s var(--ease);
   }
   @media (hover: hover){
-  .theme-swatch:hover{ transform: translateY(-2px) scale(1.06); will-change: transform; }
+    .theme-swatch:hover{ transform: translateY(-2px) scale(1.06); will-change: transform; }
   }
   .theme-swatch:active{ transform: translateY(0) scale(.94); }
   .theme-swatch.active{
@@ -252,10 +212,6 @@
     box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--text-dim);
   }
 
-  /* Переключатель группы: показать обе колонки или сфокусироваться на одной.
-     Тот же язык сегментированного контрола, что и у theme-switcher, просто
-     с текстовыми подписями вместо цветных кружков — тут важно название
-     группы, а не превью палитры. */
   .group-switcher{
     margin-top: 12px;
     display:flex;
@@ -281,17 +237,13 @@
     transition: border-color .2s var(--ease), color .2s var(--ease), background-color .2s var(--ease), transform .15s var(--ease);
   }
   @media (hover: hover){
-  .group-btn:hover{ transform: translateY(-1px); }
+    .group-btn:hover{ transform: translateY(-1px); }
   }
   .group-btn:active{ transform: translateY(0) scale(.95); }
   .group-btn.active[data-group="106"]{ border-color: var(--g106); color: var(--g106); background: var(--g106-soft); }
   .group-btn.active[data-group="107"]{ border-color: var(--g107); color: var(--g107); background: var(--g107-soft); }
   .group-btn.active[data-group="both"]{ border-color: var(--text-dim); color: var(--text); background: var(--panel); }
 
-  /* Строка навигации по неделям — заменяет собой одну сплошную ленту дат на
-     весь семестр (108+ дней плохо скроллятся и плохо ищутся). Лента дат
-     ниже теперь показывает только текущую неделю (Пн–Вс), а сюда вынесены
-     переключение недель и быстрый переход по произвольной дате. */
   .week-nav{
     display:flex;
     align-items:center;
@@ -315,12 +267,12 @@
     transition: color .2s var(--ease), border-color .2s var(--ease), transform .15s var(--ease), opacity .2s var(--ease), background-color .25s var(--ease);
   }
   @media (hover: hover){
-  .week-arrow:hover, .calendar-btn:hover{ color: var(--text); border-color: var(--g106-dim); }
+    .week-arrow:hover, .calendar-btn:hover{ color: var(--text); border-color: var(--g106-dim); }
   }
   .week-arrow:active, .calendar-btn:active{ transform: scale(.92); }
   .week-arrow:disabled{ opacity:.35; cursor:default; }
   @media (hover: hover){
-  .week-arrow:disabled:hover{ color: var(--text-dim); border-color: var(--line); }
+    .week-arrow:disabled:hover{ color: var(--text-dim); border-color: var(--line); }
   }
   .week-label{
     flex: 1 1 auto;
@@ -347,11 +299,6 @@
   .week-label .parity-chip.p1{ color: var(--parity-1); background: var(--parity-1-soft); }
   .week-label .parity-chip.p2{ color: var(--parity-2); background: var(--parity-2-soft); }
 
-  /* Лента дат — горизонтальная прокручиваемая полоса на 7 дней текущей
-     недели (Пн–Вс). Раньше пробовали жёсткую сетку в 7 колонок без скролла,
-     но с тремя строками в карточке (число/месяц/день недели) она выглядит
-     тесной на узких экранах — вернули скролл, карточки получили комфортную
-     минимальную ширину и переносятся за край экрана, кто не влез. */
   .date-rail{
     display:flex;
     gap:7px;
@@ -384,7 +331,7 @@
     transition: border-color .25s var(--ease), color .25s var(--ease), transform .28s cubic-bezier(.34,1.56,.64,1), box-shadow .25s var(--ease), background-color .25s var(--ease);
   }
   @media (hover: hover){
-  .date-pill:hover{ transform: translateY(-2px); border-color: var(--g106-dim); will-change: transform; }
+    .date-pill:hover{ transform: translateY(-2px); border-color: var(--g106-dim); will-change: transform; }
   }
   .date-pill:active{ transform: translateY(0) scale(.96); }
   .date-pill b{display:block; font-size:16px; color: var(--text); font-weight:800; margin-bottom:1px; transition: color .25s var(--ease);}
@@ -399,11 +346,6 @@
   .date-pill.off b{color: var(--text-dim);}
   .date-pill.pop{ animation: pillPop .4s cubic-bezier(.34,1.56,.64,1); }
 
-  /* Бейдж чётности недели на плашке даты — только для регулярного периода
-     (14.09+). Цвет ЗАВЕДОМО дублируется буквой (Ч/З), а не полагается
-     только на оттенок — иначе не различить дальтонику и не считать при
-     печати в ч/б. Верхний левый угол: верхний правый уже занят точкой
-     "сегодня" (.date-pill.today), так что коллизии нет. */
   .date-pill .parity-tag{
     position:absolute;
     top:4px; left:5px;
@@ -477,13 +419,10 @@
     transform: translateY(-50%) scale(1);
   }
   @media (hover: hover){
-  .today-btn:hover{ color: var(--text); border-color: var(--g106-dim); }
+    .today-btn:hover{ color: var(--text); border-color: var(--g106-dim); }
   }
   .today-btn:active{ transform: translateY(-50%) scale(.94); }
 
-  /* Точка "сегодня": статичная точка (::after) + пульсирующее кольцо (::before).
-     Кольцо анимируется только через transform/opacity — это чистый композитинг
-     (без перерисовки каждый кадр), в отличие от прежней анимации box-shadow. */
   .date-pill.today::after{
     content:"";
     position:absolute;
@@ -507,11 +446,6 @@
   }
   .date-pill.today.active::after,
   .date-pill.today.active::before{ background: var(--bg); }
-  /* Фоновая подсветка "сегодня" в ленте дат — раньше сегодняшний день был
-     виден только по маленькой точке в углу, что легко не заметить с первого
-     взгляда. Работает лишь пока плашка не выбрана (.active уже даёт свой,
-     более сильный акцент цвета группы 106, и смешивать два акцента разом
-     не нужно). */
   .date-pill.today:not(.active){
     background: var(--g107-soft);
     border-color: var(--g107);
@@ -539,9 +473,6 @@
   @media (max-width: 560px){
     .columns{grid-template-columns: 1fr;}
   }
-  /* Режим "одна группа": переключатель group-switcher скрывает вторую
-     колонку и растягивает первую на всю ширину, независимо от того, что бы
-     сделал брейкпоинт выше по ширине экрана. */
   .columns.single{ grid-template-columns: 1fr; }
   .col.hidden{ display:none; }
 
@@ -554,11 +485,11 @@
     transition: background-color .35s var(--ease), border-color .35s var(--ease), transform .35s var(--ease), box-shadow .35s var(--ease);
   }
   @media (hover: hover){
-  .col:hover{
-    transform: translateY(-3px);
-    box-shadow: 0 16px 34px -14px rgba(0,0,0,0.5);
-    will-change: transform;
-  }
+    .col:hover{
+      transform: translateY(-3px);
+      box-shadow: 0 16px 34px -14px rgba(0,0,0,0.5);
+      will-change: transform;
+    }
   }
   .col-head{
     padding: 13px 16px;
@@ -586,16 +517,11 @@
     font-weight:600;
   }
 
-  /* Ленточный (agenda) режим для одиночной группы: вместо одного дня —
-     непрерывная прокручиваемая лента ближайших дней внутри колонки. Каждый
-     день — свой мини-заголовок (дата + день недели) и свои пары под ним. */
   .feed-day{
     border-bottom: 1px solid var(--line);
-    /* Смещает точку прицеливания scrollIntoView({block:'start'}) вниз, чтобы
-       переход "к сегодня" не упирал день в самый верх экрана, а оставлял
-       сверху зазор (там всё равно плавает theme-switcher). См. renderFeed()
-       и scrollToTodayInFeed() в скрипте ниже. */
     scroll-margin-top: 92px;
+    content-visibility: auto;
+    contain-intrinsic-size: auto 168px;
   }
   .feed-day:last-child{ border-bottom:none; }
   .feed-day-head{
@@ -660,7 +586,7 @@
     transition: var(--t-bg), border-left-color .3s var(--ease), padding-left .3s var(--ease);
   }
   @media (hover: hover){
-  .slot:hover{ background: var(--panel-2); }
+    .slot:hover{ background: var(--panel-2); }
   }
   .slot:active{ background: var(--panel-2); }
   .slot:last-child{border-bottom:none;}
@@ -727,7 +653,10 @@
     border-bottom: none;
     border-radius: 20px 20px 0 0;
     box-shadow: 0 -14px 40px -12px rgba(0,0,0,0.5);
-    padding: 10px 22px calc(22px + env(safe-area-inset-bottom, 0px));
+    padding-top: 10px;
+    padding-right: max(22px, env(safe-area-inset-right));
+    padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+    padding-left: max(22px, env(safe-area-inset-left));
     z-index: 999;
     transition: transform .32s cubic-bezier(.22,1,.36,1);
   }
@@ -764,16 +693,11 @@
     transition: color .2s var(--ease), border-color .2s var(--ease), transform .15s var(--ease);
   }
   @media (hover: hover){
-  .sheet-close:hover{ color: var(--text); border-color: var(--g106-dim); }
+    .sheet-close:hover{ color: var(--text); border-color: var(--g106-dim); }
   }
   .sheet-close:active{ transform: scale(.92); }
   .sheet-header{
     cursor: grab;
-    /* Не pan-y: заголовок не прокручиваемая область, и allow-панорамирование
-       иногда даёт браузеру забрать вертикальный жест под нативный скролл
-       раньше, чем до JS дойдут pointermove — из-за этого свайп-закрытие
-       мог не сработать с первого раза на touch-устройствах. none здесь
-       ведёт себя как на .sheet-grabber и отдаёт весь жест перетаскиванию. */
     touch-action: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
@@ -822,9 +746,61 @@
     transition: var(--t-bg);
   }
 
-  /* Шторка-календарь для быстрого перехода на произвольную дату в диапазоне
-     01.09–30.12 — тот же компонент .detail-sheet (анимация выезда, свайп
-     закрытия), просто выше и с другим содержимым внутри .sheet-body. */
+  .sheet-actions{
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    transition: border-color .3s var(--ease);
+  }
+  .sheet-ics-btn{
+    width: 100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap: 8px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .2px;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: border-color .2s var(--ease), transform .15s var(--ease), background-color .25s var(--ease), color .25s var(--ease);
+  }
+  .detail-sheet.g106 .sheet-ics-btn{ border-color: var(--g106-dim); color: var(--g106); }
+  .detail-sheet.g107 .sheet-ics-btn{ border-color: var(--g107-dim); color: var(--g107); }
+  @media (hover: hover){
+    .sheet-ics-btn:hover{ transform: translateY(-1px); }
+  }
+  .sheet-ics-btn:active{ transform: translateY(0) scale(.98); }
+
+  .day-export-btn{
+    flex: 0 0 auto;
+    width:30px; height:30px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--text-dim);
+    font-size:13px;
+    line-height:1;
+    cursor:pointer;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    display:flex; align-items:center; justify-content:center;
+    transition: color .2s var(--ease), border-color .2s var(--ease), transform .15s var(--ease), background-color .25s var(--ease);
+  }
+  @media (hover: hover){
+    .day-export-btn:hover{ color: var(--text); border-color: var(--g106-dim); }
+  }
+  .day-export-btn:active{ transform: scale(.92); }
+
   .detail-sheet.cal-sheet{
     max-height: 78vh;
     max-height: 78dvh;
@@ -867,7 +843,7 @@
     transition: border-color .2s var(--ease), color .2s var(--ease), background-color .2s var(--ease), transform .15s var(--ease);
   }
   @media (hover: hover){
-  .cal-day:hover{ border-color: var(--g106-dim); transform: translateY(-1px); }
+    .cal-day:hover{ border-color: var(--g106-dim); transform: translateY(-1px); }
   }
   .cal-day:active{ transform: translateY(0) scale(.94); }
   .cal-day.current{ border-color: var(--g106); color: var(--g106); background: var(--g106-soft); }
@@ -884,9 +860,6 @@
     background: var(--g107);
   }
 
-  /* Плавающая кнопка "наверх" — появляется после прокрутки вниз, полезна
-     в первую очередь в ленточном режиме с длинной лентой дней, но работает
-     в любом режиме, раз страница прокручена достаточно далеко. */
   .scroll-top-btn{
     position: fixed;
     right: max(16px, env(safe-area-inset-right));
@@ -918,14 +891,10 @@
     transform: translateY(0) scale(1);
   }
   @media (hover: hover){
-  .scroll-top-btn:hover{ color: var(--text); border-color: var(--g106-dim); }
+    .scroll-top-btn:hover{ color: var(--text); border-color: var(--g106-dim); }
   }
   .scroll-top-btn:active{ transform: translateY(0) scale(.92); }
 
-  /* Плавающая кнопка "к сегодня" — рядом с кнопкой "наверх", только в
-     ленточном режиме (в обычном режиме для этого уже есть today-btn рядом
-     с заголовком дня). Пилюля пошире круглой кнопки — нужен текст, а не
-     только иконка, иначе назначение неочевидно. */
   .scroll-today-btn{
     position: fixed;
     right: max(16px, env(safe-area-inset-right));
@@ -962,16 +931,94 @@
     transform: translateY(0) scale(1);
   }
   @media (hover: hover){
-  .scroll-today-btn:hover{ border-color: var(--g107-dim); }
+    .scroll-today-btn:hover{ border-color: var(--g107-dim); }
   }
   .scroll-today-btn:active{ transform: translateY(0) scale(.94); }
 
-  /* Адаптация для широких экранов: больше воздуха в сетке и карточках,
-     чуть более просторная типографика для чтения с расстояния ноутбука,
-     и деталь пары открывается по центру экрана как обычный диалог, а не
-     мобильной шторкой снизу — тянуть её за ручку на десктопе незачем,
-     поэтому сама ручка прячется, а перетаскивание отключается в JS
-     (см. isDesktopSheetLayout в initSheetDrag). */
+  .update-banner{
+    position: fixed;
+    left: 0; right: 0;
+    top: 0;
+    z-index: 700;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap: 12px;
+    padding: max(10px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) 10px max(14px, env(safe-area-inset-left));
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 8px 24px -10px rgba(0,0,0,0.45);
+    transform: translateY(-100%);
+    transition: transform .3s var(--ease), background-color .3s var(--ease), border-color .3s var(--ease);
+  }
+  .update-banner.show{ transform: translateY(0); }
+  .update-banner span{
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .update-banner button{
+    border-radius: 16px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    border: 1px solid var(--line);
+    transition: border-color .2s var(--ease), color .2s var(--ease), background-color .2s var(--ease), transform .15s var(--ease);
+  }
+  .update-banner button:active{ transform: scale(.95); }
+  .update-banner .update-refresh{
+    background: var(--g106-soft);
+    color: var(--g106);
+    border-color: var(--g106-dim);
+  }
+  .update-banner .update-dismiss{
+    background: transparent;
+    color: var(--text-dim);
+  }
+
+  .install-hint-body{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    font-size:13.5px;
+    color: var(--text-dim);
+    line-height:1.5;
+  }
+  .install-hint-body b{ color: var(--text); }
+  .install-hint-icon{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:22px; height:22px;
+    border-radius:6px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    font-size:12px;
+    margin: 0 2px;
+    vertical-align:middle;
+  }
+  .install-btn-row{
+    margin-top: 4px;
+    display:flex;
+    justify-content:center;
+  }
+  .install-btn{
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: 1px solid var(--g106-dim);
+    background: var(--g106-soft);
+    color: var(--g106);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+  }
+
   @media (min-width: 900px){
     .wrap{ max-width: 920px; }
     .columns{ gap: 18px; }
@@ -981,9 +1028,6 @@
     .feed-day-head{ padding: 11px 20px 6px; }
     .theme-switcher{ padding: 7px 9px; gap: 9px; }
     .theme-swatch{ width: 28px; height: 28px; }
-    /* Кнопки дат в ленте недели — на десктопе места достаточно, и узкие
-       58px-плашки с мобильных экранов выглядят зажатыми рядом с крупной
-       десктопной типографикой остального интерфейса. */
     .date-pill{ width: 76px; padding: 10px 4px 9px; }
     .date-pill b{ font-size: 18px; }
     .date-pill .pill-month{ font-size: 10px; }
@@ -1010,10 +1054,8 @@
   }
 
   @media print{
-    /* Расписание логично распечатать: убираем декоративную анимацию,
-       фон и интерактивные элементы, оставляем только сами пары. */
     body{ background:#fff !important; color:#000 !important; padding:0; }
-    .theme-switcher, .group-switcher, .today-btn, .week-nav, .sheet-scrim, .detail-sheet, .scroll-top-btn, .scroll-today-btn{ display:none !important; }
+    .theme-switcher, .group-switcher, .today-btn, .week-nav, .sheet-scrim, .detail-sheet, .scroll-top-btn, .scroll-today-btn, .update-banner, .day-export-btn{ display:none !important; }
     .date-rail{ overflow:visible; }
     .col{ box-shadow:none; border:1px solid #999; break-inside: avoid; }
     .slot{ animation:none !important; opacity:1 !important; }
@@ -1026,8 +1068,13 @@
 </head>
 <body>
 
-<div class="wrap" id="pageWrap">
+<div class="update-banner" id="updateBanner" role="status">
+  <span>Доступна новая версия расписания</span>
+  <button class="update-refresh" id="updateRefreshBtn" type="button">Обновить</button>
+  <button class="update-dismiss" id="updateDismissBtn" type="button" aria-label="Скрыть уведомление об обновлении">Позже</button>
+</div>
 
+<div class="wrap" id="pageWrap">
   <div class="board-header">
     <div class="kicker drop-in d1">Расписание</div>
     <h1 class="drop-in d2">Группы 106 и 107</h1>
@@ -1046,6 +1093,7 @@
     <div class="day-title-row" id="dayTitleRow">
       <div class="day-title" id="dayTitle" aria-live="polite"></div>
       <button class="today-btn" id="todayBtn" onclick="jumpToToday()" title="Вернуться к сегодняшнему дню" tabindex="-1" aria-hidden="true">Сегодня</button>
+      <button class="day-export-btn" id="dayExportBtn" onclick="exportDayICS(currentDate)" title="Экспортировать день в календарь (.ics)" aria-label="Экспортировать день в календарь">📆</button>
     </div>
   </div>
 
@@ -1061,7 +1109,6 @@
       </div>
     </div>
   </div>
-
 </div>
 
 <div class="sheet-scrim" id="sheetScrim" onclick="closeSheet()"></div>
@@ -1074,6 +1121,9 @@
   </div>
   <div class="sheet-body">
     <div class="sheet-meta" id="sheetMeta"></div>
+    <div class="sheet-actions">
+      <button class="sheet-ics-btn" id="sheetIcsBtn" type="button">📅 Добавить в календарь</button>
+    </div>
   </div>
 </div>
 
@@ -1090,17 +1140,24 @@
   </div>
 </div>
 
+<div class="sheet-scrim" id="installScrim"></div>
+<div class="detail-sheet" id="installSheet" role="dialog" aria-modal="true" aria-labelledby="installSheetTitle" aria-hidden="true" inert>
+  <div class="sheet-grabber" id="installGrabber" aria-hidden="true"></div>
+  <button class="sheet-close" id="installCloseBtn" aria-label="Закрыть">✕</button>
+  <div class="sheet-header" id="installHeader">
+    <div class="sheet-time">Установка</div>
+    <h3 class="sheet-title" id="installSheetTitle">Добавить на экран «Домой»</h3>
+  </div>
+  <div class="sheet-body">
+    <div class="install-hint-body" id="installHintBody"></div>
+    <div class="install-btn-row" id="installBtnRow"></div>
+  </div>
+</div>
+
 <button class="scroll-today-btn" id="scrollTodayBtn" onclick="scrollToTodayInFeed()" aria-label="К сегодняшнему дню" title="К сегодняшнему дню">Сегодня</button>
 <button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToPageTop()" aria-label="Наверх" title="Наверх">↑</button>
 
 <script>
-// Занятия, общие для обеих групп (вступительные лекции 1–2 сентября,
-// совместные пары и т.п.). Раньше они были продублированы один в один в
-// g106 и g107 — если бы поменялась аудитория или время, пришлось бы
-// исправлять в двух местах, и рано или поздно копии разошлись бы незаметно.
-// Теперь общий блок описан один раз и подмешивается в оба расписания
-// программно (см. mergeDaySchedule ниже), а own106/own107 хранят только то,
-// что у групп реально различается.
 const sharedSchedule = {
   "2026-09-01": [
     {t:"09:00–10:30", w:"Первый раз на первый курс", d:"ассист. Тихонов С.О. · ауд. 301"},
@@ -1121,10 +1178,6 @@ const sharedSchedule = {
   "2026-09-05": [
     {t:"09:00–15:50", w:"Встречи с кураторами-студентами", d:"весь день · День кураторов"}
   ],
-  // Ниже — пары, которые раньше были дословно продублированы в own106 и
-  // own107 на одну и ту же дату/время (лекции для потока целиком, просто
-  // без вступительной недели их не вносили сюда с самого начала). Перенесены
-  // сюда по той же причине, что описана в комментарии выше файла.
   "2026-09-03": [
     {t:"09:00–10:30", w:"Знакомство с цифровой образоват. средой МПГУ", d:"лекция · доц. Маняхина В.Г. · ауд. 301"},
     {t:"10:40–12:10", w:"История России", d:"лекция · доц. Филина Е.И. · ауд. 402"},
@@ -1149,7 +1202,6 @@ const sharedSchedule = {
   ]
 };
 
-// Только то, что отличается у группы 106 (ВОМ23-ММИ2606) от общего блока.
 const own106 = {
   "2026-09-03": [
     {t:"14:20–15:50", w:"Цифровая образоват. среда МПГУ (лаб)", d:"по подгруппам", sub:[
@@ -1178,7 +1230,6 @@ const own106 = {
   "2026-09-13": []
 };
 
-// Только то, что отличается у группы 107 (ВОМ23-ММИ2607) от общего блока.
 const own107 = {
   "2026-09-01": [
     {t:"14:20–15:50", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · ауд. 207"}
@@ -1210,9 +1261,6 @@ const own107 = {
   "2026-09-13": []
 };
 
-// Склеивает общий блок и "свои" пары группы на конкретную дату и
-// сортирует по времени начала — так порядок в списке остаётся верным
-// независимо от того, в каком объекте физически лежит та или иная пара.
 function mergeDaySchedule(dateISO, ownMap){
   const merged = [...(sharedSchedule[dateISO] || []), ...(ownMap[dateISO] || [])];
   return merged.sort((a,b)=>{
@@ -1228,9 +1276,7 @@ const scheduleDates = new Set([
   ...Object.keys(own107)
 ]);
 
-// Расписание группы 106 (ВОМ23-ММИ2606)
 const g106 = {};
-// Расписание группы 107 (ВОМ23-ММИ2607)
 const g107 = {};
 scheduleDates.forEach(iso=>{
   g106[iso] = mergeDaySchedule(iso, own106);
@@ -1286,16 +1332,8 @@ function buildDateList(){
 }
 const dateList = buildDateList();
 
-// Даты, у которых на весь день стоит мероприятие (не обычная выходная суббота/
-// воскресенье) — им не нужно приглушение через класс .off, чтобы не выглядело
-// так, будто в этот день вообще ничего нет.
 const allDayEventDates = new Set(["2026-09-05","2026-09-12"]);
 
-// Праздничные (нерабочие) дни внутри всего диапазона расписания — учебных
-// занятий в эти даты нет независимо от того, что бы сгенерировал недельный
-// шаблон по дню недели и чётности. В интервале 01.09–30.12.2026 это один
-// федеральный праздник; словарь "дата → название" сделан расширяемым на
-// случай, если добавятся другие нерабочие/каникулярные дни.
 const HOLIDAYS = {
   "2026-11-04": "День народного единства"
 };
@@ -1398,14 +1436,14 @@ const singleExceptions = {
   }
 };
 
-const REGULAR_ANCHOR = "2026-09-14"; // понедельник, неделя-числитель
+const REGULAR_ANCHOR = "2026-09-14";
 
 function weekTypeFor(dateISO){
   const anchor = new Date(REGULAR_ANCHOR + "T00:00:00");
   const d = new Date(dateISO + "T00:00:00");
   const diffDays = Math.round((d - anchor) / 86400000);
   const weekIndex = Math.floor(diffDays / 7);
-  const evenWeek = ((weekIndex % 2) + 2) % 2 === 0; // корректный модуль и для дат до анкера
+  const evenWeek = ((weekIndex % 2) + 2) % 2 === 0;
   return evenWeek ? 1 : 2;
 }
 
@@ -1442,6 +1480,7 @@ const dom = {
   dayTitleRow: document.getElementById('dayTitleRow'),
   weekNav: document.getElementById('weekNav'),
   todayBtn: document.getElementById('todayBtn'),
+  dayExportBtn: document.getElementById('dayExportBtn'),
   daySwap: document.getElementById('daySwap'),
   columnsWrap: document.getElementById('columnsWrap'),
   g106Slots: document.getElementById('g106Slots'),
@@ -1457,6 +1496,7 @@ const dom = {
   sheetTime: document.getElementById('sheetTime'),
   sheetTitle: document.getElementById('sheetTitle'),
   sheetMeta: document.getElementById('sheetMeta'),
+  sheetIcsBtn: document.getElementById('sheetIcsBtn'),
   weekPrev: document.getElementById('weekPrev'),
   weekNext: document.getElementById('weekNext'),
   weekLabel: document.getElementById('weekLabel'),
@@ -1468,6 +1508,16 @@ const dom = {
   calBody: document.getElementById('calBody'),
   scrollTopBtn: document.getElementById('scrollTopBtn'),
   scrollTodayBtn: document.getElementById('scrollTodayBtn'),
+  updateBanner: document.getElementById('updateBanner'),
+  updateRefreshBtn: document.getElementById('updateRefreshBtn'),
+  updateDismissBtn: document.getElementById('updateDismissBtn'),
+  installScrim: document.getElementById('installScrim'),
+  installSheet: document.getElementById('installSheet'),
+  installGrabber: document.getElementById('installGrabber'),
+  installHeader: document.getElementById('installHeader'),
+  installHintBody: document.getElementById('installHintBody'),
+  installBtnRow: document.getElementById('installBtnRow'),
+  installCloseBtn: document.getElementById('installCloseBtn'),
 };
 
 const MOSCOW_TZ = 'Europe/Moscow';
@@ -1482,12 +1532,107 @@ function todayISO(){
 }
 let TODAY = todayISO();
 
+function parseDeepLinkDate(){
+  try{
+    const raw = new URLSearchParams(window.location.search).get('date');
+    if(!raw || !/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null;
+    if(raw < OVERALL_START || raw > OVERALL_END) return null;
+    const d = new Date(raw + "T00:00:00");
+    if(Number.isNaN(d.getTime())) return null;
+    const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,"0"), day = String(d.getDate()).padStart(2,"0");
+    if(`${y}-${m}-${day}` !== raw) return null;
+    return raw;
+  }catch(e){
+    return null;
+  }
+}
+const DEEP_LINK_DATE = parseDeepLinkDate();
+
 function pickInitialDate(){
+  if(DEEP_LINK_DATE) return DEEP_LINK_DATE;
   if(dateList.some(([iso])=>iso===TODAY)) return TODAY;
   if(TODAY < dateList[0][0]) return dateList[0][0];
   return dateList[dateList.length-1][0];
 }
 let currentDate = pickInitialDate();
+
+const GROUP_STORAGE_KEY = 'schedule-group-view-106-107';
+let groupView = 'both';
+
+function currentGroupView(){
+  try{
+    return localStorage.getItem(GROUP_STORAGE_KEY) || 'both';
+  }catch(e){
+    return 'both';
+  }
+}
+
+function applyGroupView(view, rerender = true){
+  groupView = view;
+  try{ localStorage.setItem(GROUP_STORAGE_KEY, view); }catch(e){}
+
+  dom.groupSwitcher.querySelectorAll('.group-btn').forEach(b=>{
+    const isActive = b.dataset.group === view;
+    b.classList.toggle('active', isActive);
+    b.setAttribute('aria-pressed', String(isActive));
+  });
+
+  const col106 = dom.columnsWrap.querySelector('.col.g106');
+  const col107 = dom.columnsWrap.querySelector('.col.g107');
+
+  if(view === 'both'){
+    dom.columnsWrap.classList.remove('single');
+    if(col106) col106.classList.remove('hidden');
+    if(col107) col107.classList.remove('hidden');
+    dom.weekNav.style.display = '';
+    dom.rail.style.display = '';
+    dom.dayTitleRow.style.display = '';
+    dom.scrollTodayBtn.classList.remove('show');
+  } else {
+    dom.columnsWrap.classList.add('single');
+    if(col106) col106.classList.toggle('hidden', view !== '106');
+    if(col107) col107.classList.toggle('hidden', view !== '107');
+    dom.weekNav.style.display = 'none';
+    dom.rail.style.display = 'none';
+    dom.dayTitleRow.style.display = 'none';
+    dom.scrollTodayBtn.classList.add('show');
+  }
+
+  syncDeepLinkUrl();
+  if(rerender) render();
+}
+
+function buildGroupSwitcher(){
+  const options = [
+    {id:'both', label:'Все'},
+    {id:'106', label:'106'},
+    {id:'107', label:'107'}
+  ];
+  const frag = document.createDocumentFragment();
+  options.forEach(opt=>{
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'group-btn';
+    btn.dataset.group = opt.id;
+    btn.textContent = opt.label;
+    btn.onclick = ()=> applyGroupView(opt.id, true);
+    frag.appendChild(btn);
+  });
+  dom.groupSwitcher.innerHTML = '';
+  dom.groupSwitcher.appendChild(frag);
+}
+
+function syncDeepLinkUrl(){
+  try{
+    const url = new URL(window.location.href);
+    if(groupView === 'both'){
+      url.searchParams.set('date', currentDate);
+    } else {
+      url.searchParams.delete('date');
+    }
+    window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+  }catch(e){}
+}
 
 function weekdayIndex(dateStr){
   const d = new Date(dateStr + "T00:00:00");
@@ -1495,7 +1640,7 @@ function weekdayIndex(dateStr){
 }
 
 function getWeekStart(iso){
-  const wd = weekdayIndex(iso); // 0=Вс..6=Сб
+  const wd = weekdayIndex(iso);
   const mondayOffset = wd === 0 ? -6 : 1 - wd;
   return isoPlusDays(iso, mondayOffset);
 }
@@ -1522,9 +1667,6 @@ function freeWindowsText(items){
   return `с ${start} до ${end}`;
 }
 
-// Текущий режим отображения групп: 'both' | '106' | '107'.
-let groupView = 'both';
-
 function buildRail(){
   const weekStart = getWeekStart(currentDate);
   const frag = document.createDocumentFragment();
@@ -1546,6 +1688,7 @@ function buildRail(){
     pill.dataset.iso = iso;
     pill.setAttribute('role','tab');
     pill.setAttribute('aria-selected', iso===currentDate ? 'true':'false');
+    if(iso===TODAY) pill.setAttribute('aria-current','date');
     pill.tabIndex = iso===currentDate ? 0 : -1;
     pill.title = (iso===TODAY ? `${dayNum(iso)} ${monthShort(iso)} — сегодня` : `${dayNum(iso)} ${monthShort(iso)}`)
       + (isRegular ? ` · ${parity===1?'числитель':'знаменатель'}` : '')
@@ -1557,7 +1700,11 @@ function buildRail(){
     const select = ()=>{ if(iso!==currentDate){ currentDate = iso; goToDate(); } };
     pill.onclick = select;
     pill.onkeydown = (e)=>{
-      if(e.key==='Enter' || e.key===' '){ e.preventDefault(); select(); }
+      if(e.key==='Enter' || e.key===' '){ e.preventDefault(); select(); return; }
+      if(e.key==='ArrowRight'){ e.preventDefault(); stepDay(1); return; }
+      if(e.key==='ArrowLeft'){ e.preventDefault(); stepDay(-1); return; }
+      if(e.key==='Home'){ e.preventDefault(); jumpToWeekEdge('start'); return; }
+      if(e.key==='End'){ e.preventDefault(); jumpToWeekEdge('end'); return; }
     };
     frag.appendChild(pill);
   }
@@ -1600,13 +1747,23 @@ function stepDay(delta){
   goToDate();
 }
 
+function jumpToWeekEdge(edge){
+  const weekStart = getWeekStart(currentDate);
+  let target = edge === 'start' ? weekStart : isoPlusDays(weekStart, 6);
+  if(target < OVERALL_START) target = OVERALL_START;
+  if(target > OVERALL_END) target = OVERALL_END;
+  if(target === currentDate) return;
+  currentDate = target;
+  goToDate();
+}
+
 function replayAnim(el){
   el.style.animation = 'none';
   void el.offsetWidth;
   el.style.animation = '';
 }
 
-function updateActivePill(){
+function updateActivePill(hadFocusInRail){
   dom.rail.querySelectorAll('.date-pill').forEach(p=>{
     const isActive = p.dataset.iso === currentDate;
     p.classList.toggle('active', isActive);
@@ -1620,6 +1777,7 @@ function updateActivePill(){
     void activePill.offsetWidth;
     activePill.classList.add('pop');
     activePill.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
+    if(hadFocusInRail) activePill.focus({preventScroll:true});
   }
   const showTodayBtn = currentDate !== TODAY;
   dom.todayBtn.classList.toggle('show', showTodayBtn);
@@ -1629,14 +1787,14 @@ function updateActivePill(){
 
 function goToDate(){
   if(groupView !== 'both'){
-    // В ленточном режиме навигация — это сам скролл; выбранная дата служит
-    // только якорем, откуда лента начинает строиться при следующем render().
     render();
     return;
   }
+  const hadFocusInRail = dom.rail.contains(document.activeElement);
   buildRail();
-  updateActivePill();
+  updateActivePill(hadFocusInRail);
   updateWeekNav();
+  syncDeepLinkUrl();
   dom.daySwap.classList.add('swapping');
   dom.dayTitle.classList.add('swapping');
   window.setTimeout(()=>{
@@ -1656,21 +1814,13 @@ function jumpToToday(){
   }
 }
 
-document.addEventListener('keydown', e=>{
-  if(e.target && ['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
-  if(dom.sheet.classList.contains('open') || dom.calSheet.classList.contains('open')) return;
-  if(groupView !== 'both') return;
-  if(e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-  stepDay(e.key==='ArrowRight' ? 1 : -1);
-});
-
 function minutesNow(){
   const parts = new Intl.DateTimeFormat('en-GB', {
     timeZone: MOSCOW_TZ, hour:'2-digit', minute:'2-digit', hour12:false
   }).formatToParts(new Date());
   const map = {};
   parts.forEach(p=>{ map[p.type] = p.value; });
-  const h = Number(map.hour) % 24; // на случай если движок форматирует полночь как "24:00"
+  const h = Number(map.hour) % 24;
   return h*60 + Number(map.minute);
 }
 
@@ -1827,9 +1977,6 @@ function refreshLiveIndicators(container, items){
   });
 }
 
-// Ленточный (agenda) режим строит ленту по всему диапазону расписания
-// (с 1 сентября), а не только вперёд от текущей даты — так пролистать
-// назад к началу семестра можно тем же скроллом, а не только вперёд.
 function renderFeed(container, group){
   let html = '';
   for(let idx=0; idx<dateList.length; idx++){
@@ -1907,6 +2054,11 @@ function render(){
   dayItems.g107 = hItems;
   renderSlots(dom.g107Slots, hItems, emptyText, 'g107');
   dom.g107Free.textContent = holidayName ? "выходной" : freeWindowsText(hItems);
+
+  const dayHasEvents = gItems.length>0 || hItems.length>0;
+  dom.dayExportBtn.disabled = !dayHasEvents;
+  dom.dayExportBtn.style.opacity = dayHasEvents ? '' : '.35';
+  dom.dayExportBtn.style.cursor = dayHasEvents ? '' : 'default';
 }
 
 let lastFocused = null;
@@ -1931,15 +2083,110 @@ function unlockBodyScroll(){
   window.scrollTo(0, lockedScrollY);
 }
 
+const ICS_TZ_OFFSET_HOURS = 3;
+
+function icsEscape(str){
+  return String(str)
+    .replace(/\\/g, '\\\\')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+    .replace(/\n/g, '\\n');
+}
+
+function icsStampFor(dateISO, hhmm){
+  const [h, m] = hhmm.split(':').map(Number);
+  const d = new Date(dateISO + "T00:00:00Z");
+  d.setUTCHours(d.getUTCHours() + h - ICS_TZ_OFFSET_HOURS, d.getUTCMinutes() + m);
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getUTCFullYear()}${pad(d.getUTCMonth()+1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
+}
+
+function icsUidFor(dateISO, hhmm, title){
+  const base = `${dateISO}-${hhmm}-${title}`.replace(/[^a-zA-Zа-яА-Я0-9]+/g, '-');
+  return `${base}@schedule-106-107`;
+}
+
+function itemToVevent(dateISO, it, groupLabel){
+  const range = it.t.split(/[-–—]/);
+  if(range.length !== 2) return null;
+  const start = range[0].trim(), end = range[1].trim();
+  const location = it.sub && it.sub.length
+    ? it.sub.map(s=>{
+        const prefix = s.label != null ? s.label : (s.n != null ? `${s.n} гр` : '');
+        return [prefix, s.where].filter(Boolean).join(' ');
+      }).join('; ')
+    : (it.d.split('·').pop() || '').trim();
+  const descr = it.sub && it.sub.length
+    ? it.sub.map(s=>{
+        const prefix = s.label != null ? s.label : (s.n != null ? `${s.n} гр` : '');
+        const whoWhere = [s.who, s.where].filter(Boolean).join(' · ');
+        return whoWhere ? `${prefix}: ${whoWhere}` : prefix;
+      }).join('\n')
+    : it.d;
+  return [
+    'BEGIN:VEVENT',
+    `UID:${icsUidFor(dateISO, start, it.w)}`,
+    `DTSTAMP:${icsStampFor(dateISO, start)}`,
+    `DTSTART:${icsStampFor(dateISO, start)}`,
+    `DTEND:${icsStampFor(dateISO, end)}`,
+    `SUMMARY:${icsEscape(`${groupLabel} · ${it.w}`)}`,
+    location ? `LOCATION:${icsEscape(location)}` : null,
+    `DESCRIPTION:${icsEscape(descr)}`,
+    'END:VEVENT'
+  ].filter(Boolean).join('\r\n');
+}
+
+function buildIcsFile(veventBlocks){
+  return [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Расписание 106-107//RU',
+    'CALSCALE:GREGORIAN',
+    ...veventBlocks,
+    'END:VCALENDAR'
+  ].join('\r\n');
+}
+
+function downloadIcs(filename, content){
+  const blob = new Blob([content], {type: 'text/calendar;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=> URL.revokeObjectURL(url), 1000);
+}
+
+let sheetCtx = null;
+
+function exportSlotICS(){
+  if(!sheetCtx) return;
+  const { group, iso, item } = sheetCtx;
+  const groupLabel = group === 'g106' ? '106' : '107';
+  const vevent = itemToVevent(iso, item, groupLabel);
+  if(!vevent) return;
+  downloadIcs(`${iso}-${groupLabel}.ics`, buildIcsFile([vevent]));
+}
+
+function exportDayICS(dateISO){
+  const gItems = getDaySchedule('g106', dateISO);
+  const hItems = getDaySchedule('g107', dateISO);
+  const blocks = [
+    ...gItems.map(it=> itemToVevent(dateISO, it, '106')),
+    ...hItems.map(it=> itemToVevent(dateISO, it, '107'))
+  ].filter(Boolean);
+  if(blocks.length === 0) return;
+  downloadIcs(`${dateISO}-расписание.ics`, buildIcsFile(blocks));
+}
+
 function openSlot(group, idx, sourceEl){
-  // В ленточном режиме на странице может быть несколько .slot с одинаковым
-  // data-idx (по одному на каждый день ленты) — поэтому пара определяется
-  // по дню, к которому реально принадлежит нажатый элемент, а не по
-  // текущему currentDate.
   let items;
+  let iso = currentDate;
   if(groupView !== 'both' && sourceEl){
     const dayBlock = sourceEl.closest('.feed-day');
-    const iso = dayBlock ? dayBlock.dataset.iso : currentDate;
+    iso = dayBlock ? dayBlock.dataset.iso : currentDate;
     items = getDaySchedule(group, iso);
   } else {
     items = dayItems[group];
@@ -1947,6 +2194,7 @@ function openSlot(group, idx, sourceEl){
   const it = items && items[idx];
   if(!it) return;
   lastFocused = document.activeElement;
+  sheetCtx = { group, iso, item: it };
 
   dom.sheet.classList.remove('g106','g107');
   dom.sheet.classList.add(group);
@@ -1976,6 +2224,7 @@ function closeSheet(){
   dom.sheet.classList.remove('open');
   dom.sheet.setAttribute('aria-hidden','true');
   dom.sheet.inert = true;
+  sheetCtx = null;
   unlockBodyScroll();
   if(lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus({preventScroll:true});
 }
@@ -1986,8 +2235,8 @@ function buildCalendarBody(){
   let gridEl = null;
   dateList.forEach(([iso, label])=>{
     const d = new Date(iso + "T00:00:00");
-    const wd = d.getDay(); // 0=Вс..6=Сб
-    const wdIdx = wd === 0 ? 6 : wd - 1; // 0=Пн..6=Вс, совпадает с колонками 7-колоночной сетки
+    const wd = d.getDay();
+    const wdIdx = wd === 0 ? 6 : wd - 1;
     const monthKey = `${d.getFullYear()}-${d.getMonth()}`;
     if(monthKey !== currentMonthKey){
       currentMonthKey = monthKey;
@@ -2053,11 +2302,13 @@ document.addEventListener('keydown', e=>{
   if(e.key === 'Escape'){
     if(dom.calSheet.classList.contains('open')) closeCalSheet();
     else if(dom.sheet.classList.contains('open')) closeSheet();
+    else if(dom.installSheet.classList.contains('open')) closeInstallSheet();
     return;
   }
   if(e.key === 'Tab'){
     const openSheetEl = dom.calSheet.classList.contains('open') ? dom.calSheet
-      : (dom.sheet.classList.contains('open') ? dom.sheet : null);
+      : (dom.sheet.classList.contains('open') ? dom.sheet
+      : (dom.installSheet.classList.contains('open') ? dom.installSheet : null));
     if(!openSheetEl) return;
     const focusable = openSheetEl.querySelectorAll(
       'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -2072,10 +2323,6 @@ document.addEventListener('keydown', e=>{
   }
 });
 
-// На широких экранах шторка становится центрированным диалогом (см. CSS,
-// @media (min-width: 900px)) — тянуть её за ручку вниз там не нужно и
-// физически бессмысленно (нет "низа экрана", к которому она едет), поэтому
-// перетаскивание в этом режиме не запускается вовсе.
 const DESKTOP_SHEET_QUERY = '(min-width: 900px)';
 function isDesktopSheetLayout(){
   return window.matchMedia(DESKTOP_SHEET_QUERY).matches;
@@ -2123,15 +2370,8 @@ function initSheetDrag(sheetEl, grabberEl, headerEl, closeFn){
 }
 initSheetDrag(dom.sheet, dom.sheetGrabber, dom.sheetHeader, closeSheet);
 initSheetDrag(dom.calSheet, dom.calGrabber, dom.calHeader, closeCalSheet);
+initSheetDrag(dom.installSheet, dom.installGrabber, dom.installHeader, ()=>closeInstallSheet());
 
-// Свайп влево/вправо: по ленте дат — смена недели (та же функция, что и у
-// стрелочек рядом), по блоку с парами — смена дня (та же функция, что и у
-// стрелок клавиатуры). Активно только в обычном (не ленточном) режиме —
-// в ленточном режиме навигация уже выполняется вертикальным скроллом.
-// preventDefault нигде не вызывается, поэтому обычный вертикальный скролл
-// страницы не ломается — решение "это был свайп" принимается уже
-// постфактум, по итоговому смещению между pointerdown и pointerup, а не
-// перехватом жеста на лету.
 function initSwipe(el, {onLeft, onRight, threshold = 46, restraint = 70} = {}){
   let tracking = false, startX = 0, startY = 0, startScrollLeft = 0;
   el.addEventListener('pointerdown', e=>{
@@ -2144,14 +2384,7 @@ function initSwipe(el, {onLeft, onRight, threshold = 46, restraint = 70} = {}){
   const finish = (e)=>{
     if(!tracking) return;
     tracking = false;
-    // dateRail сам по себе горизонтально прокручиваемый (лента дней), и
-    // обычный тач-скролл по нему без этой проверки засчитывался как свайп
-    // смены недели — на Android/iPhone это означало, что нельзя было
-    // пролистать даты пальцем, не переключив заодно неделю.
     if(Math.abs(el.scrollLeft - startScrollLeft) > 4) return;
-    // На ПК то же смещение мышью может быть обычным выделением текста
-    // (например, названия группы в шапке колонки) — не превращаем его
-    // в смену дня/недели.
     if(window.getSelection && String(window.getSelection())) return;
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
@@ -2210,81 +2443,6 @@ function buildThemeSwitcher(){
   });
   dom.themeSwitcher.innerHTML = '';
   dom.themeSwitcher.appendChild(frag);
-  applyTheme(currentThemeId(), false);
-}
-
-// Переключатель группы (106 / 107 / обе) — какая колонка(и) показывается в
-// content-swap. Хранится отдельно от темы, но по тому же принципу:
-// применяем сохранённый выбор сразу при построении интерфейса.
-// При выборе одной группы (106/107) интерфейс переходит в ленточный
-// (agenda) режим: лента дат недели и заголовок дня скрываются (навигация
-// по ним больше не нужна — пролистывание идёт скроллом внутри самой
-// ленты), а колонка выбранной группы растягивается на всю ширину и
-// показывает подряд несколько дней вперёд.
-const GROUP_KEY = 'schedule-group-view-106-107';
-const GROUP_VIEWS = [
-  {id:'both', label:'Обе'},
-  {id:'106',  label:'106'},
-  {id:'107',  label:'107'},
-];
-
-function currentGroupView(){
-  try{
-    const saved = localStorage.getItem(GROUP_KEY);
-    if(saved && GROUP_VIEWS.some(g=>g.id===saved)) return saved;
-  }catch(e){}
-  return 'both';
-}
-
-function applyGroupView(view, persist){
-  groupView = view;
-  if(persist){
-    try{ localStorage.setItem(GROUP_KEY, view); }catch(e){}
-  }
-  dom.columnsWrap.classList.toggle('single', view !== 'both');
-  document.querySelector('.col.g106').classList.toggle('hidden', view === '107');
-  document.querySelector('.col.g107').classList.toggle('hidden', view === '106');
-  dom.groupSwitcher.querySelectorAll('.group-btn').forEach(btn=>{
-    const isActive = btn.dataset.group === view;
-    btn.classList.toggle('active', isActive);
-    btn.setAttribute('aria-pressed', String(isActive));
-  });
-
-  const isFeed = view !== 'both';
-  dom.weekNav.style.display = isFeed ? 'none' : '';
-  dom.rail.style.display = isFeed ? 'none' : '';
-  dom.dayTitleRow.style.display = isFeed ? 'none' : '';
-  dom.scrollTodayBtn.classList.toggle('show', isFeed);
-  if(isFeed){
-    dom.g106Free.textContent = '';
-    dom.g107Free.textContent = '';
-  }
-
-  if(isFeed){
-    render();
-  } else {
-    buildRail();
-    updateActivePill();
-    updateWeekNav();
-    render();
-  }
-}
-
-function buildGroupSwitcher(){
-  const frag = document.createDocumentFragment();
-  GROUP_VIEWS.forEach(g=>{
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'group-btn';
-    btn.dataset.group = g.id;
-    btn.textContent = g.label;
-    btn.setAttribute('aria-pressed', 'false');
-    btn.onclick = ()=> applyGroupView(g.id, true);
-    frag.appendChild(btn);
-  });
-  dom.groupSwitcher.innerHTML = '';
-  dom.groupSwitcher.appendChild(frag);
-  applyGroupView(currentGroupView(), false);
 }
 
 function checkDayRollover(){
@@ -2295,7 +2453,7 @@ function checkDayRollover(){
     if(wasOnToday) currentDate = pickInitialDate();
     if(groupView === 'both'){
       buildRail();
-      updateActivePill();
+      updateActivePill(false);
       updateWeekNav();
     }
     return true;
@@ -2312,6 +2470,7 @@ document.addEventListener('keydown', e=>{
   const slot = e.target.closest && e.target.closest('.slot[data-group]');
   if(slot){ e.preventDefault(); openSlot(slot.dataset.group, Number(slot.dataset.idx), slot); }
 });
+dom.sheetIcsBtn.addEventListener('click', exportSlotICS);
 
 function scrollToPageTop(){
   window.scrollTo({top:0, behavior:'smooth'});
@@ -2333,10 +2492,185 @@ function updateScrollTopBtn(){
 }
 window.addEventListener('scroll', updateScrollTopBtn, {passive:true});
 
+let waitingWorker = null;
+
+function showUpdateBanner(worker){
+  waitingWorker = worker;
+  dom.updateBanner.classList.add('show');
+}
+function hideUpdateBanner(){
+  dom.updateBanner.classList.remove('show');
+}
+
+function initServiceWorker(){
+  if(!('serviceWorker' in navigator)) return;
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('./sw.js').then(reg=>{
+      if(reg.waiting && navigator.serviceWorker.controller){
+        showUpdateBanner(reg.waiting);
+      }
+      reg.addEventListener('updatefound', ()=>{
+        const newWorker = reg.installing;
+        if(!newWorker) return;
+        newWorker.addEventListener('statechange', ()=>{
+          if(newWorker.state === 'installed' && navigator.serviceWorker.controller){
+            showUpdateBanner(newWorker);
+          }
+        });
+      });
+    }).catch(()=>{});
+  });
+
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+    if(reloading) return;
+    reloading = true;
+    window.location.reload();
+  });
+
+  dom.updateRefreshBtn.addEventListener('click', ()=>{
+    if(!waitingWorker) return;
+    waitingWorker.postMessage({type:'SKIP_WAITING'});
+    hideUpdateBanner();
+  });
+  dom.updateDismissBtn.addEventListener('click', hideUpdateBanner);
+}
+
+const INSTALL_DISMISS_KEY = 'schedule-install-hint-dismissed-106-107';
+let deferredInstallPrompt = null;
+
+function isStandaloneDisplay(){
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function isIOSDevice(){
+  const ua = window.navigator.userAgent || '';
+  const isIOSUA = /iPad|iPhone|iPod/.test(ua);
+  const isIPadOS13 = /Macintosh/.test(ua) && navigator.maxTouchPoints > 1;
+  return isIOSUA || isIPadOS13;
+}
+
+function openInstallSheet(){
+  lastFocused = document.activeElement;
+  const isIOS = isIOSDevice();
+  dom.installHintBody.innerHTML = isIOS
+    ? `<div>Установите приложение на экран «Домой» — оно будет открываться отдельно от Safari и работать офлайн.</div>
+       <div>1. Нажмите <b>Поделиться</b> <span class="install-hint-icon">⎋</span> внизу экрана</div>
+       <div>2. Выберите <b>«На экран Домой»</b></div>
+       <div>3. Нажмите <b>Добавить</b></div>`
+    : `<div>Установите приложение — оно будет открываться отдельно от браузера и работать офлайн, как обычное приложение.</div>`;
+  dom.installBtnRow.innerHTML = '';
+  if(!isIOS && deferredInstallPrompt){
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'install-btn';
+    btn.textContent = 'Установить';
+    btn.onclick = async ()=>{
+      closeInstallSheet();
+      const promptEvent = deferredInstallPrompt;
+      deferredInstallPrompt = null;
+      if(!promptEvent) return;
+      promptEvent.prompt();
+      try{ await promptEvent.userChoice; }catch(e){}
+    };
+    dom.installBtnRow.appendChild(btn);
+  }
+  dom.installScrim.classList.add('open');
+  dom.installSheet.classList.add('open');
+  dom.installSheet.setAttribute('aria-hidden','false');
+  dom.installSheet.inert = false;
+  lockBodyScroll();
+  dom.installCloseBtn.focus({preventScroll:true});
+}
+function closeInstallSheet(){
+  if(!dom.installSheet.classList.contains('open')) return;
+  dom.installScrim.classList.remove('open');
+  dom.installSheet.classList.remove('open');
+  dom.installSheet.setAttribute('aria-hidden','true');
+  dom.installSheet.inert = true;
+  unlockBodyScroll();
+  try{ localStorage.setItem(INSTALL_DISMISS_KEY, '1'); }catch(e){}
+  if(lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus({preventScroll:true});
+}
+dom.installScrim.addEventListener('click', closeInstallSheet);
+dom.installCloseBtn.addEventListener('click', closeInstallSheet);
+
+function initInstallFlow(){
+  if(isStandaloneDisplay()) return;
+  let dismissed = false;
+  try{ dismissed = localStorage.getItem(INSTALL_DISMISS_KEY) === '1'; }catch(e){}
+  if(dismissed) return;
+
+  window.addEventListener('beforeinstallprompt', (e)=>{
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    window.setTimeout(()=>{ if(!isStandaloneDisplay()) openInstallSheet(); }, 2500);
+  });
+
+  if(isIOSDevice()){
+    window.setTimeout(()=>{ if(!isStandaloneDisplay()) openInstallSheet(); }, 2500);
+  }
+}
+
+const REMIND_KEY = 'schedule-reminders-enabled-106-107';
+const REMIND_LEAD_MINUTES = 15;
+let reminderTimer = null;
+
+function remindersSupported(){
+  return 'Notification' in window && 'serviceWorker' in navigator;
+}
+function remindersEnabled(){
+  try{ return localStorage.getItem(REMIND_KEY) === '1'; }catch(e){ return false; }
+}
+
+function findNextUpcoming(){
+  const now = minutesNow();
+  const groups = ['g106','g107'];
+  let best = null;
+  groups.forEach(g=>{
+    const items = getDaySchedule(g, TODAY);
+    items.forEach(it=>{
+      const range = parseRange(it.t);
+      if(!range) return;
+      const remindAt = range[0] - REMIND_LEAD_MINUTES;
+      if(remindAt >= now && (!best || range[0] < best.start)){
+        best = { group:g, item:it, start:range[0], remindAt };
+      }
+    });
+  });
+  return best;
+}
+
+function scheduleNextReminder(){
+  if(reminderTimer){ clearTimeout(reminderTimer); reminderTimer = null; }
+  if(!remindersEnabled() || !remindersSupported()) return;
+  if(Notification.permission !== 'granted') return;
+  const upcoming = findNextUpcoming();
+  if(!upcoming) return;
+  const now = minutesNow();
+  const delayMs = Math.max(0, (upcoming.remindAt - now)) * 60000;
+  reminderTimer = window.setTimeout(async ()=>{
+    try{
+      const reg = await navigator.serviceWorker.ready;
+      const groupLabel = upcoming.group === 'g106' ? '106' : '107';
+      await reg.showNotification(`Через ${REMIND_LEAD_MINUTES} мин: ${upcoming.item.w}`, {
+        body: `Группа ${groupLabel} · ${upcoming.item.t}${upcoming.item.d ? ' · ' + cleanShortDesc(upcoming.item.d) : ''}`,
+        tag: `reminder-${upcoming.group}-${upcoming.item.t}`,
+        icon: undefined,
+      });
+    }catch(e){}
+    scheduleNextReminder();
+  }, delayMs);
+}
+
 function initBoard(){
   buildThemeSwitcher();
+  applyTheme(currentThemeId(), false);
   buildGroupSwitcher();
+  applyGroupView(currentGroupView(), false);
   updateScrollTopBtn();
+  initServiceWorker();
+  initInstallFlow();
+  if(remindersEnabled()) scheduleNextReminder();
   document.querySelectorAll('.drop-in, .rise-in').forEach(el=>{
     el.addEventListener('animationend', function handler(){
       el.classList.remove('drop-in','rise-in','d1','d2','d3');
@@ -2346,10 +2680,13 @@ function initBoard(){
       el.classList.remove('drop-in','rise-in','d1','d2','d3');
     }, 1500);
   });
+
   const liveTick = ()=>{
+    if(document.hidden) return;
     const dayChanged = checkDayRollover();
     if(dayChanged){
       render();
+      if(remindersEnabled()) scheduleNextReminder();
     } else if(groupView === 'both'){
       refreshLiveIndicators(dom.g106Slots, dayItems.g106);
       refreshLiveIndicators(dom.g107Slots, dayItems.g107);
@@ -2363,6 +2700,8 @@ function initBoard(){
   document.addEventListener('visibilitychange', ()=>{
     if(!document.hidden) liveTick();
   });
+
+  goToDate();
 }
 
 initBoard();
