@@ -362,17 +362,20 @@
   .day-title-row{
     display:flex;
     align-items:center;
-    justify-content:center;
-    gap:10px;
+    justify-content:flex-start;
+    gap:8px;
     margin: 0 0 18px;
-    position:relative;
-    overflow:hidden;
   }
   .day-title{
+    flex: 1 1 auto;
+    min-width:0;
     font-size: 14.5px;
     font-weight:600;
     color: var(--text-dim);
-    text-align:center;
+    text-align:left;
+    text-overflow:ellipsis;
+    overflow:hidden;
+    white-space:nowrap;
     margin: 0;
     letter-spacing: 1.5px;
     text-transform: uppercase;
@@ -393,12 +396,11 @@
   .day-title-chip.p1{ color: var(--parity-1); background: var(--parity-1-soft); }
   .day-title-chip.p2{ color: var(--parity-2); background: var(--parity-2-soft); }
   .today-btn{
-    position:absolute;
-    right:0;
+    flex: 0 0 auto;
     background: var(--panel-2);
     border: 1px solid var(--line);
     color: var(--text-dim);
-    padding: 5px 12px;
+    padding: 6px 14px;
     border-radius: 20px;
     font-family:inherit;
     font-size: 11px;
@@ -411,19 +413,18 @@
     user-select: none;
     opacity:0;
     pointer-events:none;
-    transform: translateY(-50%) scale(.9);
-    top:50%;
+    transform: scale(.9);
     transition: opacity .25s var(--ease), transform .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease);
   }
   .today-btn.show{
     opacity:1;
     pointer-events:auto;
-    transform: translateY(-50%) scale(1);
+    transform: scale(1);
   }
   @media (hover: hover){
     .today-btn:hover{ color: var(--text); border-color: var(--g106-dim); }
   }
-  .today-btn:active{ transform: translateY(-50%) scale(.94); }
+  .today-btn:active{ transform: scale(.94); }
 
   .date-pill.today::after{
     content:"";
