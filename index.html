@@ -305,6 +305,7 @@
     padding: 4px 2px 14px;
     margin-bottom: 4px;
     overflow-x: auto;
+    touch-action: pan-x;
     scroll-snap-type: x proximity;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
@@ -461,6 +462,7 @@
 
   .content-swap{
     transition: opacity .26s var(--ease), transform .26s var(--ease);
+    touch-action: pan-y;
   }
   .content-swap.swapping{ opacity:0; transform: translateY(6px) scale(.99); }
 
@@ -899,16 +901,16 @@
     position: fixed;
     right: max(16px, env(safe-area-inset-right));
     bottom: calc(max(20px, env(safe-area-inset-bottom) + 12px) + 52px);
-    padding: 0 16px;
-    height: 38px;
-    border-radius: 20px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
     border: 1px solid var(--line);
     background: var(--panel);
     color: var(--g107);
     font-family: inherit;
-    font-size: 12.5px;
+    font-size: 18px;
     font-weight: 700;
-    letter-spacing: .2px;
+    line-height: 1;
     white-space: nowrap;
     display:flex;
     align-items:center;
@@ -1154,7 +1156,7 @@
   </div>
 </div>
 
-<button class="scroll-today-btn" id="scrollTodayBtn" onclick="scrollToTodayInFeed()" aria-label="К сегодняшнему дню" title="К сегодняшнему дню">Сегодня</button>
+<button class="scroll-today-btn" id="scrollTodayBtn" onclick="scrollToTodayInFeed()" aria-label="К сегодняшнему дню" title="К сегодняшнему дню">⌄</button>
 <button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToPageTop()" aria-label="Наверх" title="Наверх">↑</button>
 
 <script>
@@ -1595,11 +1597,14 @@ function applyGroupView(view, rerender = true){
     dom.weekNav.style.display = 'none';
     dom.rail.style.display = 'none';
     dom.dayTitleRow.style.display = 'none';
-    dom.scrollTodayBtn.classList.add('show');
+    dom.scrollTodayBtn.classList.remove('show');
   }
 
   syncDeepLinkUrl();
   if(rerender) render();
+  if(typeof showScrollTodayIfNeeded === 'function'){
+    requestAnimationFrame(showScrollTodayIfNeeded);
+  }
 }
 
 function buildGroupSwitcher(){
@@ -2372,34 +2377,86 @@ initSheetDrag(dom.sheet, dom.sheetGrabber, dom.sheetHeader, closeSheet);
 initSheetDrag(dom.calSheet, dom.calGrabber, dom.calHeader, closeCalSheet);
 initSheetDrag(dom.installSheet, dom.installGrabber, dom.installHeader, ()=>closeInstallSheet());
 
-function initSwipe(el, {onLeft, onRight, threshold = 46, restraint = 70} = {}){
+function initSwipe(el, {onLeft, onRight, threshold = 46, restraint = 70, cancelHoriz = true} = {}){
   let tracking = false, startX = 0, startY = 0, startScrollLeft = 0;
-  el.addEventListener('pointerdown', e=>{
-    if(e.pointerType === 'mouse' && e.button !== 0) return;
+
+  const begin = (cx, cy)=>{
     tracking = true;
-    startX = e.clientX;
-    startY = e.clientY;
+    startX = cx;
+    startY = cy;
     startScrollLeft = el.scrollLeft;
-  });
-  const finish = (e)=>{
+  };
+
+  const finishAt = (cx, cy)=>{
     if(!tracking) return;
     tracking = false;
     if(Math.abs(el.scrollLeft - startScrollLeft) > 4) return;
     if(window.getSelection && String(window.getSelection())) return;
-    const dx = e.clientX - startX;
-    const dy = e.clientY - startY;
+    const dx = cx - startX;
+    const dy = cy - startY;
     if(Math.abs(dx) >= threshold && Math.abs(dy) <= restraint){
       if(dx < 0) onLeft && onLeft();
       else onRight && onRight();
     }
   };
-  el.addEventListener('pointerup', finish);
+
+  // Pointer events (modern browsers)
+  let pFinishTs = 0;
+  el.addEventListener('pointerdown', e=>{
+    if(e.pointerType === 'mouse' && e.button !== 0) return;
+    begin(e.clientX, e.clientY);
+  });
+  el.addEventListener('pointerup', e=>{ pFinishTs = Date.now(); finishAt(e.clientX, e.clientY); });
   el.addEventListener('pointercancel', ()=>{ tracking = false; });
+
+  // Touch events fallback — работает даже там, где pointer-cancel
+  // перехватывает жест (некоторые WebView/браузеры).
+  let tTracker = null;
+  el.addEventListener('touchstart', e=>{
+    const t = e.changedTouches[0];
+    tTracker = { x: t.clientX, y: t.clientY, id: t.identifier };
+  }, {passive:true});
+  el.addEventListener('touchmove', e=>{
+    if(!tTracker) return;
+    for(let i=0; i<e.changedTouches.length; i++){
+      const t = e.changedTouches[i];
+      if(t.identifier === tTracker.id){
+        const dx = t.clientX - tTracker.x;
+        const dy = t.clientY - tTracker.y;
+        // Если жест явно горизонтальный и элемент сам не скроллится
+        // по горизонтали — даём знать браузеру, чтобы он не перехватывал жест.
+        if(cancelHoriz && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)){
+          e.preventDefault();
+        }
+        return;
+      }
+    }
+  }, {passive:false});
+  el.addEventListener('touchend', e=>{
+    if(!tTracker) return;
+    // Если pointerup уже обработал этот жест — не дублируем.
+    if(Date.now() - pFinishTs < 350) { tTracker = null; return; }
+    for(let i=0; i<e.changedTouches.length; i++){
+      const t = e.changedTouches[i];
+      if(t.identifier === tTracker.id){
+        finishAt(t.clientX, t.clientY);
+        tTracker = null;
+        return;
+      }
+    }
+  });
+  el.addEventListener('touchcancel', ()=>{ tTracker = null; });
 }
-initSwipe(dom.rail, { onLeft: ()=>shiftWeek(1), onRight: ()=>shiftWeek(-1) });
+initSwipe(dom.rail, { onLeft: ()=>shiftWeek(1), onRight: ()=>shiftWeek(-1), cancelHoriz:false });
 initSwipe(dom.daySwap, {
-  onLeft: ()=>{ if(groupView==='both') stepDay(1); },
-  onRight: ()=>{ if(groupView==='both') stepDay(-1); }
+  onLeft: ()=>{
+    if(groupView==='both') stepDay(1);
+    else shiftWeek(1);
+  },
+  onRight: ()=>{
+    if(groupView==='both') stepDay(-1);
+    else shiftWeek(-1);
+  }
 });
 
 const THEME_KEY = 'schedule-theme-106-107';
@@ -2491,6 +2548,22 @@ function updateScrollTopBtn(){
   dom.scrollTopBtn.classList.toggle('show', y > SCROLL_TOP_THRESHOLD);
 }
 window.addEventListener('scroll', updateScrollTopBtn, {passive:true});
+
+function showScrollTodayIfNeeded(){
+  if(groupView === 'both'){ dom.scrollTodayBtn.classList.remove('show'); return; }
+  const group = groupView === '106' ? 'g106' : 'g107';
+  const container = group === 'g106' ? dom.g106Slots : dom.g107Slots;
+  const anchorIso = dateList.some(d=>d[0]===TODAY) ? TODAY : currentDate;
+  const todayBlock = container.querySelector(`.feed-day[data-iso="${anchorIso}"]`);
+  if(!todayBlock){ dom.scrollTodayBtn.classList.add('show'); return; }
+  const top = todayBlock.getBoundingClientRect().top;
+  // Показываем кнопку, только если блок «сегодня» уехал за верхний край,
+  // чтобы она не накатывала на интерфейс всё время.
+  const show = top > window.innerHeight - 80;
+  dom.scrollTodayBtn.classList.toggle('show', show);
+}
+window.addEventListener('scroll', showScrollTodayIfNeeded, {passive:true});
+window.addEventListener('resize', showScrollTodayIfNeeded, {passive:true});
 
 let waitingWorker = null;
 
