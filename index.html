@@ -1550,11 +1550,16 @@ function parseDeepLinkDate(){
 }
 const DEEP_LINK_DATE = parseDeepLinkDate();
 
-function pickInitialDate(){
-  if(DEEP_LINK_DATE) return DEEP_LINK_DATE;
+function todayTarget(){
+  // Всегда актуальный «сегодня», с защитой от выхода за пределы семестра.
   if(dateList.some(([iso])=>iso===TODAY)) return TODAY;
   if(TODAY < dateList[0][0]) return dateList[0][0];
   return dateList[dateList.length-1][0];
+}
+
+function pickInitialDate(){
+  if(DEEP_LINK_DATE) return DEEP_LINK_DATE;
+  return todayTarget();
 }
 let currentDate = pickInitialDate();
 
@@ -1812,7 +1817,9 @@ function goToDate(){
 }
 
 function jumpToToday(){
-  const target = pickInitialDate();
+  // Кнопка «Сегодня» всегда ведёт на реальное сегодня, а не на ту дату,
+  // что осталась в URL / deep-link от прошлого открытия календаря.
+  const target = todayTarget();
   if(target !== currentDate){
     currentDate = target;
     goToDate();
@@ -2537,7 +2544,8 @@ function scrollToTodayInFeed(){
   if(groupView === 'both') return;
   const group = groupView === '106' ? 'g106' : 'g107';
   const container = group === 'g106' ? dom.g106Slots : dom.g107Slots;
-  const anchorIso = dateList.some(d=>d[0]===TODAY) ? TODAY : currentDate;
+  // Идём на реальное «сегодня», а не на ту дату, что осталась в кэше/URL.
+  const anchorIso = todayTarget();
   const target = container.querySelector(`.feed-day[data-iso="${anchorIso}"]`);
   if(target) target.scrollIntoView({behavior:'smooth', block:'start'});
 }
