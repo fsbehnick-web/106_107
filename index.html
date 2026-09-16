@@ -945,6 +945,24 @@
   }
   .scroll-today-btn:active{ transform: translateY(0) scale(.94); }
 
+  .app-version{
+    position: fixed;
+    left: max(12px, env(safe-area-inset-left));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-dim);
+    opacity: .22;
+    letter-spacing: .2px;
+    pointer-events: none;
+    user-select: none;
+    z-index: 40;
+    transition: opacity .3s var(--ease);
+  }
+  @media (hover: hover){
+    .app-version:hover{ opacity: .45; }
+  }
+
   .update-banner{
     position: fixed;
     left: 0; right: 0;
@@ -1065,7 +1083,7 @@
 
   @media print{
     body{ background:#fff !important; color:#000 !important; padding:0; }
-    .theme-switcher, .group-switcher, .today-btn, .week-nav, .sheet-scrim, .detail-sheet, .scroll-top-btn, .scroll-today-btn, .update-banner, .day-export-btn{ display:none !important; }
+    .theme-switcher, .group-switcher, .today-btn, .week-nav, .sheet-scrim, .detail-sheet, .scroll-top-btn, .scroll-today-btn, .update-banner, .day-export-btn, .app-version{ display:none !important; }
     .date-rail{ overflow:visible; }
     .col{ box-shadow:none; border:1px solid #999; break-inside: avoid; }
     .slot{ animation:none !important; opacity:1 !important; }
@@ -1166,6 +1184,8 @@
 
 <button class="scroll-today-btn" id="scrollTodayBtn" onclick="scrollToTodayInFeed()" aria-label="К сегодняшнему дню" title="К сегодняшнему дню">⌄</button>
 <button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToPageTop()" aria-label="Наверх" title="Наверх">↑</button>
+
+<div class="app-version" aria-hidden="true">v1.4 · 16.09.2026</div>
 
 <script>
 const sharedSchedule = {
