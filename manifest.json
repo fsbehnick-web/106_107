@@ -1,0 +1,27 @@
+{
+  "name": "Расписание 106 и 107",
+  "short_name": "106 / 107",
+  "description": "Расписание групп ВОМ23-ММИ2606 и ВОМ23-ММИ2607",
+  "lang": "ru",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1a1512",
+  "theme_color": "#1a1512",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
