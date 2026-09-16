@@ -526,6 +526,12 @@
     contain-intrinsic-size: auto 168px;
   }
   .feed-day:last-child{ border-bottom:none; }
+  /* Отступ снизу в листовом режиме, чтобы фиксированная кнопка «к сегодняшнему дню»
+     не накрывала последние строки расписания. */
+  .columns.single #g106Slots,
+  .columns.single #g107Slots{
+    padding-bottom: 140px;
+  }
   .feed-day-head{
     padding: 9px 16px 5px;
     font-size: 11px;
@@ -2561,14 +2567,15 @@ function showScrollTodayIfNeeded(){
   if(groupView === 'both'){ dom.scrollTodayBtn.classList.remove('show'); return; }
   const group = groupView === '106' ? 'g106' : 'g107';
   const container = group === 'g106' ? dom.g106Slots : dom.g107Slots;
-  const anchorIso = dateList.some(d=>d[0]===TODAY) ? TODAY : currentDate;
+  const anchorIso = todayTarget();
   const todayBlock = container.querySelector(`.feed-day[data-iso="${anchorIso}"]`);
-  if(!todayBlock){ dom.scrollTodayBtn.classList.add('show'); return; }
-  const top = todayBlock.getBoundingClientRect().top;
-  // Показываем кнопку, только если блок «сегодня» уехал за верхний край,
-  // чтобы она не накатывала на интерфейс всё время.
-  const show = top > window.innerHeight - 80;
-  dom.scrollTodayBtn.classList.toggle('show', show);
+  if(!todayBlock){ dom.scrollTodayBtn.classList.remove('show'); return; }
+  const rect = todayBlock.getBoundingClientRect();
+  // Показываем кнопку только тогда, когда блок «сегодня» полностью
+  // ушёл за экран (вниз или вверх). Пока он хоть частично виден —
+  // кнопка скрыта и ничего не перекрывает.
+  const isFullyVisible = rect.top < window.innerHeight && rect.bottom > 0;
+  dom.scrollTodayBtn.classList.toggle('show', !isFullyVisible);
 }
 window.addEventListener('scroll', showScrollTodayIfNeeded, {passive:true});
 window.addEventListener('resize', showScrollTodayIfNeeded, {passive:true});
