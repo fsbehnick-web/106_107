@@ -373,9 +373,6 @@
     font-weight:600;
     color: var(--text-dim);
     text-align:left;
-    text-overflow:ellipsis;
-    overflow:hidden;
-    white-space:nowrap;
     margin: 0;
     letter-spacing: 1.5px;
     text-transform: uppercase;
@@ -397,6 +394,7 @@
   .day-title-chip.p2{ color: var(--parity-2); background: var(--parity-2-soft); }
   .today-btn{
     flex: 0 0 auto;
+    display:none;
     background: var(--panel-2);
     border: 1px solid var(--line);
     color: var(--text-dim);
@@ -417,6 +415,7 @@
     transition: opacity .25s var(--ease), transform .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease);
   }
   .today-btn.show{
+    display:block;
     opacity:1;
     pointer-events:auto;
     transform: scale(1);
@@ -962,6 +961,38 @@
   @media (hover: hover){
     .app-version:hover{ opacity: .45; }
   }
+  .app-version-row{
+    position: fixed;
+    left: max(12px, env(safe-area-inset-left));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 40;
+  }
+  .app-version-refresh{
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: .35;
+    transition: opacity .25s var(--ease), color .25s var(--ease), border-color .25s var(--ease);
+  }
+  @media (hover: hover){
+    .app-version-refresh:hover{ opacity: .75; }
+  }
+  .app-version-refresh:active{ transform: scale(.92); }
+  .app-version-refresh.ok{ color: var(--free); border-color: var(--free); opacity: .7; }
+  .app-version-refresh.busy{ opacity: .5; animation: spin 1s linear infinite; }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
 
   .update-banner{
     position: fixed;
@@ -1185,111 +1216,31 @@
 <button class="scroll-today-btn" id="scrollTodayBtn" onclick="scrollToTodayInFeed()" aria-label="К сегодняшнему дню" title="К сегодняшнему дню">⌄</button>
 <button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToPageTop()" aria-label="Наверх" title="Наверх">↑</button>
 
-<div class="app-version" aria-hidden="true">v1.4 · 16.09.2026</div>
+<div class="app-version-row">
+  <div class="app-version" aria-hidden="true">v1.5 · 16.09.2026</div>
+  <button class="app-version-refresh" id="versionRefreshBtn" type="button" aria-label="Проверить наличие обновлений" title="Проверить наличие обновлений">↻</button>
+</div>
 
 <script>
-const sharedSchedule = {
-  "2026-09-01": [
-    {t:"09:00–10:30", w:"Первый раз на первый курс", d:"ассист. Тихонов С.О. · ауд. 301"},
-    {t:"10:40–12:10", w:"Знакомство со структурой МПГУ и ИМИ", d:"Дирекция ИМИ и представители кафедр · ауд. 402"},
-    {t:"12:40–14:10", w:"Знакомство с ЭБС МПГУ", d:"Курицына Т.В. · ауд. 301"}
-  ],
-  "2026-09-02": [
-    {t:"09:00–10:30", w:"Знакомство со студ. самоуправлением и профсоюзом", d:"Горпенко К.Д., Корноухова Д.Д. · ауд. 402"},
-    {t:"10:40–12:10", w:"МПГУ – не только учёба", d:"Гульянц С.С., представители УВР · ауд. 402"},
-    {t:"12:40–14:10", w:"Геометрия", d:"лекция · доц. Никифорова А.В. · ауд. 401"},
-    {t:"14:20–15:50", w:"Математический анализ", d:"лекция · проф. Матвеев Е.М. · ауд. 401"}
-  ],
-  "2026-09-04": [
-    {t:"10:40–12:10", w:"Учимся учиться", d:"доц. Чуйкова Н.В. · ауд. 401"},
-    {t:"12:40–14:10", w:"Основы российской государственности", d:"лекция · доц. Максимова Л.Н. · ауд. 402"},
-    {t:"14:20–15:50", w:"Основы российской государственности", d:"лекция · доц. Максимова Л.Н. · ауд. 402"}
-  ],
-  "2026-09-05": [
-    {t:"09:00–15:50", w:"Встречи с кураторами-студентами", d:"весь день · День кураторов"}
-  ],
-  "2026-09-03": [
-    {t:"09:00–10:30", w:"Знакомство с цифровой образоват. средой МПГУ", d:"лекция · доц. Маняхина В.Г. · ауд. 301"},
-    {t:"10:40–12:10", w:"История России", d:"лекция · доц. Филина Е.И. · ауд. 402"},
-    {t:"12:40–14:10", w:"Алгебра", d:"лекция · проф. Михайлова М.В. · ауд. 401"}
-  ],
-  "2026-09-07": [
-    {t:"10:40–12:10", w:"Геометрия", d:"лекция · доц. Никифорова А.В. · ауд. 301"}
-  ],
-  "2026-09-08": [
-    {t:"10:40–12:10", w:"Геометрия", d:"лекция · доц. Никифорова А.В. · ауд. 301"}
-  ],
-  "2026-09-09": [
-    {t:"10:40–12:10", w:"История России", d:"лекция · доц. Филина Е.И. · ауд. 402"}
-  ],
-  "2026-09-10": [
-    {t:"09:00–10:30", w:"Математический анализ", d:"лекция · проф. Матвеев Е.М. · ауд. 401"},
-    {t:"10:40–12:10", w:"Знакомство с деканатом и его функциями", d:"Машкина А.В. · ауд. 301"},
-    {t:"12:40–14:10", w:"Алгебра", d:"лекция · проф. Михайлова М.В. · ауд. 401"}
-  ],
-  "2026-09-12": [
-    {t:"09:00–15:50", w:"Самостоятельные и групповые прогулки", d:"весь день · День здоровья"}
-  ]
-};
+let sharedSchedule = {};
+let own106 = {};
+let own107 = {};
+let g106 = {};
+let g107 = {};
 
-const own106 = {
-  "2026-09-03": [
-    {t:"14:20–15:50", w:"Цифровая образоват. среда МПГУ (лаб)", d:"по подгруппам", sub:[
-      {n:1, who:"Маняхина В.Г.", where:"ауд. 209"},
-      {n:2, who:"Иванова Н.Ю.", where:"ауд. 208"},
-      {n:3, who:"Овчарова П.С.", where:"ауд. 210"}
-    ]}
-  ],
-  "2026-09-06": [],
-  "2026-09-07": [
-    {t:"09:00–10:30", w:"Алгебра", d:"практика · ассист. Артемов Д.Ю. · ауд. 407"},
-    {t:"14:20–15:50", w:"Тренинг по военно-спортивной подготовке", d:"пр-кт Вернадского, дом 88, спорт. зал"}
-  ],
-  "2026-09-08": [
-    {t:"12:40–14:10", w:"Иностранный язык", d:"практика · доц. Кашпарова В.С. · ауд. 405"},
-    {t:"14:20–15:50", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · ауд. 305"}
-  ],
-  "2026-09-09": [
-    {t:"12:40–14:10", w:"Геометрия", d:"практика · доц. Никифорова А.В. · ауд. 207"}
-  ],
-  "2026-09-11": [
-    {t:"12:40–14:10", w:"Математический анализ", d:"практика · ассист. Морозенкова М.С. · ауд. 207"},
-    {t:"14:20–15:50", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · ауд. 407"},
-    {t:"16:00–17:30", w:"Речевые практики", d:"практика · ассист. Редькина Д.И. · ауд. 405"}
-  ],
-  "2026-09-13": []
-};
-
-const own107 = {
-  "2026-09-01": [
-    {t:"14:20–15:50", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · ауд. 207"}
-  ],
-  "2026-09-03": [],
-  "2026-09-04": [
-    {t:"16:00–17:30", w:"Цифровая образоват. среда МПГУ (лаб)", d:"по подгруппам", sub:[
-      {n:1, who:"Маняхина В.Г.", where:"ауд. 210"},
-      {n:2, who:"Иванова Н.Ю.", where:"ауд. 108"},
-      {n:3, who:"Овчарова П.С.", where:"ауд. 211"}
-    ]}
-  ],
-  "2026-09-06": [],
-  "2026-09-07": [
-    {t:"12:40–14:10", w:"Алгебра", d:"практика · ассист. Артемов Д.Ю. · ауд. 407"}
-  ],
-  "2026-09-08": [
-    {t:"09:00–10:30", w:"Иностранный язык", d:"практика · доц. Кашпарова В.С. · ауд. 405"}
-  ],
-  "2026-09-09": [
-    {t:"09:00–10:30", w:"Геометрия", d:"практика · доц. Никифорова А.В. · ауд. 206"},
-    {t:"14:20–15:50", w:"Тренинг по военно-спортивной подготовке", d:"пр-кт Вернадского, дом 88, спорт. зал"}
-  ],
-  "2026-09-11": [
-    {t:"10:40–12:10", w:"Математический анализ", d:"практика · ассист. Морозенкова М.С. · ауд. 207"},
-    {t:"12:40–14:10", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · ауд. 407"},
-    {t:"14:20–15:50", w:"Речевые практики", d:"практика · ассист. Редькина Д.И. · ауд. 405"}
-  ],
-  "2026-09-13": []
-};
+let weeklyTemplate = {};
+async function loadData() {
+  try {
+    const response = await fetch('./data.json');
+    const data = await response.json();
+    sharedSchedule = data.sharedSchedule || {};
+    own106 = data.own106 || {};
+    own107 = data.own107 || {};
+    weeklyTemplate = data.weeklyTemplate || {};
+  } catch (e) {
+    console.error('Failed to load schedule data:', e);
+  }
+}
 
 function mergeDaySchedule(dateISO, ownMap){
   const merged = [...(sharedSchedule[dateISO] || []), ...(ownMap[dateISO] || [])];
@@ -1300,18 +1251,20 @@ function mergeDaySchedule(dateISO, ownMap){
   });
 }
 
-const scheduleDates = new Set([
-  ...Object.keys(sharedSchedule),
-  ...Object.keys(own106),
-  ...Object.keys(own107)
-]);
-
-const g106 = {};
-const g107 = {};
-scheduleDates.forEach(iso=>{
-  g106[iso] = mergeDaySchedule(iso, own106);
-  g107[iso] = mergeDaySchedule(iso, own107);
-});
+function generateGroupMaps() {
+  const scheduleDates = new Set([
+    ...Object.keys(sharedSchedule),
+    ...Object.keys(own106),
+    ...Object.keys(own107)
+  ]);
+  
+  g106 = {};
+  g107 = {};
+  scheduleDates.forEach(iso=>{
+    g106[iso] = mergeDaySchedule(iso, own106);
+    g107[iso] = mergeDaySchedule(iso, own107);
+  });
+}
 
 const SCHEDULE_START = "2026-09-01";
 const OVERALL_START = "2026-09-01";
@@ -1373,95 +1326,19 @@ function isHoliday(dateISO){
 
 const weekdayNames = ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"];
 
-const weeklyTemplate = {
-  g106: {
-    1: [
-      {t:"09:00–10:30", week:"all", w:"Физическая культура и спорт", d:"практика · ул. Кибальчича, д. 16"},
-      {t:"12:40–14:10", week:"all", w:"Алгебра", d:"практика · ассист. Артемов Д.Ю. · ауд. 207"},
-      {t:"14:20–15:50", week:"all", w:"Иностранный язык", d:"практика · доц. Кашпарова В.С. · ауд. 405"}
-    ],
-    2: [
-      {t:"10:40–12:10", week:"all", w:"Системное и прикладное ПО (лаб)", d:"по подгруппам", sub:[
-        {label:"1 гр", who:"доц. Иванова Н.Ю.", where:"ауд. 211"},
-        {label:"2 гр", who:"ст. пр. Овчарова П.С.", where:"ауд. 105"},
-        {label:"3 гр", who:"доц. Маняхина В.Г.", where:"ауд. 208"}
-      ]},
-      {t:"12:40–14:10", week:"all", w:"Геометрия", d:"практика · доц. Никифорова А.В. · ауд. 206"}
-    ],
-    3: [
-      {t:"10:40–12:10", week:"all", w:"Математический анализ", d:"лекция · проф. Матвеев Е.М. · ауд. 401"},
-      {t:"12:40–14:10", week:"all", w:"Геометрия", d:"лекция · доц. Никифорова А.В. · ауд. 401"},
-      {t:"14:20–15:50", week:2, w:"Вводный курс математики", d:"практика · доц. Сергеева И.Е. · ауд. 401"}
-    ],
-    4: [
-      {t:"10:40–12:10", week:"all", w:"История", d:"практика · доц. Филина Е.И. · ауд. 402"},
-      {t:"12:40–14:10", week:"all", w:"Алгебра", d:"лекция · проф. Михайлова М.В. · ауд. 401"},
-      {t:"14:20–15:50", week:"all", w:"История", d:"лекция · доц. Филина Е.И. · ауд. 402"}
-    ],
-    5: [
-      {t:"10:40–12:10", week:1, w:"Основы российской государственности", d:"лекция · доц. Максимова Л.Н. · ауд. 402"},
-      {t:"10:40–12:10", week:2, w:"Системное и прикладное ПО", d:"лекция · доц. Маняхина В.Г. · ауд. 402"},
-      {t:"12:40–14:10", week:"all", w:"Математический анализ", d:"практика · ассист. Морозенкова М.С. · ауд. 407"},
-      {t:"14:20–15:50", week:"all", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · ауд. 207"},
-      {t:"16:00–17:30", week:"all", w:"Речевые практики", d:"практика · ассист. Редькина Д.А. · ауд. 407"}
-    ],
-    6: [
-      {t:"09:00–10:30", week:1, until:"2026-11-28", w:"Учебная практика", d:"практика · ст. пр. Окорочков И.В. · аудитория не указана"},
-      {t:"10:40–12:10", week:1, until:"2026-11-28", w:"Учебная практика", d:"практика · ст. пр. Окорочков И.В. · аудитория не указана"}
-    ]
-  },
-  g107: {
-    1: [
-      {t:"12:40–14:10", week:"all", w:"Геометрия", d:"практика · доц. Никифорова А.В. · ауд. 206"},
-      {t:"14:20–15:50", week:"all", w:"Алгебра", d:"практика · ассист. Артемов Д.Ю. · ауд. 207"},
-      {t:"16:00–17:30", week:"all", w:"История", d:"практика · доц. Филина Е.И. · ауд. 402"}
-    ],
-    2: [
-      {t:"09:00–10:30", week:"all", w:"Системное и прикладное ПО (лаб)", d:"по подгруппам", sub:[
-        {label:"1 гр", who:"доц. Иванова Н.Ю.", where:"ауд. 211"},
-        {label:"2 гр", who:"ст. пр. Овчарова П.С.", where:"ауд. 105"},
-        {label:"3 гр", who:"доц. Маняхина В.Г.", where:"ауд. 208"}
-      ]},
-      {t:"10:40–12:10", week:"all", w:"Иностранный язык", d:"по подгруппам", sub:[
-        {label:"англ.", who:"доц. Кашпарова В.С.", where:"ауд. 405"},
-        {label:"фр./нем.", who:"", where:"ауд. 308"}
-      ]}
-    ],
-    3: [
-      {t:"10:40–12:10", week:"all", w:"Математический анализ", d:"лекция · проф. Матвеев Е.М. · ауд. 401"},
-      {t:"12:40–14:10", week:"all", w:"Геометрия", d:"лекция · доц. Никифорова А.В. · ауд. 401"},
-      {t:"14:20–15:50", week:2, w:"Вводный курс математики", d:"практика · доц. Сергеева И.Е. · ауд. 401"}
-    ],
-    4: [
-      {t:"09:00–10:30", week:"all", w:"Физическая культура и спорт", d:"практика · ул. Кибальчича, д. 16"},
-      {t:"12:40–14:10", week:"all", w:"Алгебра", d:"лекция · проф. Михайлова М.В. · ауд. 401"},
-      {t:"14:20–15:50", week:"all", w:"История", d:"лекция · доц. Филина Е.И. · ауд. 402"}
-    ],
-    5: [
-      {t:"09:00–10:30", week:"all", w:"Математический анализ", d:"практика · ассист. Морозенкова М.С. · ауд. 407"},
-      {t:"10:40–12:10", week:1, w:"Основы российской государственности", d:"лекция · доц. Максимова Л.Н. · ауд. 402"},
-      {t:"10:40–12:10", week:2, w:"Системное и прикладное ПО", d:"лекция · доц. Маняхина В.Г. · ауд. 402"},
-      {t:"12:40–14:10", week:"all", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · ауд. 207"},
-      {t:"14:20–15:50", week:"all", w:"Речевые практики", d:"практика · ассист. Редькина Д.А. · ауд. 407"}
-    ],
-    6: [
-      {t:"09:00–10:30", week:2, until:"2026-12-05", w:"Учебная практика", d:"практика · ст. пр. Окорочков И.В. · ауд. 410"},
-      {t:"10:40–12:10", week:2, until:"2026-12-05", w:"Учебная практика", d:"практика · ст. пр. Окорочков И.В. · ауд. 410"}
-    ]
-  }
-};
+// weeklyTemplate moved to data.json
 
 const singleExceptions = {
   g106: {
-    "2026-09-19": [
-      {t:"12:40–14:10", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · аудитория не указана"},
-      {t:"14:20–15:50", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · аудитория не указана"}
+    "2026-10-03": [
+      {t:"12:40–14:10", w:"Основы российской государственности", d:"Практика · ассист. Куанова И.Б. · ауд. 404"},
+      {t:"14:20–15:50", w:"Основы российской государственности", d:"Практика · ассист. Куанова И.Б. · ауд. 404"}
     ]
   },
   g107: {
     "2026-09-26": [
-      {t:"12:40–14:10", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · аудитория не указана"},
-      {t:"14:20–15:50", w:"Основы российской государственности", d:"практика · ассист. Куанова И.Б. · аудитория не указана"}
+      {t:"12:40–14:10", w:"Основы российской государственности", d:"Практика · ассист. Куанова И.Б. · ауд. 404"},
+      {t:"14:20–15:50", w:"Основы российской государственности", d:"Практика · ассист. Куанова И.Б. · ауд. 404"}
     ]
   }
 };
@@ -1548,6 +1425,7 @@ const dom = {
   installHintBody: document.getElementById('installHintBody'),
   installBtnRow: document.getElementById('installBtnRow'),
   installCloseBtn: document.getElementById('installCloseBtn'),
+  versionRefreshBtn: document.getElementById('versionRefreshBtn'),
 };
 
 const MOSCOW_TZ = 'Europe/Moscow';
@@ -2644,6 +2522,52 @@ function initServiceWorker(){
     hideUpdateBanner();
   });
   dom.updateDismissBtn.addEventListener('click', hideUpdateBanner);
+
+  let refreshBusy = false;
+  dom.versionRefreshBtn.addEventListener('click', ()=>{
+    if(refreshBusy) return;
+    refreshBusy = true;
+    dom.versionRefreshBtn.classList.add('busy');
+    if(!('serviceWorker' in navigator)){
+      dom.versionRefreshBtn.classList.remove('busy');
+      dom.versionRefreshBtn.classList.add('ok');
+      refreshBusy = false;
+      setTimeout(()=>{ dom.versionRefreshBtn.classList.remove('ok'); }, 1500);
+      window.location.reload();
+      return;
+    }
+    navigator.serviceWorker.getRegistration().then((reg)=>{
+      if(reg && reg.waiting && reg.controller){
+        // новая версия уже установлена, скипаем
+        reg.waiting.postMessage({type:'SKIP_WAITING'});
+        hideUpdateBanner();
+        dom.versionRefreshBtn.classList.remove('busy');
+        refreshBusy = false;
+        return;
+      }
+      const checking = ()=>{
+        dom.versionRefreshBtn.classList.add('busy');
+        reg.update();
+      };
+      reg.addEventListener('updatefound', ()=>{
+        const newWorker = reg.installing;
+        if(!newWorker) return;
+        newWorker.addEventListener('statechange', ()=>{
+          if(newWorker.state === 'installed' && reg.controller){
+            dom.versionRefreshBtn.classList.remove('busy');
+            dom.versionRefreshBtn.classList.add('ok');
+            refreshBusy = false;
+            setTimeout(()=>{ dom.versionRefreshBtn.classList.remove('ok'); }, 2000);
+          }
+        });
+      }, {once:true});
+      checking();
+    }).catch(()=>{
+      dom.versionRefreshBtn.classList.remove('busy');
+      refreshBusy = false;
+      window.location.reload();
+    });
+  });
 }
 
 const INSTALL_DISMISS_KEY = 'schedule-install-hint-dismissed-106-107';
@@ -2772,7 +2696,9 @@ function scheduleNextReminder(){
   }, delayMs);
 }
 
-function initBoard(){
+async function initBoard(){
+  await loadData();
+  generateGroupMaps();
   buildThemeSwitcher();
   applyTheme(currentThemeId(), false);
   buildGroupSwitcher();

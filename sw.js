@@ -13,12 +13,13 @@
 // нужно бампнуть CACHE_VERSION ниже — иначе activate не увидит разницы и не
 // перезапишет уже закэшированный файл (addAll ничего не перекачивает
 // повторно для уже существующего кэша с тем же именем).
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v5';
 const CACHE_NAME = `schedule-106-107-shell-${CACHE_VERSION}`;
 
 const SHELL_ASSETS = [
   './',
   './index.html',
+  './data.json',
 ];
 
 self.addEventListener('install', (event) => {
