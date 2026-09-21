@@ -577,6 +577,7 @@
   }
 
   .slot{
+    position: relative;
     padding: 10px 16px;
     border-bottom: 1px solid var(--line);
     border-left: 3px solid transparent;
@@ -615,6 +616,18 @@
     transition: var(--t-color);
   }
   .slot.past{ opacity:.5; }
+  .slot-progress{
+    position:absolute;
+    left:0; right:0; bottom:0;
+    height:2.5px;
+    background: var(--line);
+    overflow:hidden;
+  }
+  .slot-progress-fill{
+    height:100%;
+    background: var(--g107);
+    transition: width .5s var(--ease);
+  }
 
   .slot .time{
     color: var(--text-dim);
@@ -809,6 +822,95 @@
     .day-export-btn:hover{ color: var(--text); border-color: var(--g106-dim); }
   }
   .day-export-btn:active{ transform: scale(.92); }
+
+  .pulse-card{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 13px 15px;
+    margin: 0 0 18px;
+    box-shadow: var(--shadow);
+    transition: var(--t-bg), border-color .3s var(--ease);
+  }
+  .pulse-row{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+  }
+  .pulse-row + .pulse-row{
+    padding-top:12px;
+    border-top: 1px solid var(--line);
+  }
+  .pulse-dot{
+    flex:0 0 auto;
+    width:9px; height:9px;
+    margin-top:4px;
+    border-radius:50%;
+    background: var(--text-dim);
+    transition: var(--t-bg);
+  }
+  .pulse-dot.now{
+    background: var(--accent, var(--g107));
+    box-shadow: 0 0 0 4px var(--accent-soft, var(--g107-soft));
+    animation: pulseDot 1.8s ease-in-out infinite;
+  }
+  .pulse-dot.next{ background: var(--accent, var(--g106)); }
+  .pulse-dot.done{ background: var(--free); }
+  @keyframes pulseDot{
+    0%,100%{ box-shadow: 0 0 0 4px var(--accent-soft, var(--g107-soft)); }
+    50%{ box-shadow: 0 0 0 8px transparent; }
+  }
+  .pulse-text{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .pulse-text b{
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--text);
+    display:block;
+    transition: var(--t-color);
+  }
+  .pulse-text span{
+    font-size:12px;
+    color:var(--text-dim);
+    display:block;
+    transition: var(--t-color);
+  }
+  .pulse-bar{
+    margin-top:7px;
+    height:4px;
+    border-radius:3px;
+    background: var(--line);
+    overflow:hidden;
+  }
+  .pulse-bar-fill{
+    height:100%;
+    border-radius:3px;
+    background: var(--accent, var(--g107));
+    transition: width .5s var(--ease);
+  }
+  .day-share-btn{
+    flex: 0 0 auto;
+    width:30px; height:30px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--text-dim);
+    font-size:13px;
+    line-height:1;
+    cursor:pointer;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    display:flex; align-items:center; justify-content:center;
+    transition: color .2s var(--ease), border-color .2s var(--ease), transform .15s var(--ease), background-color .25s var(--ease);
+  }
+  @media (hover: hover){
+    .day-share-btn:hover{ color: var(--text); border-color: var(--g106-dim); }
+  }
+  .day-share-btn:active{ transform: scale(.92); }
+  .day-share-btn.ok{ color: var(--free); border-color: var(--free); }
+  .day-share-btn.err{ color: var(--g107); border-color: var(--g107); }
 
   .detail-sheet.cal-sheet{
     max-height: 78vh;
@@ -1114,7 +1216,7 @@
 
   @media print{
     body{ background:#fff !important; color:#000 !important; padding:0; }
-    .theme-switcher, .group-switcher, .today-btn, .week-nav, .sheet-scrim, .detail-sheet, .scroll-top-btn, .scroll-today-btn, .update-banner, .day-export-btn, .app-version{ display:none !important; }
+    .theme-switcher, .group-switcher, .today-btn, .week-nav, .sheet-scrim, .detail-sheet, .scroll-top-btn, .scroll-today-btn, .update-banner, .day-export-btn, .day-share-btn, .pulse-card, .app-version{ display:none !important; }
     .date-rail{ overflow:visible; }
     .col{ box-shadow:none; border:1px solid #999; break-inside: avoid; }
     .slot{ animation:none !important; opacity:1 !important; }
@@ -1141,6 +1243,8 @@
     <div class="group-switcher drop-in d3" id="groupSwitcher" role="group" aria-label="Выбор группы"></div>
   </div>
 
+  <div class="pulse-card rise-in d1" id="pulseCard" aria-live="polite"></div>
+
   <div class="rise-in d1">
     <div class="week-nav" id="weekNav">
       <button class="week-arrow" id="weekPrev" onclick="shiftWeek(-1)" aria-label="Предыдущая неделя">‹</button>
@@ -1153,6 +1257,7 @@
       <div class="day-title" id="dayTitle" aria-live="polite"></div>
       <button class="today-btn" id="todayBtn" onclick="jumpToToday()" title="Вернуться к сегодняшнему дню" tabindex="-1" aria-hidden="true">Сегодня</button>
       <button class="day-export-btn" id="dayExportBtn" onclick="exportDayICS(currentDate)" title="Экспортировать день в календарь (.ics)" aria-label="Экспортировать день в календарь">📆</button>
+      <button class="day-share-btn" id="dayShareBtn" onclick="shareDay(currentDate)" title="Поделиться расписанием дня" aria-label="Поделиться расписанием дня">📤</button>
     </div>
   </div>
 
@@ -1217,7 +1322,7 @@
 <button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToPageTop()" aria-label="Наверх" title="Наверх">↑</button>
 
 <div class="app-version-row">
-  <div class="app-version" aria-hidden="true">v1.5 · 16.09.2026</div>
+  <div class="app-version" aria-hidden="true">v1.6 · 21.09.2026</div>
   <button class="app-version-refresh" id="versionRefreshBtn" type="button" aria-label="Проверить наличие обновлений" title="Проверить наличие обновлений">↻</button>
 </div>
 
@@ -1388,6 +1493,8 @@ const dom = {
   weekNav: document.getElementById('weekNav'),
   todayBtn: document.getElementById('todayBtn'),
   dayExportBtn: document.getElementById('dayExportBtn'),
+  dayShareBtn: document.getElementById('dayShareBtn'),
+  pulseCard: document.getElementById('pulseCard'),
   daySwap: document.getElementById('daySwap'),
   columnsWrap: document.getElementById('columnsWrap'),
   g106Slots: document.getElementById('g106Slots'),
@@ -1513,6 +1620,7 @@ function applyGroupView(view, rerender = true){
 
   syncDeepLinkUrl();
   if(rerender) render();
+  renderPulseCard();
   if(typeof showScrollTodayIfNeeded === 'function'){
     requestAnimationFrame(showScrollTodayIfNeeded);
   }
@@ -1828,15 +1936,105 @@ function computeLiveIndices(items, now){
   return {nowIdx, nextIdx};
 }
 
-function slotHtml(it, i, group, isLive, now){
+function pulseStateFor(group){
+  const items = getDaySchedule(group, TODAY);
+  if(items.length===0) return {status:'free'};
+  const now = minutesNow();
+  const {nowIdx, nextIdx} = computeLiveIndices(items, now);
+  if(nowIdx !== -1){
+    const range = parseRange(items[nowIdx].t);
+    const pct = Math.min(100, Math.max(0, Math.round((now-range[0])/(range[1]-range[0])*100)));
+    return {status:'now', item:items[nowIdx], minutesLeft: range[1]-now, pct};
+  }
+  if(nextIdx !== -1){
+    const range = parseRange(items[nextIdx].t);
+    return {status:'next', item:items[nextIdx], minutesUntil: range[0]-now};
+  }
+  return {status:'done'};
+}
+
+function pulseRowHtml(group, label){
+  const accent = group === 'g106' ? 'var(--g106)' : 'var(--g107)';
+  const accentSoft = group === 'g106' ? 'var(--g106-soft)' : 'var(--g107-soft)';
+  const styleAttr = `style="--accent:${accent};--accent-soft:${accentSoft}"`;
+  const holidayName = HOLIDAYS[TODAY];
+  if(holidayName){
+    return `<div class="pulse-row" ${styleAttr}>
+      <span class="pulse-dot"></span>
+      <div class="pulse-text"><b>${label}</b><span>${holidayName} — занятий нет</span></div>
+    </div>`;
+  }
+  const st = pulseStateFor(group);
+  if(st.status === 'now'){
+    const minutesLeft = Math.max(st.minutesLeft, 0);
+    return `<div class="pulse-row" ${styleAttr}>
+      <span class="pulse-dot now"></span>
+      <div class="pulse-text">
+        <b>${label} · идёт пара</b>
+        <span>${escapeHtml(st.item.w)} · ещё ${minutesLeft>0?formatLeft(minutesLeft):'<1м'}</span>
+        <div class="pulse-bar"><div class="pulse-bar-fill" style="width:${st.pct}%"></div></div>
+      </div>
+    </div>`;
+  }
+  if(st.status === 'next'){
+    const minutesUntil = Math.max(st.minutesUntil, 0);
+    return `<div class="pulse-row" ${styleAttr}>
+      <span class="pulse-dot next"></span>
+      <div class="pulse-text">
+        <b>${label} · пара через ${minutesUntil>0?formatLeft(minutesUntil):'<1м'}</b>
+        <span>${escapeHtml(st.item.w)} · ${st.item.t}</span>
+      </div>
+    </div>`;
+  }
+  if(st.status === 'done'){
+    return `<div class="pulse-row" ${styleAttr}>
+      <span class="pulse-dot done"></span>
+      <div class="pulse-text"><b>${label} · пары закончились</b><span>на сегодня всё 🎉</span></div>
+    </div>`;
+  }
+  return `<div class="pulse-row" ${styleAttr}>
+    <span class="pulse-dot"></span>
+    <div class="pulse-text"><b>${label} · сегодня пар нет</b><span>свободный день</span></div>
+  </div>`;
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str == null ? '' : str;
+  return d.innerHTML;
+}
+
+function renderPulseCard(){
+  if(!dom.pulseCard) return;
+  let html = '';
+  if(groupView === 'both'){
+    html = pulseRowHtml('g106','106') + pulseRowHtml('g107','107');
+  } else {
+    const group = groupView === '106' ? 'g106' : 'g107';
+    html = pulseRowHtml(group, groupView);
+  }
+  dom.pulseCard.innerHTML = html;
+}
+
+function slotProgressHtml(range, now){
+  const pct = Math.min(100, Math.max(0, Math.round((now-range[0])/(range[1]-range[0])*100)));
+  return `<div class="slot-progress"><div class="slot-progress-fill" style="width:${pct}%"></div></div>`;
+}
+
+function slotHtml(it, i, group, isLive, now, nowIdx=-1, nextIdx=-1){
   const range = isLive ? parseRange(it.t) : null;
   let cls = "slot";
   let timeLeftHtml = '';
+  let progressHtml = '';
   if(range){
-    if(now >= range[0] && now <= range[1]){
+    if(i === nowIdx){
       cls += " now";
       const minutesLeft = range[1]-now;
       timeLeftHtml = `<div class="time-left">${minutesLeft>0?formatLeft(minutesLeft):'<1м'}</div>`;
+      progressHtml = slotProgressHtml(range, now);
+    } else if(i === nextIdx){
+      const minutesUntil = range[0]-now;
+      timeLeftHtml = `<div class="time-left">через ${minutesUntil>0?formatLeft(minutesUntil):'<1м'}</div>`;
     } else if(now > range[1]){
       cls += " past";
     }
@@ -1847,6 +2045,7 @@ function slotHtml(it, i, group, isLive, now){
          tabindex="0" role="button" aria-haspopup="dialog" aria-label="${ariaLabel}">
       <div class="time">${it.t}${timeLeftHtml}</div>
       <div class="what"><b>${it.w}</b><span>${cleanShortDesc(it.d)}</span></div>
+      ${progressHtml}
     </div>`;
 }
 
@@ -1857,7 +2056,8 @@ function renderSlots(container, items, emptyText, group){
   }
   const isToday = currentDate === TODAY;
   const now = isToday ? minutesNow() : null;
-  container.innerHTML = items.map((it,i)=> slotHtml(it, i, group, isToday, now)).join("");
+  const {nowIdx, nextIdx} = isToday ? computeLiveIndices(items, now) : {nowIdx:-1, nextIdx:-1};
+  container.innerHTML = items.map((it,i)=> slotHtml(it, i, group, isToday, now, nowIdx, nextIdx)).join("");
 }
 
 function refreshLiveIndicators(container, items){
@@ -1869,6 +2069,7 @@ function refreshLiveIndicators(container, items){
     const range = parseRange(items[i].t);
     el.classList.remove('now','past');
     let timeLeftEl = el.querySelector('.time-left');
+    let progressEl = el.querySelector('.slot-progress');
     if(range && i === nowIdx){
       el.classList.add('now');
       const minutesLeft = range[1] - now;
@@ -1879,18 +2080,26 @@ function refreshLiveIndicators(container, items){
         el.querySelector('.time').appendChild(timeLeftEl);
       }
       timeLeftEl.textContent = text;
+      const pct = Math.min(100, Math.max(0, Math.round((now-range[0])/(range[1]-range[0])*100)));
+      if(!progressEl){
+        el.insertAdjacentHTML('beforeend', slotProgressHtml(range, now));
+      } else {
+        progressEl.querySelector('.slot-progress-fill').style.width = pct + '%';
+      }
     } else if(range && i === nextIdx){
       const minutesUntil = range[0] - now;
-      const text = minutesUntil > 0 ? formatLeft(minutesUntil) : '<1м';
+      const text = 'через ' + (minutesUntil > 0 ? formatLeft(minutesUntil) : '<1м');
       if(!timeLeftEl){
         timeLeftEl = document.createElement('div');
         timeLeftEl.className = 'time-left';
         el.querySelector('.time').appendChild(timeLeftEl);
       }
       timeLeftEl.textContent = text;
+      if(progressEl) progressEl.remove();
     } else {
       if(range && now > range[1]) el.classList.add('past');
       if(timeLeftEl) timeLeftEl.remove();
+      if(progressEl) progressEl.remove();
     }
   });
 }
@@ -1918,7 +2127,8 @@ function renderFeed(container, group){
       html += `<div class="feed-empty">Пар нет — весь день свободна</div>`;
     } else {
       const now = isToday ? minutesNow() : null;
-      html += items.map((it,i)=> slotHtml(it, i, group, isToday, now)).join("");
+      const {nowIdx, nextIdx} = isToday ? computeLiveIndices(items, now) : {nowIdx:-1, nextIdx:-1};
+      html += items.map((it,i)=> slotHtml(it, i, group, isToday, now, nowIdx, nextIdx)).join("");
     }
     html += `</div>`;
   }
@@ -2097,6 +2307,56 @@ function exportDayICS(dateISO){
   ].filter(Boolean);
   if(blocks.length === 0) return;
   downloadIcs(`${dateISO}-расписание.ics`, buildIcsFile(blocks));
+}
+
+function dayScheduleText(dateISO){
+  const wd = weekdayNames[weekdayIndex(dateISO)];
+  const header = `${dayNum(dateISO)} ${monthShort(dateISO)} · ${wd}`;
+  const holidayName = HOLIDAYS[dateISO];
+  if(holidayName) return `${header}\n${holidayName} — занятий нет`;
+
+  const groups = groupView === 'both' ? ['g106','g107'] : [groupView === '106' ? 'g106' : 'g107'];
+  let body = '';
+  groups.forEach(g=>{
+    const items = getDaySchedule(g, dateISO);
+    const label = g === 'g106' ? '106' : '107';
+    if(groups.length > 1) body += `\nГруппа ${label}:\n`;
+    if(items.length === 0){
+      body += 'пар нет — весь день свободна\n';
+    } else {
+      items.forEach(it=>{
+        const desc = cleanShortDesc(it.d);
+        body += `${it.t} — ${it.w}${desc ? ' (' + desc + ')' : ''}\n`;
+      });
+    }
+  });
+  return `${header}\n${body.trim()}`;
+}
+
+function flashShareBtn(state){
+  if(!dom.dayShareBtn) return;
+  dom.dayShareBtn.classList.remove('ok','err');
+  dom.dayShareBtn.classList.add(state);
+  window.setTimeout(()=> dom.dayShareBtn.classList.remove(state), 1600);
+}
+
+async function shareDay(dateISO){
+  const text = dayScheduleText(dateISO);
+  if(navigator.share){
+    try{
+      await navigator.share({ title: 'Расписание', text });
+      return;
+    }catch(e){
+      // Пользователь отменил шеринг — просто выходим, без показа ошибки.
+      if(e && e.name === 'AbortError') return;
+    }
+  }
+  try{
+    await navigator.clipboard.writeText(text);
+    flashShareBtn('ok');
+  }catch(e){
+    flashShareBtn('err');
+  }
 }
 
 function openSlot(group, idx, sourceEl){
@@ -2731,6 +2991,7 @@ async function initBoard(){
       const container = group === 'g106' ? dom.g106Slots : dom.g107Slots;
       refreshFeedLiveIndicators(container, group);
     }
+    renderPulseCard();
   };
   window.setInterval(liveTick, 60000);
   document.addEventListener('visibilitychange', ()=>{
