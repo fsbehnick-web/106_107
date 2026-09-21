@@ -1214,9 +1214,243 @@
     .sheet-header{ cursor: default; }
   }
 
+  /* ---------- Поиск ---------- */
+  .search-box{
+    position: relative;
+    max-width: 420px;
+    margin: 14px auto 0;
+  }
+  .search-input{
+    width: 100%;
+    font-family: inherit;
+    font-size: 16px; /* 16px, чтобы iOS не увеличивал страницу при фокусе */
+    font-weight: 500;
+    color: var(--text);
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 10px 40px 10px 40px;
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+    transition: border-color .2s var(--ease), background-color .25s var(--ease), box-shadow .25s var(--ease), color .25s var(--ease);
+  }
+  .search-input::placeholder{ color: var(--text-dim); opacity: .85; font-size: 14px; }
+  .search-input::-webkit-search-cancel-button,
+  .search-input::-webkit-search-decoration{ -webkit-appearance: none; appearance: none; display: none; }
+  .search-input:focus{
+    border-color: var(--g106-dim);
+    background: var(--panel);
+    box-shadow: 0 0 0 3px var(--g106-soft);
+  }
+  .search-icon{
+    position: absolute;
+    left: 14px; top: 50%;
+    width: 16px; height: 16px;
+    transform: translateY(-50%);
+    color: var(--text-dim);
+    pointer-events: none;
+  }
+  .search-clear{
+    position: absolute;
+    right: 8px; top: 50%;
+    width: 26px; height: 26px;
+    transform: translateY(-50%);
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .search-box.has-value .search-clear{ display: flex; }
+  @media (hover: hover){
+    .search-clear:hover{ color: var(--text); background: var(--line); }
+  }
+
+  .search-results{ display: none; margin: 0 0 20px; }
+  body.searching .search-results{ display: block; }
+  body.searching #pulseCard,
+  body.searching #dayBlock,
+  body.searching #daySwap,
+  body.searching .scroll-today-btn{ display: none !important; }
+
+  .sr-card{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: background-color .35s var(--ease), border-color .35s var(--ease);
+  }
+  .sr-head, .sr-sep{
+    padding: 9px 16px 6px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .6px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    background: var(--panel-2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    transition: var(--t-color), var(--t-bg);
+  }
+  .sr-item{
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    transition: var(--t-bg);
+  }
+  @media (hover: hover){
+    .sr-item:hover{ background: var(--panel-2); }
+  }
+  .sr-item:active{ background: var(--panel-2); }
+  .sr-item:focus-visible{ outline: 2px solid var(--g106); outline-offset: -2px; }
+  .sr-item.past{ opacity: .55; }
+  .sr-when{
+    flex: 0 0 92px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+    padding-top: 1px;
+  }
+  .sr-when b{ display: block; color: var(--text); font-size: 13px; font-weight: 700; margin-bottom: 1px; }
+  .sr-when em{ display: block; margin-top: 2px; font-style: normal; font-size: 9.5px; font-weight: 800; letter-spacing: .5px; color: var(--g107); }
+  .sr-what{ flex: 1 1 auto; min-width: 0; }
+  .sr-what b{ display: block; color: var(--text); font-size: 13px; font-weight: 600; }
+  .sr-what span{ display: block; color: var(--text-dim); font-size: 12px; margin-top: 1px; }
+  .sr-tags{ flex: 0 0 auto; display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+  .sr-tag{
+    font-style: normal;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 1px 7px;
+    border-radius: 20px;
+  }
+  .sr-tag.g106{ color: var(--g106); background: var(--g106-soft); }
+  .sr-tag.g107{ color: var(--g107); background: var(--g107-soft); }
+  .search-results mark{
+    background: var(--g106-soft);
+    color: var(--g106);
+    border-radius: 3px;
+    padding: 0 1px;
+    font-weight: 800;
+  }
+  .sr-empty{
+    padding: 26px 16px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.45;
+  }
+  .sr-more, .rel-toggle{
+    width: 100%;
+    border: none;
+    background: var(--panel-2);
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    padding: 11px 14px;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    transition: var(--t-color), var(--t-bg);
+  }
+  @media (hover: hover){
+    .sr-more:hover, .rel-toggle:hover{ color: var(--text); }
+  }
+
+  @keyframes slotFlash{
+    0%{   box-shadow: inset 0 0 0 100px var(--g106-soft), inset 3px 0 0 var(--g106); }
+    100%{ box-shadow: inset 0 0 0 100px transparent, inset 3px 0 0 transparent; }
+  }
+  .slot.flash{ animation: slotFlash 1.8s ease-out 1; }
+
+  /* ---------- Другие пары по предмету (в карточке пары) ---------- */
+  .sheet-related{
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    transition: border-color .3s var(--ease);
+  }
+  .sheet-related:empty{ display: none; }
+  .rel-head{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-dim);
+  }
+  .rel-head h4{
+    margin: 0;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .6px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .rel-sub{
+    margin: 10px 0 2px;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    opacity: .75;
+  }
+  .rel-note{ padding: 4px 0 2px; font-size: 12.5px; color: var(--text-dim); }
+  .rel-item{
+    display: block;
+    text-align: left;
+    padding: 8px 10px;
+    margin: 0 -10px;
+    width: calc(100% + 20px);
+    border: none;
+    border-bottom: 1px dashed var(--line);
+    border-radius: 8px;
+    background: transparent;
+    color: inherit;
+    font-family: inherit;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    transition: var(--t-bg);
+  }
+  @media (hover: hover){
+    .rel-item:hover{ background: var(--panel-2); }
+  }
+  .rel-item:active{ background: var(--panel-2); }
+  .rel-item.past{ opacity: .6; }
+  .rel-row{ display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .rel-date{ font-size: 13px; font-weight: 700; color: var(--text); }
+  .rel-when{ font-size: 11.5px; font-weight: 700; color: var(--text-dim); white-space: nowrap; }
+  .detail-sheet.g106 .rel-when{ color: var(--g106); }
+  .detail-sheet.g107 .rel-when{ color: var(--g107); }
+  .rel-desc{ display: block; margin-top: 1px; font-size: 12px; color: var(--text-dim); line-height: 1.35; }
+  .rel-toggle{ margin-top: 8px; border-radius: 10px; }
+  .sheet-actions .sheet-ics-btn + .sheet-ics-btn{ margin-top: 8px; }
+
   @media print{
     body{ background:#fff !important; color:#000 !important; padding:0; }
-    .theme-switcher, .group-switcher, .today-btn, .week-nav, .sheet-scrim, .detail-sheet, .scroll-top-btn, .scroll-today-btn, .update-banner, .day-export-btn, .day-share-btn, .pulse-card, .app-version{ display:none !important; }
+    .theme-switcher, .group-switcher, .today-btn, .week-nav, .sheet-scrim, .detail-sheet, .scroll-top-btn, .scroll-today-btn, .update-banner, .day-export-btn, .day-share-btn, .pulse-card, .search-box, .search-results, .app-version{ display:none !important; }
     .date-rail{ overflow:visible; }
     .col{ box-shadow:none; border:1px solid #999; break-inside: avoid; }
     .slot{ animation:none !important; opacity:1 !important; }
@@ -1241,11 +1475,18 @@
     <h1 class="drop-in d2">Группы 106 и 107</h1>
     <div class="theme-switcher drop-in d3" id="themeSwitcher" role="group" aria-label="Выбор темы оформления"></div>
     <div class="group-switcher drop-in d3" id="groupSwitcher" role="group" aria-label="Выбор группы"></div>
+    <div class="search-box drop-in d3" id="searchBox" role="search">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input class="search-input" id="searchInput" type="search" placeholder="Найти предмет или преподавателя" enterkeyhint="search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Поиск по расписанию">
+      <button class="search-clear" id="searchClear" type="button" aria-label="Очистить поиск">✕</button>
+    </div>
   </div>
 
   <div class="pulse-card rise-in d1" id="pulseCard" aria-live="polite"></div>
 
-  <div class="rise-in d1">
+  <div class="search-results" id="searchResults" role="region" aria-label="Результаты поиска"></div>
+
+  <div class="rise-in d1" id="dayBlock">
     <div class="week-nav" id="weekNav">
       <button class="week-arrow" id="weekPrev" onclick="shiftWeek(-1)" aria-label="Предыдущая неделя">‹</button>
       <div class="week-label" id="weekLabel" aria-live="polite"></div>
@@ -1285,8 +1526,10 @@
   </div>
   <div class="sheet-body">
     <div class="sheet-meta" id="sheetMeta"></div>
+    <div class="sheet-related" id="sheetRelated"></div>
     <div class="sheet-actions">
       <button class="sheet-ics-btn" id="sheetIcsBtn" type="button">📅 Добавить в календарь</button>
+      <button class="sheet-ics-btn" id="sheetGotoBtn" type="button">📍 Перейти к этому дню</button>
     </div>
   </div>
 </div>
@@ -1322,7 +1565,7 @@
 <button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToPageTop()" aria-label="Наверх" title="Наверх">↑</button>
 
 <div class="app-version-row">
-  <div class="app-version" aria-hidden="true">v1.6 · 21.09.2026</div>
+  <div class="app-version" aria-hidden="true">v1.7 · 21.09.2026</div>
   <button class="app-version-refresh" id="versionRefreshBtn" type="button" aria-label="Проверить наличие обновлений" title="Проверить наличие обновлений">↻</button>
 </div>
 
@@ -1533,6 +1776,12 @@ const dom = {
   installBtnRow: document.getElementById('installBtnRow'),
   installCloseBtn: document.getElementById('installCloseBtn'),
   versionRefreshBtn: document.getElementById('versionRefreshBtn'),
+  searchBox: document.getElementById('searchBox'),
+  searchInput: document.getElementById('searchInput'),
+  searchClear: document.getElementById('searchClear'),
+  searchResults: document.getElementById('searchResults'),
+  sheetRelated: document.getElementById('sheetRelated'),
+  sheetGotoBtn: document.getElementById('sheetGotoBtn'),
 };
 
 const MOSCOW_TZ = 'Europe/Moscow';
@@ -1621,6 +1870,7 @@ function applyGroupView(view, rerender = true){
   syncDeepLinkUrl();
   if(rerender) render();
   renderPulseCard();
+  if(isSearching()) runSearch();
   if(typeof showScrollTodayIfNeeded === 'function'){
     requestAnimationFrame(showScrollTodayIfNeeded);
   }
@@ -1657,7 +1907,6 @@ function syncDeepLinkUrl(){
     window.history.replaceState(null, '', url.pathname + url.search + url.hash);
   }catch(e){}
 }
-
 function weekdayIndex(dateStr){
   const d = new Date(dateStr + "T00:00:00");
   return d.getDay();
@@ -2187,6 +2436,7 @@ function render(){
   dom.dayExportBtn.disabled = !dayHasEvents;
   dom.dayExportBtn.style.opacity = dayHasEvents ? '' : '.35';
   dom.dayExportBtn.style.cursor = dayHasEvents ? '' : 'default';
+  applyPendingFlash();
 }
 
 let lastFocused = null;
@@ -2359,6 +2609,30 @@ async function shareDay(dateISO){
   }
 }
 
+function fillSheet(group, iso, it){
+  sheetCtx = { group, iso, item: it };
+
+  dom.sheet.classList.remove('g106','g107');
+  dom.sheet.classList.add(group);
+  dom.sheetTime.textContent = `${dayNum(iso)} ${monthShort(iso)} · ${weekdayNames[weekdayIndex(iso)]} · ${it.t}`;
+  dom.sheetTitle.textContent = it.w;
+  dom.sheetMeta.innerHTML = it.sub && it.sub.length
+    ? it.sub.map(s=>{
+        const prefix = s.label != null ? s.label : (s.n != null ? `${s.n} гр` : '');
+        const whoWhere = [s.who ? expandMetaPart(s.who) : null, s.where || null]
+          .filter(Boolean).join(' · ');
+        const line = whoWhere ? `${prefix}: ${whoWhere}` : prefix;
+        return `<span>${line}</span>`;
+      }).join("")
+    : (it.d || '').split("·").map(part=>`<span>${expandMetaPart(part)}</span>`).join("");
+
+  relState.expanded = false;
+  renderRelated(group, iso, it);
+  dom.sheetGotoBtn.style.display = (groupView === 'both' && iso === currentDate) ? 'none' : '';
+  const body = dom.sheet.querySelector('.sheet-body');
+  if(body) body.scrollTop = 0;
+}
+
 function openSlot(group, idx, sourceEl){
   let items;
   let iso = currentDate;
@@ -2372,21 +2646,7 @@ function openSlot(group, idx, sourceEl){
   const it = items && items[idx];
   if(!it) return;
   lastFocused = document.activeElement;
-  sheetCtx = { group, iso, item: it };
-
-  dom.sheet.classList.remove('g106','g107');
-  dom.sheet.classList.add(group);
-  dom.sheetTime.textContent = it.t;
-  dom.sheetTitle.textContent = it.w;
-  dom.sheetMeta.innerHTML = it.sub && it.sub.length
-    ? it.sub.map(s=>{
-        const prefix = s.label != null ? s.label : (s.n != null ? `${s.n} гр` : '');
-        const whoWhere = [s.who ? expandMetaPart(s.who) : null, s.where || null]
-          .filter(Boolean).join(' · ');
-        const line = whoWhere ? `${prefix}: ${whoWhere}` : prefix;
-        return `<span>${line}</span>`;
-      }).join("")
-    : it.d.split("·").map(part=>`<span>${expandMetaPart(part)}</span>`).join("");
+  fillSheet(group, iso, it);
 
   dom.sheetScrim.classList.add('open');
   dom.sheet.classList.add('open');
@@ -2955,6 +3215,359 @@ function scheduleNextReminder(){
     scheduleNextReminder();
   }, delayMs);
 }
+
+/* ---------- Индекс пар: поиск и «другие пары по предмету» ---------- */
+let pairIndex = null;
+let pairsBySubject = null;
+
+function normText(s){
+  return String(s == null ? '' : s).toLowerCase().replace(/ё/g, 'е');
+}
+
+function escapeAttr(s){
+  return escapeHtml(s).replace(/"/g, '&quot;');
+}
+
+function pairHaystack(it){
+  const parts = [it.w, it.d];
+  if(it.d){
+    parts.push(expandMetaPart(String(it.d)));
+    parts.push(String(it.d).replace(/ауд\./g, 'аудитория'));
+  }
+  if(Array.isArray(it.sub)){
+    it.sub.forEach(s=>{
+      parts.push(s.label, s.n != null ? `${s.n} гр` : '', s.where);
+      if(s.who) parts.push(s.who, expandMetaPart(String(s.who)));
+    });
+  }
+  return normText(parts.filter(Boolean).join(' | '));
+}
+
+// Все пары обеих групп за весь семестр — строится один раз при первом обращении.
+function buildPairIndex(){
+  if(pairIndex) return pairIndex;
+  const list = [];
+  dateList.forEach(([iso])=>{
+    ['g106','g107'].forEach(group=>{
+      getDaySchedule(group, iso).forEach((item, idx)=>{
+        const r = parseRange(item.t);
+        list.push({
+          group, iso, idx, item,
+          start: r ? r[0] : 0,
+          subj: normText(item.w).trim(),
+          hay: pairHaystack(item)
+        });
+      });
+    });
+  });
+  list.sort((a,b)=> a.iso < b.iso ? -1 : (a.iso > b.iso ? 1 : a.start - b.start));
+  pairsBySubject = new Map();
+  list.forEach(e=>{
+    const key = e.group + '|' + e.subj;
+    if(!pairsBySubject.has(key)) pairsBySubject.set(key, []);
+    pairsBySubject.get(key).push(e);
+  });
+  pairIndex = list;
+  return list;
+}
+
+/* ---------- Поиск ---------- */
+const SEARCH_PAGE = 40;
+let searchState = { results: [], pastStart: 0, shown: 0, re: null, prevScroll: 0 };
+let searchTimer = null;
+let pendingFlash = null;
+
+function isSearching(){
+  return document.body.classList.contains('searching');
+}
+
+function searchTokens(q){
+  return normText(q).split(/[\s,;]+/).filter(Boolean);
+}
+
+function buildSearchRegex(tokens){
+  if(!tokens.length) return null;
+  const parts = tokens.slice().sort((a,b)=> b.length - a.length).map(t=>
+    t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/[её]/g, '[её]')
+  );
+  return new RegExp('(' + parts.join('|') + ')', 'gi');
+}
+
+function highlightHtml(text, re){
+  const src = String(text == null ? '' : text);
+  if(!re) return escapeHtml(src);
+  let out = '', last = 0, m;
+  re.lastIndex = 0;
+  while((m = re.exec(src)) !== null){
+    if(m[0] === ''){ re.lastIndex++; continue; }
+    out += escapeHtml(src.slice(last, m.index)) + '<mark>' + escapeHtml(m[0]) + '</mark>';
+    last = m.index + m[0].length;
+  }
+  return out + escapeHtml(src.slice(last));
+}
+
+// Ищет по выбранной группе (или по обеим). Одинаковые пары 106 и 107 (общие лекции) склеиваются.
+function findPairs(q){
+  const tokens = searchTokens(q);
+  if(!tokens.length) return { list: [], pastStart: 0 };
+  const groups = groupView === 'both' ? ['g106','g107'] : [groupView === '106' ? 'g106' : 'g107'];
+  const merged = new Map();
+  buildPairIndex().forEach(e=>{
+    if(!groups.includes(e.group)) return;
+    if(!tokens.every(t=> e.hay.includes(t))) return;
+    const key = [e.iso, e.item.t, e.item.w, e.item.d || ''].join('|');
+    let r = merged.get(key);
+    if(!r){
+      r = { iso: e.iso, item: e.item, groups: [], refs: [] };
+      merged.set(key, r);
+    }
+    r.groups.push(e.group);
+    r.refs.push({ group: e.group, idx: e.idx });
+  });
+  const all = Array.from(merged.values());
+  const upcoming = all.filter(r=> r.iso >= TODAY);
+  const past = all.filter(r=> r.iso < TODAY).reverse();
+  return { list: upcoming.concat(past), pastStart: upcoming.length };
+}
+
+function searchItemHtml(r, k, re){
+  const it = r.item;
+  const dateLabel = `${dayNum(r.iso)} ${monthShort(r.iso)} · ${weekdayNames[weekdayIndex(r.iso)]}`;
+  const desc = cleanShortDesc(it.d);
+  const tags = r.groups.map(g=> `<i class="sr-tag ${g}">${g === 'g106' ? '106' : '107'}</i>`).join('');
+  const past = r.iso < TODAY;
+  return `<div class="sr-item${past ? ' past' : ''}" data-k="${k}" tabindex="0" role="button" aria-label="${escapeAttr(dateLabel + ', ' + it.t + ', ' + it.w)}">
+      <div class="sr-when"><b>${dateLabel}</b>${escapeHtml(it.t)}${r.iso === TODAY ? '<em>СЕГОДНЯ</em>' : ''}</div>
+      <div class="sr-what"><b>${highlightHtml(it.w, re)}</b>${desc ? `<span>${highlightHtml(desc, re)}</span>` : ''}</div>
+      <div class="sr-tags">${tags}</div>
+    </div>`;
+}
+
+function drawSearchResults(){
+  const { results, pastStart, shown, re } = searchState;
+  const scope = groupView === 'both' ? 'Группы 106 · 107' : `Группа ${groupView}`;
+  if(!results.length){
+    dom.searchResults.innerHTML = `<div class="sr-card"><div class="sr-empty">Ничего не найдено.<br>Попробуйте другое слово${groupView === 'both' ? '' : ' или переключитесь на «Все»'}.</div></div>`;
+    return;
+  }
+  let html = `<div class="sr-card"><div class="sr-head"><span>Найдено: ${results.length}</span><span>${scope}</span></div>`;
+  for(let k = 0; k < shown; k++){
+    if(k === 0 && pastStart > 0) html += `<div class="sr-sep">Предстоящие</div>`;
+    if(k === pastStart && pastStart < results.length) html += `<div class="sr-sep">Прошедшие</div>`;
+    html += searchItemHtml(results[k], k, re);
+  }
+  if(shown < results.length){
+    html += `<button type="button" class="sr-more">Показать ещё (${results.length - shown})</button>`;
+  }
+  html += `</div>`;
+  dom.searchResults.innerHTML = html;
+}
+
+function runSearch(){
+  const q = dom.searchInput.value.trim();
+  if(q.length < 2){
+    searchState.results = [];
+    searchState.shown = 0;
+    dom.searchResults.innerHTML = `<div class="sr-card"><div class="sr-empty">Введите хотя бы 2 символа — название предмета, фамилию преподавателя или номер аудитории</div></div>`;
+    return;
+  }
+  const { list, pastStart } = findPairs(q);
+  searchState.results = list;
+  searchState.pastStart = pastStart;
+  searchState.shown = Math.min(SEARCH_PAGE, list.length);
+  searchState.re = buildSearchRegex(searchTokens(q));
+  drawSearchResults();
+}
+
+function enterSearch(){
+  if(isSearching()) return;
+  searchState.prevScroll = window.scrollY || window.pageYOffset || 0;
+  document.body.classList.add('searching');
+}
+
+function leaveSearch(restoreScroll){
+  if(!isSearching()) return;
+  document.body.classList.remove('searching');
+  dom.searchResults.innerHTML = '';
+  if(restoreScroll) window.scrollTo(0, searchState.prevScroll);
+  showScrollTodayIfNeeded();
+}
+
+function clearSearch(restoreScroll = true){
+  window.clearTimeout(searchTimer);
+  dom.searchInput.value = '';
+  dom.searchBox.classList.remove('has-value');
+  leaveSearch(restoreScroll);
+}
+
+function syncSearchMode(){
+  if(dom.searchInput.value.trim() === ''){ leaveSearch(true); return; }
+  enterSearch();
+  runSearch();
+}
+
+// Прыжок к паре: переключает день (режим «Все») или прокручивает ленту, затем подсвечивает карточку.
+function goToPair(iso, refs){
+  pendingFlash = { iso, refs };
+  clearSearch(false);
+  if(groupView === 'both' && currentDate !== iso){
+    currentDate = iso;
+    goToDate(); // после отрисовки дня render() сам вызовет applyPendingFlash()
+  } else {
+    applyPendingFlash();
+  }
+}
+
+function applyPendingFlash(){
+  const pf = pendingFlash;
+  if(!pf) return;
+  pendingFlash = null;
+  const containers = { g106: dom.g106Slots, g107: dom.g107Slots };
+  const els = [];
+  pf.refs.forEach(r=>{
+    let root = containers[r.group];
+    if(root && groupView !== 'both') root = root.querySelector(`.feed-day[data-iso="${pf.iso}"]`);
+    const el = root && root.querySelector(`.slot[data-idx="${r.idx}"]`);
+    if(el) els.push(el);
+  });
+  if(!els.length){
+    if(groupView !== 'both'){
+      const group = groupView === '106' ? 'g106' : 'g107';
+      const block = containers[group].querySelector(`.feed-day[data-iso="${pf.iso}"]`);
+      if(block) block.scrollIntoView({ block: 'start' });
+    }
+    return;
+  }
+  const target = els[0];
+  target.scrollIntoView({ block: 'center' });
+  // второй проход: у ленты content-visibility:auto, высоты дней уточняются после первого скролла
+  requestAnimationFrame(()=> target.scrollIntoView({ block: 'center' }));
+  els.forEach(el=>{
+    el.classList.remove('flash');
+    void el.offsetWidth;
+    el.classList.add('flash');
+    window.setTimeout(()=> el.classList.remove('flash'), 1900);
+  });
+}
+
+function openSearchResult(k){
+  const r = searchState.results[k];
+  if(r) goToPair(r.iso, r.refs);
+}
+
+dom.searchInput.addEventListener('input', ()=>{
+  dom.searchBox.classList.toggle('has-value', dom.searchInput.value.length > 0);
+  window.clearTimeout(searchTimer);
+  searchTimer = window.setTimeout(syncSearchMode, 110);
+});
+dom.searchInput.addEventListener('keydown', e=>{
+  if(e.key === 'Escape'){
+    if(dom.searchInput.value) clearSearch(true);
+    else dom.searchInput.blur();
+  } else if(e.key === 'Enter'){
+    dom.searchInput.blur();
+  }
+});
+dom.searchClear.addEventListener('click', ()=>{
+  clearSearch(true);
+  dom.searchInput.focus({ preventScroll: true });
+});
+dom.searchResults.addEventListener('click', e=>{
+  if(e.target.closest('.sr-more')){
+    searchState.shown = Math.min(searchState.results.length, searchState.shown + SEARCH_PAGE);
+    drawSearchResults();
+    return;
+  }
+  const item = e.target.closest('.sr-item');
+  if(item) openSearchResult(Number(item.dataset.k));
+});
+dom.searchResults.addEventListener('keydown', e=>{
+  if(e.key !== 'Enter' && e.key !== ' ') return;
+  const item = e.target.closest && e.target.closest('.sr-item');
+  if(item){ e.preventDefault(); openSearchResult(Number(item.dataset.k)); }
+});
+
+/* ---------- Другие пары по предмету (карточка пары) ---------- */
+const REL_PREV = 2;
+const REL_NEXT = 3;
+let relState = { entries: [], expanded: false };
+
+function daysFromToday(iso){
+  return Math.round((new Date(iso + 'T00:00:00') - new Date(TODAY + 'T00:00:00')) / 86400000);
+}
+
+function relWhenLabel(iso){
+  const n = daysFromToday(iso);
+  if(n === 0) return 'сегодня';
+  if(n === 1) return 'завтра';
+  if(n === -1) return 'вчера';
+  return n > 0 ? `через ${n} дн.` : `${-n} дн. назад`;
+}
+
+function relRowHtml(e, k){
+  const desc = cleanShortDesc(e.item.d);
+  return `<button type="button" class="rel-item${e.iso < TODAY ? ' past' : ''}" data-k="${k}">
+      <span class="rel-row"><span class="rel-date">${dayNum(e.iso)} ${monthShort(e.iso)} · ${weekdayNames[weekdayIndex(e.iso)]}</span><span class="rel-when">${relWhenLabel(e.iso)}</span></span>
+      <span class="rel-desc">${escapeHtml(e.item.t)}${desc ? ' · ' + escapeHtml(desc) : ''}</span>
+    </button>`;
+}
+
+function renderRelated(group, iso, item){
+  buildPairIndex();
+  const list = pairsBySubject.get(group + '|' + normText(item.w).trim()) || [];
+  const cur = list.findIndex(e=> e.iso === iso && e.item.t === item.t);
+  relState.entries = [];
+  if(cur < 0){ dom.sheetRelated.innerHTML = ''; return; }
+  if(list.length === 1){
+    dom.sheetRelated.innerHTML = `<div class="rel-head"><h4>Пары по предмету</h4></div><div class="rel-note">Это единственная пара по этому предмету в расписании</div>`;
+    return;
+  }
+  const prev = list.slice(0, cur).reverse(); // от ближайшей к самой ранней
+  const next = list.slice(cur + 1);
+  const exp = relState.expanded;
+  const prevShow = exp ? prev : prev.slice(0, REL_PREV);
+  const nextShow = exp ? next : next.slice(0, REL_NEXT);
+  const hiddenCount = (prev.length - prevShow.length) + (next.length - nextShow.length);
+  relState.entries = prevShow.concat(nextShow);
+
+  let html = `<div class="rel-head"><h4>Пары по предмету</h4><span>эта — ${cur + 1} из ${list.length}</span></div>`;
+  html += `<div class="rel-sub">Предыдущие</div>`;
+  html += prevShow.length
+    ? prevShow.map((e, i)=> relRowHtml(e, i)).join('')
+    : `<div class="rel-note">Это первая пара по предмету</div>`;
+  html += `<div class="rel-sub">Следующие</div>`;
+  html += nextShow.length
+    ? nextShow.map((e, i)=> relRowHtml(e, prevShow.length + i)).join('')
+    : `<div class="rel-note">Это последняя пара по предмету</div>`;
+  if(hiddenCount > 0){
+    html += `<button type="button" class="rel-toggle">Показать все (ещё ${hiddenCount})</button>`;
+  } else if(exp && (prev.length > REL_PREV || next.length > REL_NEXT)){
+    html += `<button type="button" class="rel-toggle">Свернуть</button>`;
+  }
+  dom.sheetRelated.innerHTML = html;
+}
+
+dom.sheetRelated.addEventListener('click', e=>{
+  if(e.target.closest('.rel-toggle')){
+    relState.expanded = !relState.expanded;
+    if(sheetCtx) renderRelated(sheetCtx.group, sheetCtx.iso, sheetCtx.item);
+    return;
+  }
+  const row = e.target.closest('.rel-item');
+  if(!row) return;
+  const entry = relState.entries[Number(row.dataset.k)];
+  if(!entry) return;
+  fillSheet(entry.group, entry.iso, entry.item);
+  dom.sheet.querySelector('.sheet-close').focus({ preventScroll: true });
+});
+
+dom.sheetGotoBtn.addEventListener('click', ()=>{
+  if(!sheetCtx) return;
+  const { group, iso, item } = sheetCtx;
+  const idx = getDaySchedule(group, iso).findIndex(x=> x.t === item.t && x.w === item.w);
+  closeSheet();
+  goToPair(iso, idx >= 0 ? [{ group, idx }] : []);
+});
 
 async function initBoard(){
   await loadData();
