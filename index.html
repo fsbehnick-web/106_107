@@ -3381,6 +3381,16 @@ function closeSheet(){
   if(lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus({preventScroll:true});
 }
 
+function openSheet(){
+  dom.sheetScrim.classList.add('open');
+  dom.sheet.classList.add('open');
+  dom.sheet.setAttribute('aria-hidden','false');
+  dom.sheet.inert = false;
+  lockBodyScroll();
+  const closeBtn = dom.sheet.querySelector('.sheet-close');
+  if(closeBtn) closeBtn.focus({preventScroll:true});
+}
+
 function buildCalendarBody(){
   const frag = document.createDocumentFragment();
   let currentMonthKey = null;
@@ -3774,20 +3784,6 @@ function renderGridCell(classes) {
       </div>
     `;
   }).join('');
-}
-
-function getWeekStart(dateISO) {
-  const d = new Date(dateISO + 'T00:00:00');
-  const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day; // Monday as start
-  d.setDate(d.getDate() + diff);
-  return d.toISOString().slice(0, 10);
-}
-
-function isoPlusDays(iso, days) {
-  const d = new Date(iso + 'T00:00:00');
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
 }
 
 // Next Up Widget
