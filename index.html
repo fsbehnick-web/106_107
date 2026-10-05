@@ -2162,6 +2162,211 @@
   @media (prefers-reduced-motion: reduce){
     *{ animation-duration: 0.001s !important; transition-duration: 0.001s !important; }
   }
+  /* Theme Menu Modal */
+  .theme-menu-scrim{
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    z-index: 700;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s var(--ease);
+  }
+  .theme-menu-scrim.open{
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .theme-menu{
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    width: min(520px, calc(100vw - 32px));
+    max-height: calc(100vh - 80px);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    z-index: 701;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s var(--ease), transform .3s var(--ease);
+    overflow-y: auto;
+  }
+  .theme-menu.open{
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  .theme-menu-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .theme-menu-header h2{
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .theme-menu-close{
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: var(--t-bg), var(--t-color), transform .2s var(--ease);
+  }
+  .theme-menu-close:hover{
+    background: var(--line);
+    transform: scale(1.05);
+  }
+  .theme-menu-close:active{
+    transform: scale(0.95);
+  }
+  .theme-menu-section{
+    margin-bottom: 24px;
+  }
+  .theme-menu-section h3{
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .theme-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  .theme-card{
+    background: var(--panel-2);
+    border: 2px solid var(--line);
+    border-radius: 12px;
+    padding: 12px;
+    cursor: pointer;
+    transition: var(--t-bg), border-color .3s var(--ease), transform .2s var(--ease);
+    position: relative;
+  }
+  .theme-card:hover{
+    border-color: var(--text-dim);
+    transform: translateY(-2px);
+  }
+  .theme-card.active{
+    border-color: var(--g106);
+    background: var(--g106-soft);
+  }
+  .theme-card.active::after{
+    content: '✓';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 20px;
+    height: 20px;
+    background: var(--g106);
+    color: var(--bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .theme-preview{
+    height: 60px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  .theme-card-name{
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+  }
+  .theme-card-description{
+    font-size: 11px;
+    color: var(--text-dim);
+    margin: 4px 0 0 0;
+  }
+  .theme-controls{
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .theme-btn{
+    flex: 1;
+    padding: 10px 16px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel-2);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--t-bg), var(--t-color), transform .2s var(--ease);
+  }
+  .theme-btn:hover{
+    background: var(--line);
+    transform: translateY(-1px);
+  }
+  .theme-btn:active{
+    transform: translateY(0);
+  }
+  .theme-btn.primary{
+    background: var(--g106);
+    color: var(--bg);
+    border-color: var(--g106);
+  }
+  .theme-btn.primary:hover{
+    background: var(--g106-dim);
+    border-color: var(--g106-dim);
+  }
+  .theme-info{
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .theme-menu-trigger{
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: var(--t-bg), var(--t-color), transform .2s var(--ease);
+    margin-left: 8px;
+  }
+  .theme-menu-trigger:hover{
+    background: var(--line);
+    transform: scale(1.05);
+  }
+  .theme-menu-trigger:active{
+    transform: scale(0.95);
+  }
+
 </style>
 </head>
 <body>
@@ -2176,8 +2381,37 @@
   <div class="board-header">
     <div class="kicker drop-in d1">Расписание</div>
     <h1 class="drop-in d2">Группы 106 и 107</h1>
-    <div class="theme-switcher drop-in d3" id="themeSwitcher" role="group" aria-label="Выбор темы оформления"></div>
+    <div class="theme-switcher drop-in d3" id="themeSwitcher" role="group" aria-label="Выбор темы оформления">
+      <button class="theme-menu-trigger" id="themeMenuBtn" type="button" aria-label="Открыть меню тем">⚙</button>
+    </div>
     <div class="group-switcher drop-in d3" id="groupSwitcher" role="group" aria-label="Выбор группы"></div>
+
+  <!-- Theme Menu Modal -->
+  <div class="theme-menu-scrim" id="themeMenuScrim"></div>
+  <div class="theme-menu" id="themeMenu" role="dialog" aria-modal="true" aria-labelledby="themeMenuTitle">
+    <div class="theme-menu-header">
+      <h2 id="themeMenuTitle">Темы оформления</h2>
+      <button class="theme-menu-close" id="themeMenuClose" type="button" aria-label="Закрыть">×</button>
+    </div>
+
+    <div class="theme-menu-section">
+      <h3>Доступные темы</h3>
+      <div class="theme-grid" id="themeMenuGrid"></div>
+    </div>
+
+    <div class="theme-menu-section">
+      <h3>Настройки</h3>
+      <div class="theme-info">
+        <p><strong>Текущая тема:</strong> <span id="currentThemeName"></span></p>
+        <p style="margin-top: 8px;">Тема сохраняется автоматически и применяется при следующем посещении.</p>
+      </div>
+    </div>
+
+    <div class="theme-controls">
+      <button class="theme-btn" id="themeResetBtn" type="button">Сброс на системную</button>
+      <button class="theme-btn primary" id="themeCloseBtn" type="button">Готово</button>
+    </div>
+  </div>
     <div class="search-box drop-in d3" id="searchBox" role="search">
       <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
       <input class="search-input" id="searchInput" type="search" placeholder="Найти предмет или преподавателя" enterkeyhint="search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Поиск по расписанию">
@@ -2459,6 +2693,14 @@ const dom = {
   g107Slots: document.getElementById('g107Slots'),
   g107Free: document.getElementById('g107Free'),
   themeSwitcher: document.getElementById('themeSwitcher'),
+  themeMenuBtn: document.getElementById('themeMenuBtn'),
+  themeMenu: document.getElementById('themeMenu'),
+  themeMenuScrim: document.getElementById('themeMenuScrim'),
+  themeMenuClose: document.getElementById('themeMenuClose'),
+  themeMenuGrid: document.getElementById('themeMenuGrid'),
+  currentThemeName: document.getElementById('currentThemeName'),
+  themeResetBtn: document.getElementById('themeResetBtn'),
+  themeCloseBtn: document.getElementById('themeCloseBtn'),
   groupSwitcher: document.getElementById('groupSwitcher'),
   sheetScrim: document.getElementById('sheetScrim'),
   sheet: document.getElementById('detailSheet'),
@@ -3698,6 +3940,94 @@ function buildThemeSwitcher(){
   dom.themeSwitcher.appendChild(frag);
 }
 
+// Theme Menu Functions
+function openThemeMenu(){
+  buildThemeMenuGrid();
+  updateThemeMenuInfo();
+  dom.themeMenu.classList.add('open');
+  dom.themeMenuScrim.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeThemeMenu(){
+  dom.themeMenu.classList.remove('open');
+  dom.themeMenuScrim.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function buildThemeMenuGrid(){
+  const currentId = currentThemeId();
+  const grid = dom.themeMenuGrid;
+  if(!grid) return;
+  grid.innerHTML = '';
+
+  const customThemes = loadCustomThemes();
+  const allThemes = [...THEMES, ...customThemes];
+
+  allThemes.forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'theme-card';
+    if(t.id === currentId) card.classList.add('active');
+
+    const preview = document.createElement('div');
+    preview.className = 'theme-preview';
+    preview.style.background = `linear-gradient(135deg, ${t.bg} 0%, ${t.a} 50%, ${t.b} 100%)`;
+
+    const name = document.createElement('p');
+    name.className = 'theme-card-name';
+    name.textContent = t.name;
+
+    const desc = document.createElement('p');
+    desc.className = 'theme-card-description';
+    desc.textContent = t.description || getThemeDescription(t.id);
+
+    card.appendChild(preview);
+    card.appendChild(name);
+    card.appendChild(desc);
+
+    card.onclick = () => {
+      applyTheme(t.id, true);
+      buildThemeMenuGrid();
+      updateThemeMenuInfo();
+    };
+
+    grid.appendChild(card);
+  });
+}
+
+function getThemeDescription(id){
+  const descriptions = {
+    'mocha': 'Тёмная тема',
+    'terracotta': 'Светлая тема',
+    'crimson-cloud': 'Светлая, красный акцент',
+    'forest-cream': 'Тёмная, лесная',
+    'bronze-night': 'Тёмная, бронзовая',
+    'olive-wine': 'Тёмная, оливковая',
+    'rust-sand': 'Светлая, ржавчина',
+    'moss-ivory': 'Светлая, мох',
+  };
+  return descriptions[id] || 'Пользовательская тема';
+}
+
+function updateThemeMenuInfo(){
+  const currentId = currentThemeId();
+  const customThemes = loadCustomThemes();
+  const allThemes = [...THEMES, ...customThemes];
+  const theme = allThemes.find(t => t.id === currentId);
+  if(theme && dom.currentThemeName){
+    dom.currentThemeName.textContent = theme.name;
+  }
+}
+
+function resetToSystemTheme(){
+  const prefersDark = window.matchMedia && !window.matchMedia('(prefers-color-scheme: light)').matches;
+  const systemTheme = prefersDark ? 'mocha' : 'terracotta';
+  applyTheme(systemTheme, true);
+  buildThemeMenuGrid();
+  updateThemeMenuInfo();
+}
+
+
 // View Mode Switcher (List vs Grid)
 let currentViewMode = 'list';
 
@@ -4761,6 +5091,21 @@ async function initBoard(){
   initInstallFlow();
   if(remindersEnabled()) scheduleNextReminder();
   else showNotificationPrompt(); // Show prompt if reminders not enabled
+
+  // Theme menu event listeners
+  if(dom.themeMenuBtn) dom.themeMenuBtn.onclick = openThemeMenu;
+  if(dom.themeMenuClose) dom.themeMenuClose.onclick = closeThemeMenu;
+  if(dom.themeCloseBtn) dom.themeCloseBtn.onclick = closeThemeMenu;
+  if(dom.themeMenuScrim) dom.themeMenuScrim.onclick = closeThemeMenu;
+  if(dom.themeResetBtn) dom.themeResetBtn.onclick = resetToSystemTheme;
+
+  // Close theme menu on Escape
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && dom.themeMenu && dom.themeMenu.classList.contains('open')){
+      closeThemeMenu();
+    }
+  });
+
   document.querySelectorAll('.drop-in, .rise-in').forEach(el=>{
     el.addEventListener('animationend', function handler(){
       el.classList.remove('drop-in','rise-in','d1','d2','d3');
