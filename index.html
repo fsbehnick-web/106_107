@@ -11,13 +11,26 @@
 <script>
 (function(){
   try{
-    var saved = localStorage.getItem('schedule-theme-106-107');
-    var resolved = saved || ((window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'terracotta' : null);
-    if(resolved){
-      document.documentElement.setAttribute('data-theme', resolved);
+    var BUILTIN = {mocha:'#1a1512', terracotta:'#f1e3d0', 'crimson-cloud':'#F1FAEE', 'forest-cream':'#0B3D0B',
+      'bronze-night':'#121A3A', 'olive-wine':'#5A1020', 'rust-sand':'#E9D8A6', 'moss-ivory':'#FEFAE0'};
+    var root = document.documentElement, meta = document.getElementById('themeColorMeta');
+    var light = !!(window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches);
+    var system = light ? 'terracotta' : 'mocha';
+    function read(k){ try{ return JSON.parse(localStorage.getItem(k) || '[]') || []; }catch(e){ return []; } }
+    var customs = read('custom-themes-106-107-shared'), hidden = read('hidden-themes-106-107');
+    if(customs.length){
+      var s = document.createElement('style');
+      s.id = 'custom-themes-style';
+      s.textContent = customs.map(function(t){ return t.css || ''; }).join('');
+      document.head.appendChild(s);
     }
-    var meta = document.getElementById('themeColorMeta');
-    if(meta) meta.setAttribute('content', resolved === 'terracotta' ? '#f1e3d0' : '#1a1512');
+    var saved = localStorage.getItem('schedule-theme-106-107');
+    var custom = customs.filter(function(x){ return x.id === saved; })[0];
+    var known = !!custom || Object.prototype.hasOwnProperty.call(BUILTIN, saved);
+    // выбранная тема скрыта или удалена — откат к системной
+    var id = (saved && known && hidden.indexOf(saved) < 0) ? saved : system;
+    if(saved || id !== 'mocha') root.setAttribute('data-theme', id);
+    if(meta) meta.setAttribute('content', custom && id === saved ? (custom.bg || custom.c1) : (BUILTIN[id] || '#1a1512'));
   }catch(e){}
 })();
 </script>
@@ -29,18 +42,6 @@ var tablet=ipad||(android&&!/Mobile/i.test(ua)),mobile=(ios||android)&&!tablet;
 d.setAttribute('data-os',os);d.setAttribute('data-device',mobile?'mobile':tablet?'tablet':'desktop');
 if(tp>0||'ontouchstart' in window)d.setAttribute('data-touch','');
 try{if((window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone)d.setAttribute('data-standalone','')}catch(e){}})();
-</script>
-<script>
-(function(){try{var l=JSON.parse(localStorage.getItem('custom-themes-106-107-shared')||'[]');if(!l.length)return;
-var s=document.createElement('style');s.id='custom-themes-style';s.textContent=l.map(function(t){return t.css||''}).join('');document.head.appendChild(s);
-var id=localStorage.getItem('schedule-theme-106-107'),t=l.filter(function(x){return x.id===id})[0];
-if(t){document.documentElement.setAttribute('data-theme',id);document.getElementById('themeColorMeta').setAttribute('content',t.bg||t.c1)}}catch(e){}})();
-</script>
-  <script>
-(function(){try{var l=JSON.parse(localStorage.getItem('custom-themes-106-107-shared')||'[]');if(!l.length)return;
-var s=document.createElement('style');s.id='custom-themes-style';s.textContent=l.map(function(t){return t.css||''}).join('');document.head.appendChild(s);
-var id=localStorage.getItem('schedule-theme-106-107'),t=l.filter(function(x){return x.id===id})[0];
-if(t){document.documentElement.setAttribute('data-theme',id);document.getElementById('themeColorMeta').setAttribute('content',t.bg||t.c1)}}catch(e){}})();
 </script>
 <title>Расписание — группы 106 и 107</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -302,7 +303,7 @@ if(t){document.documentElement.setAttribute('data-theme',id);document.getElement
   .board-header{
     text-align:center;
     padding: 6px 10px 26px;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     position:relative;
   }
   .board-header::after{
@@ -381,199 +382,6 @@ if(t){document.documentElement.setAttribute('data-theme',id);document.getElement
     border-color: var(--text);
     box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--text-dim);
   }
-  .theme-swatch.custom-theme-btn{
-    background: conic-gradient(from 0deg, #E63946, #F1FAEE, #0B3D0B, #C68642, #8A8A4B, #9B2226, #606C38, #E63946);
-    border-color: var(--text);
-    position: relative;
-  }
-  .theme-swatch.custom-theme-btn::after{
-    content: '+';
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    background: var(--panel);
-    border-radius: 50%;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text);
-  }
-  .custom-theme-modal{
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(12px) saturate(180%);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-  .custom-theme-modal.open{ display: flex; }
-  .custom-theme-panel{
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 24px;
-    max-width: 480px;
-    width: 100%;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-    animation: dropIn 0.3s var(--ease);
-  }
-  .custom-theme-panel h3{
-    margin: 0 0 18px;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--text);
-  }
-  .custom-theme-field{
-    margin-bottom: 16px;
-  }
-  .custom-theme-field label{
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-dim);
-    margin-bottom: 6px;
-  }
-  .custom-theme-field input[type="text"],
-  .custom-theme-field input[type="color"]{
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: var(--bg);
-    color: var(--text);
-    font-family: inherit;
-    font-size: 14px;
-    transition: border-color 0.2s;
-  }
-  .custom-theme-field input[type="color"]{
-    height: 48px;
-    cursor: pointer;
-    padding: 4px;
-  }
-  .custom-theme-field input:focus{
-    outline: none;
-    border-color: var(--g106);
-    box-shadow: 0 0 0 3px var(--g106-soft);
-  }
-  .custom-theme-mode{
-    display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-  }
-  .custom-theme-mode label{
-    flex: 1;
-    position: relative;
-  }
-  .custom-theme-mode input{
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-  }
-  .custom-theme-mode span{
-    display: block;
-    padding: 10px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    text-align: center;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .custom-theme-mode input:checked + span{
-    border-color: var(--g106);
-    background: var(--g106-soft);
-    color: var(--g106);
-  }
-  .custom-theme-preview{
-    margin: 16px 0;
-    padding: 16px;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-  }
-  .custom-theme-preview-title{
-    font-size: 14px;
-    font-weight: 700;
-    margin-bottom: 8px;
-  }
-  .custom-theme-preview-card{
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 12px;
-    margin-top: 8px;
-  }
-  .custom-theme-preview-accent{
-    display: inline-block;
-    padding: 4px 8px;
-    background: var(--g106-soft);
-    color: var(--g106);
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-  }
-  .custom-theme-actions{
-    display: flex;
-    gap: 10px;
-    margin-top: 18px;
-  }
-  .custom-theme-btn-primary,
-  .custom-theme-btn-secondary{
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .custom-theme-btn-primary{
-    background: var(--g106);
-    color: #fff;
-  }
-  .custom-theme-btn-primary:hover{
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  }
-  .custom-theme-btn-secondary{
-    background: var(--panel-2);
-    color: var(--text);
-    border: 1px solid var(--line);
-  }
-  .custom-theme-btn-secondary:hover{
-    background: var(--bg);
-  }
-  .custom-theme-item{
-    position: relative;
-  }
-  .custom-theme-delete{
-    position: absolute;
-    top: -4px;
-    right: -4px;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: var(--g107);
-    color: #fff;
-    border: none;
-    font-size: 12px;
-    line-height: 1;
-    cursor: pointer;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  }
-  .custom-theme-item:hover .custom-theme-delete{
-    display: flex;
-  }
-
   .notification-prompt{
     position: fixed;
     bottom: max(20px, env(safe-area-inset-bottom));
@@ -639,7 +447,7 @@ if(t){document.documentElement.setAttribute('data-theme',id);document.getElement
     display: flex;
     gap: 6px;
     justify-content: center;
-    margin: 16px 0 0;
+    margin: 0 0 16px;
   }
   .view-mode-btn{
     padding: 8px 16px;
@@ -663,110 +471,16 @@ if(t){document.documentElement.setAttribute('data-theme',id);document.getElement
   }
 
   .week-grid-container{
-    margin: 24px 0;
+    margin: 0 0 24px;
     display: none;
   }
   .week-grid-container.show{ display: block; }
-  .week-grid{
-    display: grid;
-    grid-template-columns: 60px repeat(7, 1fr);
-    gap: 1px;
-    background: var(--line);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    overflow: hidden;
-  }
-  .week-grid-header{
-    display: contents;
-  }
-  .week-grid-time-label{
-    background: var(--panel-2);
-    padding: 12px 8px;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text-dim);
-    text-align: center;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  .week-grid-day-label{
-    background: var(--panel-2);
-    padding: 12px 8px;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--text);
-    text-align: center;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  .week-grid-day-label.today{
-    background: var(--g106-soft);
-    color: var(--g106);
-  }
-  .week-grid-time{
-    background: var(--panel-2);
-    padding: 8px;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-dim);
-    text-align: center;
-    position: sticky;
-    left: 0;
-    z-index: 5;
-  }
-  .week-grid-cell{
-    background: var(--panel);
-    padding: 4px;
-    min-height: 50px;
-    position: relative;
-    transition: background-color 0.2s;
-  }
-  .week-grid-cell:hover{
-    background: var(--panel-2);
-  }
-  .week-grid-class{
-    background: var(--g106-soft);
-    border-left: 3px solid var(--g106);
-    padding: 4px 6px;
-    border-radius: 4px;
-    font-size: 10px;
-    line-height: 1.3;
-    margin-bottom: 2px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .week-grid-class:hover{
-    background: var(--g106);
-    color: #fff;
-    transform: translateX(2px);
-  }
-  .week-grid-class.g107{
-    background: var(--g107-soft);
-    border-left-color: var(--g107);
-  }
-  .week-grid-class.g107:hover{
-    background: var(--g107);
-  }
-  .week-grid-class-title{
-    font-weight: 700;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .week-grid-class-time{
-    font-size: 9px;
-    opacity: 0.8;
-    margin-top: 2px;
-  }
-
   .next-up-widget{
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 14px;
     padding: 16px;
-    margin: 16px 0;
+    margin: 0 0 16px;
     box-shadow: var(--shadow);
     transition: all 0.3s var(--ease);
   }
@@ -936,44 +650,12 @@ if(t){document.documentElement.setAttribute('data-theme',id);document.getElement
     font-weight: 600;
   }
 
-  .group-switcher{
-    margin-top: 12px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap: 7px;
-  }
-  .group-btn{
-    border: 1px solid var(--line);
-    background: var(--panel-2);
-    color: var(--text-dim);
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: .2px;
-    padding: 6px 14px;
-    border-radius: 20px;
-    cursor: pointer;
-    touch-action: manipulation;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    user-select: none;
-    transition: border-color .2s var(--ease), color .2s var(--ease), background-color .2s var(--ease), transform .15s var(--ease);
-  }
-  @media (hover: hover){
-    .group-btn:hover{ transform: translateY(-1px); }
-  }
-  .group-btn:active{ transform: translateY(0) scale(.95); }
-  .group-btn.active[data-group="106"]{ border-color: var(--g106); color: var(--g106); background: var(--g106-soft); }
-  .group-btn.active[data-group="107"]{ border-color: var(--g107); color: var(--g107); background: var(--g107-soft); }
-  .group-btn.active[data-group="both"]{ border-color: var(--text-dim); color: var(--text); background: var(--panel); }
-
   .week-nav{
     display:flex;
     align-items:center;
     justify-content:center;
     gap:10px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
   .week-arrow, .calendar-btn{
     flex: 0 0 auto;
@@ -1026,8 +708,8 @@ if(t){document.documentElement.setAttribute('data-theme',id);document.getElement
   .date-rail{
     display:flex;
     gap:7px;
-    padding: 4px 2px 14px;
-    margin-bottom: 4px;
+    padding: 4px 2px 12px;
+    margin: 0 0 12px;
     overflow-x: auto;
     touch-action: pan-x;
     scroll-snap-type: x proximity;
@@ -1088,7 +770,7 @@ if(t){document.documentElement.setAttribute('data-theme',id);document.getElement
     align-items:center;
     justify-content:flex-start;
     gap:8px;
-    margin: 0 0 18px;
+    margin: 0 0 14px;
   }
   .day-title{
     flex: 1 1 auto;
@@ -1195,7 +877,7 @@ if(t){document.documentElement.setAttribute('data-theme',id);document.getElement
     display:grid;
     grid-template-columns: 1fr 1fr;
     gap: 14px;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
   }
   @media (max-width: 560px){
     .columns{grid-template-columns: 1fr;}
@@ -1555,7 +1237,7 @@ if(t){document.documentElement.setAttribute('data-theme',id);document.getElement
     border: 1px solid var(--line);
     border-radius: 16px;
     padding: 13px 15px;
-    margin: 0 0 18px;
+    margin: 0 0 16px;
     box-shadow: var(--shadow);
     transition: var(--t-bg), border-color .3s var(--ease);
   }
@@ -1998,11 +1680,14 @@ if(t){document.documentElement.setAttribute('data-theme',id);document.getElement
     .search-clear:hover{ color: var(--text); background: var(--line); }
   }
 
-  .search-results{ display: none; margin: 0 0 20px; }
+  .search-results{ display: none; margin: 0 0 16px; }
   body.searching .search-results{ display: block; }
   body.searching #pulseCard,
+  body.searching #nextUpWidget,
+  body.searching #viewModeSwitcher,
   body.searching #dayBlock,
   body.searching #daySwap,
+  body.searching #weekGridContainer,
   body.searching .scroll-today-btn{ display: none !important; }
 
   .sr-card{
@@ -2174,7 +1859,7 @@ if(t){document.documentElement.setAttribute('data-theme',id);document.getElement
 
   @media print{
     body{ background:#fff !important; color:#000 !important; padding:0; }
-    .theme-switcher, .group-switcher, .today-btn, .week-nav, .sheet-scrim, .detail-sheet, .scroll-top-btn, .scroll-today-btn, .update-banner, .day-export-btn, .day-share-btn, .pulse-card, .search-box, .search-results, .app-version{ display:none !important; }
+    .theme-switcher, .group-menu-trigger, .group-menu, .group-menu-scrim, .today-btn, .week-nav, .sheet-scrim, .detail-sheet, .scroll-top-btn, .scroll-today-btn, .update-banner, .day-export-btn, .day-share-btn, .pulse-card, .search-box, .search-results, .app-version{ display:none !important; }
     .date-rail{ overflow:visible; }
     .col{ box-shadow:none; border:1px solid #999; break-inside: avoid; }
     .slot{ animation:none !important; opacity:1 !important; }
@@ -2388,14 +2073,254 @@ if(t){document.documentElement.setAttribute('data-theme',id);document.getElement
     transform: scale(0.95);
   }
 
+/* ===== Адаптация под систему и редактор тем (бывший патч-блок) ===== */
+html[data-touch] .week-arrow,html[data-touch] .calendar-btn,html[data-touch] .day-export-btn,html[data-touch] .day-share-btn,html[data-touch] .theme-swatch,html[data-touch] .theme-menu-trigger{position:relative}
+html[data-touch] .week-arrow::after,html[data-touch] .calendar-btn::after,html[data-touch] .day-export-btn::after,html[data-touch] .day-share-btn::after,html[data-touch] .theme-swatch::after,html[data-touch] .theme-menu-trigger::after,html[data-touch] .sheet-close::after{content:"";position:absolute;inset:-8px}
+.tm-ib,.tm-sw{position:relative}
+html[data-touch] .tm-ib::after,html[data-touch] .tm-sw::after{content:"";position:absolute;inset:-8px}
+/* меню тем и редактор */
+.tm-acts{position:absolute;right:6px;bottom:6px;display:flex;gap:4px}
+.tm-ib{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--text-dim);font-size:14px;line-height:1;cursor:pointer;padding:0}
+.tm-rest{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;font-size:13px;color:var(--text-dim)}
+.tm-rest .theme-btn{flex:0 0 auto}
+.tm-ed h3{margin:0 0 10px}
+.tm-name,.tm-in input[type=text]{width:100%;font:inherit;font-size:16px;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;outline:none}
+.tm-name:focus,.tm-in input[type=text]:focus{border-color:var(--g106)}
+.tm-in{display:flex;gap:8px}
+.tm-in input[type=color]{flex:0 0 48px;height:44px;padding:3px;border:1px solid var(--line);border-radius:10px;background:var(--bg);cursor:pointer}
+.tm-in input.bad{border-color:#e5484d}
+.tm-f{margin-top:12px}.tm-f label{display:block;font-size:12px;font-weight:700;color:var(--text-dim);margin-bottom:6px}
+.tm-pal{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.tm-sw{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);padding:0;cursor:pointer}
+.tm-mode{display:flex;gap:6px;margin-top:14px}
+.tm-mode button{flex:1;padding:10px 6px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);color:var(--text-dim);font-weight:700;font-size:13px;cursor:pointer}
+.tm-mode button.on{border-color:var(--g106);color:var(--g106);background:var(--g106-soft)}
+.tm-adv{margin-top:12px;font-size:13px;color:var(--text-dim)}.tm-adv summary{cursor:pointer;padding:8px 0;font-weight:700}
+.tm-hint{font-size:11.5px;margin:10px 0 0}
+.tm-prev{margin-top:14px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg);color:var(--text)}
+.tm-pv-h{padding:8px 12px;font-weight:800;font-size:13px;color:var(--g106);background:var(--panel-2)}.tm-pv-h i{font-style:normal;color:var(--g107);margin-left:8px}
+.tm-pv-s{padding:9px 12px;font-size:12.5px;background:var(--panel);border-top:1px solid var(--line);border-left:3px solid transparent}
+.tm-pv-s b{color:var(--text-dim);margin-right:6px}.tm-pv-s.now{background:var(--g107-soft);border-left-color:var(--g107)}
+.tm-btns{display:flex;gap:8px;margin-top:14px}
+html[data-device="mobile"] .theme-switcher{gap:6px;padding:5px 7px}
+html[data-device="mobile"] .theme-switcher .theme-swatch:not(.active){display:none}
+html[data-device="mobile"] .theme-menu{top:auto;bottom:0;left:0;transform:translateY(100%);width:100%;max-height:88vh;max-height:88dvh;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+html[data-device="mobile"] .theme-menu.open{transform:none}
+html[data-device="mobile"] .theme-grid{grid-template-columns:repeat(2,1fr)}
+html[data-device="tablet"] .theme-grid{grid-template-columns:repeat(3,1fr)}
+html[data-standalone][data-touch] body{overscroll-behavior-y:contain}
+html[data-os="android"][data-standalone] .scroll-top-btn{bottom:max(28px,env(safe-area-inset-bottom) + 16px)}
+
+/* ===== Меню группы и подгруппы (кнопка слева сверху) ===== */
+.group-menu-trigger{
+  position:fixed;
+  top:max(14px, env(safe-area-inset-top));
+  left:max(14px, env(safe-area-inset-left));
+  z-index:60;
+  display:flex;align-items:center;gap:7px;
+  max-width:calc(100vw - 150px);
+  padding:6px 12px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:20px;
+  box-shadow:var(--shadow);
+  font:inherit;font-size:12.5px;font-weight:700;line-height:1.2;
+  color:var(--text);
+  cursor:pointer;
+  white-space:nowrap;
+  touch-action:manipulation;
+  -webkit-touch-callout:none;
+  -webkit-user-select:none;user-select:none;
+  transition:background-color .35s var(--ease), border-color .35s var(--ease), box-shadow .35s var(--ease), transform .15s var(--ease);
+}
+@media (hover:hover){ .group-menu-trigger:hover{ border-color:var(--text-dim); } }
+.group-menu-trigger:active{ transform:scale(.97); }
+.group-menu-trigger:focus-visible{ outline:2px solid var(--g106); outline-offset:2px; }
+.group-menu-trigger .gm-ico{position:relative;font-size:14px;line-height:1;flex:0 0 auto}
+.group-menu-trigger .gm-ico::after{content:"";position:absolute;right:-4px;bottom:-3px;width:8px;height:8px;border-radius:50%;background:var(--text-dim);border:1.5px solid var(--panel)}
+.group-menu-trigger[data-group="106"] .gm-ico::after{background:var(--g106)}
+.group-menu-trigger[data-group="107"] .gm-ico::after{background:var(--g107)}
+.group-menu-trigger[data-group="both"] .gm-ico::after{background:linear-gradient(135deg,var(--g106) 50%,var(--g107) 50%)}
+.group-menu-trigger .gm-label{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.gm-short{display:none}
+@media (max-width:420px){ .gm-full{display:none} .gm-short{display:inline} }
+html[data-device="mobile"] .group-menu-trigger{padding:5px 10px;gap:6px}
+
+.group-menu .theme-menu-section:last-of-type{margin-bottom:8px}
+.gm-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.gm-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0;padding:12px;border:2px solid var(--line);border-radius:12px;background:var(--panel-2);color:var(--text);font:inherit;text-align:left;cursor:pointer;touch-action:manipulation;transition:border-color .25s var(--ease), background-color .25s var(--ease), transform .15s var(--ease)}
+.gm-card:active{transform:scale(.98)}
+.gm-card:focus-visible,.gm-sub:focus-visible{outline:2px solid var(--g106);outline-offset:2px}
+.gm-card-dot{flex:0 0 auto;width:12px;height:12px;border-radius:50%;background:var(--text-dim)}
+.gm-card[data-group="106"] .gm-card-dot{background:var(--g106)}
+.gm-card[data-group="107"] .gm-card-dot{background:var(--g107)}
+.gm-card[data-group="both"] .gm-card-dot{background:linear-gradient(135deg,var(--g106) 50%,var(--g107) 50%)}
+.gm-card-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.gm-card-txt b{font-size:14px;font-weight:800}
+.gm-card-txt small{font-size:11px;font-weight:600;color:var(--text-dim);overflow-wrap:anywhere}
+.gm-card.active[data-group="106"]{border-color:var(--g106);background:var(--g106-soft)}
+.gm-card.active[data-group="107"]{border-color:var(--g107);background:var(--g107-soft)}
+.gm-card.active[data-group="both"]{border-color:var(--text);background:var(--panel)}
+.gm-subs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.gm-sub{min-width:0;padding:11px 6px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);color:var(--text-dim);font:inherit;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;transition:border-color .25s var(--ease), background-color .25s var(--ease), color .25s var(--ease)}
+.gm-sub.active{border-color:var(--g106);background:var(--g106-soft);color:var(--g106)}
+.gm-hint{margin:10px 0 0;font-size:12px;line-height:1.45;color:var(--text-dim)}
+@media (max-width:460px){ .gm-subs{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:420px){
+  .gm-cards{grid-template-columns:1fr}
+  .gm-card{flex-direction:row;align-items:center;gap:12px}
+}
+
+/* ===== Новые компоненты: подгруппы, «Что дальше», сетка недели, заметки, инфо-окна ===== */
+/* «Что дальше»: две колонки 106 | 107 — как .gv-day-cols в сетке недели */
+.next-up-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 12px}
+.next-up-header .next-up-label{margin:0}
+.next-up-columns{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border-top:1px solid var(--line);margin:0 -16px -16px;border-radius:0 0 14px 14px;overflow:hidden}
+.next-up-columns.single{grid-template-columns:1fr}
+@media (max-width:350px){.next-up-columns{grid-template-columns:1fr}}
+.nu-col{min-width:0;display:flex;flex-direction:column;background:var(--panel)}
+.nu-col.g106{border-top:2px solid var(--g106)}
+.nu-col.g107{border-top:2px solid var(--g107)}
+.nu-col-head{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;padding:8px 10px 7px;font-size:12px;font-weight:700;color:var(--text-dim)}
+.nu-status{font-size:11px;font-weight:600;color:var(--text-dim);min-width:0}
+.nu-g{padding:2px 9px;border-radius:7px;font-weight:800;font-size:11px}
+.nu-col.g106 .nu-g{background:var(--g106-soft);color:var(--g106)}
+.nu-col.g107 .nu-g{background:var(--g107-soft);color:var(--g107)}
+.nu-soon{display:inline-block;padding:2px 8px;border-radius:999px;background:var(--g106-soft);color:var(--g106);font-weight:800;animation:nuPulse 1.4s ease-in-out infinite}
+@keyframes nuPulse{0%,100%{opacity:1}50%{opacity:.55}}
+/* компактные кликабельные слоты (как .gv-c) */
+.next-up-widget .nu-col .next-up-card{display:block;margin:0;padding:8px 10px;border-radius:0;background:none;border-top:1px solid var(--line);border-left:3px solid transparent;cursor:pointer;min-width:0}
+.next-up-widget .nu-col .next-up-card:hover{background:var(--panel-2)}
+.next-up-widget .nu-col .next-up-card:focus-visible{outline:2px solid var(--g106);outline-offset:-2px}
+.next-up-widget .nu-col .next-up-time{font-size:11px;font-weight:700;color:var(--text-dim);margin:0}
+.next-up-widget .nu-col .next-up-title{font-size:12.5px;font-weight:700;line-height:1.3;margin:1px 0 0}
+.next-up-widget .nu-col .next-up-meta{display:block;font-size:11px;color:var(--text-dim);margin-top:2px}
+.next-up-widget .nu-col .note-badge{margin-top:3px}
+.nu-col.g106 .next-up-card.primary{background:var(--g106-soft);border-left-color:var(--g106)}
+.nu-col.g107 .next-up-card.primary{background:var(--g107-soft);border-left-color:var(--g107)}
+.nu-col.g106 .next-up-card.primary .next-up-time{color:var(--g106)}
+.nu-col.g107 .next-up-card.primary .next-up-time{color:var(--g107)}
+.nu-more{padding:7px 10px;border-top:1px solid var(--line);font-size:11.5px;font-weight:700;color:var(--text-dim)}
+.nu-empty{padding:10px;border-top:1px solid var(--line);font-size:12.5px;color:var(--text-dim)}
+
+/* Сетка недели: карточки дней, внутри — колонки 106 | 107 */
+.week-grid{display:block}
+.gv-nav{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;margin:0 0 12px}
+.gv-nav .week-label{flex:1 1 auto;min-width:0;text-align:center}
+.gv-today{padding:6px 12px;border:1px solid var(--g106);background:var(--g106-soft);color:var(--g106);border-radius:999px;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
+.gv-days{display:flex;flex-direction:column;gap:12px}
+.gv-day-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+.gv-day-card.today{border-color:var(--g107);box-shadow:0 0 0 2px var(--g107-soft),var(--shadow)}
+.gv-day-head{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px;padding:10px 12px;background:var(--panel-2);font-size:12px;font-weight:700;color:var(--text-dim)}
+.gv-day-head b{color:var(--text);font-size:15px}
+.gv-day-card.today .gv-day-head{background:var(--g107-soft);color:var(--g107)}
+.gv-day-card.today .gv-day-head b{color:var(--g107)}
+.gv-tag{margin-left:auto;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:999px;background:var(--line);color:var(--text)}
+.gv-day-cols{display:grid;grid-template-columns:1fr;gap:1px;background:var(--line)}
+.gv-day-cols.both{grid-template-columns:1fr 1fr}
+.gv-gcol{background:var(--panel);min-width:0}
+.gv-gtag{padding:6px 10px 4px;font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase}
+.gv-gcol.g106 .gv-gtag{color:var(--g106);border-top:2px solid var(--g106)}
+.gv-gcol.g107 .gv-gtag{color:var(--g107);border-top:2px solid var(--g107)}
+.gv-c{display:block;width:100%;box-sizing:border-box;text-align:left;border:0;border-top:1px solid var(--line);border-left:3px solid transparent;background:none;color:var(--text);padding:8px 10px;font:inherit;cursor:pointer}
+.gv-c.g106{border-left-color:var(--g106)}
+.gv-c.g107{border-left-color:var(--g107)}
+.gv-c:hover{background:var(--panel-2)}
+.gv-c:focus-visible{outline:2px solid var(--g106);outline-offset:-2px}
+.gv-c-time{display:block;font-size:11px;font-weight:700;color:var(--text-dim)}
+.gv-c-title{display:block;font-size:12.5px;font-weight:600;margin-top:1px}
+.gv-c-desc{display:block;font-size:11px;color:var(--text-dim);margin-top:2px}
+.gv-empty{padding:10px;font-size:12px;color:var(--text-dim)}
+.gv-empty.free{color:var(--free);font-weight:600}
+
+/* Заметки к парам */
+.note-badge,.slot .what .note-badge{display:flex;align-items:center;gap:4px;margin-top:4px;max-width:100%;font-size:11px;font-weight:700;color:var(--g106)}
+.note-badge i{font-style:normal;font-weight:600;color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.sheet-note-box{margin:14px 0}
+.sheet-note-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;font-size:13px;font-weight:700}
+.sheet-note-clear{background:none;border:0;padding:0;color:var(--text-dim);font:inherit;font-size:12px;font-weight:700;text-decoration:underline;cursor:pointer}
+.sheet-note-clear[hidden]{display:none}
+.sheet-note-input{display:block;width:100%;box-sizing:border-box;min-height:56px;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;color:var(--text);font:inherit;font-size:13px;line-height:1.4;padding:9px 10px;resize:vertical}
+.sheet-note-input:focus{outline:2px solid var(--g106);outline-offset:1px}
+
+/* Карточка пары: подгруппы, преподаватели, прогресс дисциплины */
+.meta-teacher-link{background:none;border:0;padding:0;font:inherit;color:inherit;text-align:left;text-decoration:underline dotted;text-underline-offset:3px;cursor:pointer}
+.meta-teacher-link:hover,.meta-teacher-link:focus-visible{color:var(--g106)}
+.sheet-meta .sub-mine{background:var(--g106-soft);border-left:3px solid var(--g106);border-radius:6px;padding:4px 8px}
+.sheet-meta .sub-dim{opacity:.6}
+.mine-pill{font-style:normal;font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:999px;background:var(--g106);color:var(--bg);white-space:nowrap}
+.rel-progress{height:6px;border-radius:999px;background:var(--panel-2);overflow:hidden;margin:6px 0 4px}
+.rel-progress-bar{height:100%;border-radius:999px;background:var(--g106)}
+.rel-progress-label{font-size:11.5px;font-weight:600;color:var(--text-dim);margin-bottom:8px}
+
+/* Инфо-окна (#sheetCustom) */
+.sheet-custom{padding:2px 0 12px}
+.stats-table{width:100%;border-collapse:collapse;font-size:13px}
+.stats-table th,.stats-table td{padding:9px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.stats-table thead th{font-size:12px;font-weight:800}
+.stats-table thead th.g106{color:var(--g106)}
+.stats-table thead th.g107{color:var(--g107)}
+.stats-table tbody th{font-weight:600;color:var(--text-dim);width:42%}
+.stats-table td{font-weight:700;color:var(--text)}
+.kbd-list{display:grid;gap:2px;font-size:14px}
+.kbd-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.kbd-row:last-child{border-bottom:0}
+.kbd-row span{color:var(--text-dim)}
+.kbd-row kbd{background:var(--panel-2);padding:4px 8px;border-radius:6px;font-family:ui-monospace,monospace;font-size:13px;color:var(--text);white-space:nowrap}
+.kbd-help-btn{display:none}
+@media (min-width:900px){
+  .kbd-help-btn{display:flex;align-items:center;justify-content:center;position:fixed;right:18px;bottom:76px;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:18px;cursor:pointer;box-shadow:var(--shadow);z-index:30}
+  .kbd-help-btn:hover{border-color:var(--g106)}
+}
+@media (prefers-reduced-motion:reduce){.nu-soon{animation:none}}
+
+.data-error{margin:0 0 16px;padding:12px 14px;border:1px solid #e5484d;border-radius:12px;background:rgba(229,72,77,.12);color:var(--text);font-size:13px;font-weight:600}
 </style>
 </head>
 <body>
-
 <div class="update-banner" id="updateBanner" role="status">
   <span>Доступна новая версия расписания</span>
   <button class="update-refresh" id="updateRefreshBtn" type="button">Обновить</button>
   <button class="update-dismiss" id="updateDismissBtn" type="button" aria-label="Скрыть уведомление об обновлении">Позже</button>
+</div>
+
+<!-- Кнопка меню группы и подгруппы (слева сверху) -->
+<button class="group-menu-trigger" id="groupMenuBtn" type="button" data-group="both" aria-haspopup="dialog" aria-label="Группа и подгруппа: все группы, все подгруппы">
+  <span class="gm-ico" aria-hidden="true">👥</span><span class="gm-label" id="groupMenuBtnLabel"><span class="gm-full">Все группы</span><span class="gm-short">Все</span></span>
+</button>
+
+<!-- Group Menu Modal -->
+<div class="theme-menu-scrim group-menu-scrim" id="groupMenuScrim"></div>
+<div class="theme-menu group-menu" id="groupMenu" role="dialog" aria-modal="true" aria-labelledby="groupMenuTitle" aria-hidden="true" inert>
+  <div class="theme-menu-header">
+    <h2 id="groupMenuTitle">Группа и подгруппа</h2>
+    <button class="theme-menu-close" id="groupMenuClose" type="button" aria-label="Закрыть">×</button>
+  </div>
+
+  <div class="theme-menu-section">
+    <h3>Учебная группа</h3>
+    <div class="gm-cards" role="group" aria-label="Учебная группа">
+      <button type="button" class="gm-card" data-group="both" aria-pressed="false"><span class="gm-card-dot"></span><span class="gm-card-txt"><b>Все</b><small>106 и 107</small></span></button>
+      <button type="button" class="gm-card" data-group="106" aria-pressed="false"><span class="gm-card-dot"></span><span class="gm-card-txt"><b>Группа 106</b><small>ВОМ23-ММИ2606</small></span></button>
+      <button type="button" class="gm-card" data-group="107" aria-pressed="false"><span class="gm-card-dot"></span><span class="gm-card-txt"><b>Группа 107</b><small>ВОМ23-ММИ2607</small></span></button>
+    </div>
+  </div>
+
+  <div class="theme-menu-section">
+    <h3>Подгруппа (для лаб. и практик)</h3>
+    <div class="gm-subs" role="group" aria-label="Подгруппа">
+      <button type="button" class="gm-sub" data-sub="all" aria-pressed="false">Все подгруппы</button>
+      <button type="button" class="gm-sub" data-sub="1" aria-pressed="false">1 подгруппа</button>
+      <button type="button" class="gm-sub" data-sub="2" aria-pressed="false">2 подгруппа</button>
+      <button type="button" class="gm-sub" data-sub="3" aria-pressed="false">3 подгруппа</button>
+    </div>
+    <p class="gm-hint">В расписании и карточке пары будут сразу отображаться преподаватель и аудитория выбранной подгруппы.</p>
+  </div>
+
+  <div class="theme-controls">
+    <button class="theme-btn" id="groupMenuReset" type="button">Сбросить фильтр</button>
+    <button class="theme-btn primary" id="groupMenuDone" type="button">Готово</button>
+  </div>
 </div>
 
 <div class="wrap" id="pageWrap">
@@ -2405,7 +2330,6 @@ if(t){document.documentElement.setAttribute('data-theme',id);document.getElement
     <div class="theme-switcher drop-in d3" id="themeSwitcher" role="group" aria-label="Выбор темы оформления">
       <button class="theme-menu-trigger" id="themeMenuBtn" type="button" aria-label="Открыть меню тем">⚙</button>
     </div>
-    <div class="group-switcher drop-in d3" id="groupSwitcher" role="group" aria-label="Выбор группы"></div>
 
   <!-- Theme Menu Modal -->
   <div class="theme-menu-scrim" id="themeMenuScrim"></div>
@@ -2464,6 +2388,7 @@ if(t){document.documentElement.setAttribute('data-theme',id);document.getElement
       <button class="today-btn" id="todayBtn" onclick="jumpToToday()" title="Вернуться к сегодняшнему дню" tabindex="-1" aria-hidden="true">Сегодня</button>
       <button class="day-export-btn" id="dayExportBtn" onclick="exportDayICS(currentDate)" title="Экспортировать день в календарь (.ics)" aria-label="Экспортировать день в календарь">📆</button>
       <button class="day-share-btn" id="dayShareBtn" onclick="shareDay(currentDate)" title="Поделиться расписанием дня" aria-label="Поделиться расписанием дня">📤</button>
+      <button class="day-export-btn day-stats-btn" id="dayStatsBtn" type="button" onclick="showStats()" title="Статистика недели" aria-label="Статистика недели">📊</button>
     </div>
   </div>
 
@@ -2479,10 +2404,10 @@ if(t){document.documentElement.setAttribute('data-theme',id);document.getElement
       </div>
     </div>
   </div>
-</div>
 
-<div class="week-grid-container" id="weekGridContainer">
-  <div class="week-grid" id="weekGrid"></div>
+  <div class="week-grid-container" id="weekGridContainer">
+    <div class="week-grid" id="weekGrid"></div>
+  </div>
 </div>
 
 <div class="sheet-scrim" id="sheetScrim" onclick="closeSheet()"></div>
@@ -2494,7 +2419,12 @@ if(t){document.documentElement.setAttribute('data-theme',id);document.getElement
     <h3 class="sheet-title" id="sheetTitle"></h3>
   </div>
   <div class="sheet-body">
+    <div class="sheet-custom" id="sheetCustom" style="display:none"></div>
     <div class="sheet-meta" id="sheetMeta"></div>
+    <div class="sheet-note-box" id="sheetNote">
+      <div class="sheet-note-head"><span>📌 Заметка к паре</span><button type="button" class="sheet-note-clear" id="sheetNoteClear" hidden>Очистить</button></div>
+      <textarea class="sheet-note-input" id="sheetNoteInput" rows="2" maxlength="280" placeholder="Например: сдать лабу №2, контрольная, принести тетрадь…" aria-label="Заметка к паре"></textarea>
+    </div>
     <div class="sheet-related" id="sheetRelated"></div>
     <div class="sheet-actions">
       <button class="sheet-ics-btn" id="sheetIcsBtn" type="button">📅 Добавить в календарь</button>
@@ -2532,10 +2462,21 @@ if(t){document.documentElement.setAttribute('data-theme',id);document.getElement
 
 <button class="scroll-today-btn" id="scrollTodayBtn" onclick="scrollToTodayInFeed()" aria-label="К сегодняшнему дню" title="К сегодняшнему дню">⌄</button>
 <button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToPageTop()" aria-label="Наверх" title="Наверх">↑</button>
+<button class="kbd-help-btn" id="kbdHelpBtn" type="button" onclick="showKeyboardHelp()" title="Горячие клавиши (?)" aria-label="Горячие клавиши">⌨️</button>
 
 <div class="app-version-row">
-  <div class="app-version" aria-hidden="true">v1.7 · 21.09.2026</div>
+  <div class="app-version" aria-hidden="true">v1.8 · 14.10.2026</div>
   <button class="app-version-refresh" id="versionRefreshBtn" type="button" aria-label="Проверить наличие обновлений" title="Проверить наличие обновлений">↻</button>
+</div>
+
+<!-- Notification Permission Prompt -->
+<div class="notification-prompt" id="notificationPrompt">
+  <h3>🔔 Не пропустите пары</h3>
+  <p>Получайте уведомления за 5 минут до начала занятия</p>
+  <div class="notification-prompt-actions">
+    <button class="btn-later" onclick="dismissNotificationPrompt()">Позже</button>
+    <button class="btn-enable" onclick="enableNotifications()">Включить</button>
+  </div>
 </div>
 
 <script>
@@ -2546,16 +2487,20 @@ let g106 = {};
 let g107 = {};
 
 let weeklyTemplate = {};
+let dataLoadFailed = false;
 async function loadData() {
   try {
     const response = await fetch('./data.json');
+    if (!response.ok) throw new Error('HTTP ' + response.status);
     const data = await response.json();
     sharedSchedule = data.sharedSchedule || {};
     own106 = data.own106 || {};
     own107 = data.own107 || {};
     weeklyTemplate = data.weeklyTemplate || {};
+    dataLoadFailed = false;
   } catch (e) {
     console.error('Failed to load schedule data:', e);
+    dataLoadFailed = true;
   }
 }
 
@@ -2722,7 +2667,13 @@ const dom = {
   currentThemeName: document.getElementById('currentThemeName'),
   themeResetBtn: document.getElementById('themeResetBtn'),
   themeCloseBtn: document.getElementById('themeCloseBtn'),
-  groupSwitcher: document.getElementById('groupSwitcher'),
+  groupMenuBtn: document.getElementById('groupMenuBtn'),
+  groupMenuBtnLabel: document.getElementById('groupMenuBtnLabel'),
+  groupMenu: document.getElementById('groupMenu'),
+  groupMenuScrim: document.getElementById('groupMenuScrim'),
+  groupMenuClose: document.getElementById('groupMenuClose'),
+  groupMenuDone: document.getElementById('groupMenuDone'),
+  groupMenuReset: document.getElementById('groupMenuReset'),
   sheetScrim: document.getElementById('sheetScrim'),
   sheet: document.getElementById('detailSheet'),
   sheetGrabber: document.getElementById('sheetGrabber'),
@@ -2759,6 +2710,14 @@ const dom = {
   searchResults: document.getElementById('searchResults'),
   sheetRelated: document.getElementById('sheetRelated'),
   sheetGotoBtn: document.getElementById('sheetGotoBtn'),
+  sheetBody: document.querySelector('#detailSheet .sheet-body'),
+  sheetCustom: document.getElementById('sheetCustom'),
+  sheetActions: document.querySelector('#detailSheet .sheet-actions'),
+  sheetNote: document.getElementById('sheetNote'),
+  nextUpWidget: document.getElementById('nextUpWidget'),
+  viewModeSwitcher: document.getElementById('viewModeSwitcher'),
+  weekGridContainer: document.getElementById('weekGridContainer'),
+  weekGrid: document.getElementById('weekGrid'),
 };
 
 const MOSCOW_TZ = 'Europe/Moscow';
@@ -2773,22 +2732,6 @@ function todayISO(){
 }
 let TODAY = todayISO();
 
-function parseDeepLinkDate(){
-  try{
-    const raw = new URLSearchParams(window.location.search).get('date');
-    if(!raw || !/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null;
-    if(raw < OVERALL_START || raw > OVERALL_END) return null;
-    const d = new Date(raw + "T00:00:00");
-    if(Number.isNaN(d.getTime())) return null;
-    const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,"0"), day = String(d.getDate()).padStart(2,"0");
-    if(`${y}-${m}-${day}` !== raw) return null;
-    return raw;
-  }catch(e){
-    return null;
-  }
-}
-const DEEP_LINK_DATE = parseDeepLinkDate();
-
 function todayTarget(){
   // Всегда актуальный «сегодня», с защитой от выхода за пределы семестра.
   if(dateList.some(([iso])=>iso===TODAY)) return TODAY;
@@ -2796,11 +2739,19 @@ function todayTarget(){
   return dateList[dateList.length-1][0];
 }
 
-function pickInitialDate(){
-  if(DEEP_LINK_DATE) return DEEP_LINK_DATE;
-  return todayTarget();
-}
-let currentDate = pickInitialDate();
+// Приложение всегда стартует на сегодняшней дате и не пишет дату в адресную строку.
+let currentDate = todayTarget();
+
+// Однократно чистим адресную строку от старого параметра ?date=
+(function cleanLegacyDateParam(){
+  try{
+    if(window.location.search.includes('date=')){
+      const url = new URL(window.location.href);
+      url.searchParams.delete('date');
+      window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+    }
+  }catch(e){}
+})();
 
 const GROUP_STORAGE_KEY = 'schedule-group-view-106-107';
 let groupView = 'both';
@@ -2816,12 +2767,6 @@ function currentGroupView(){
 function applyGroupView(view, rerender = true){
   groupView = view;
   try{ localStorage.setItem(GROUP_STORAGE_KEY, view); }catch(e){}
-
-  dom.groupSwitcher.querySelectorAll('.group-btn').forEach(b=>{
-    const isActive = b.dataset.group === view;
-    b.classList.toggle('active', isActive);
-    b.setAttribute('aria-pressed', String(isActive));
-  });
 
   const col106 = dom.columnsWrap.querySelector('.col.g106');
   const col107 = dom.columnsWrap.querySelector('.col.g107');
@@ -2844,46 +2789,16 @@ function applyGroupView(view, rerender = true){
     dom.scrollTodayBtn.classList.remove('show');
   }
 
-  syncDeepLinkUrl();
   if(rerender) render();
   renderPulseCard();
+  updateGroupMenuUI();
+  if(currentViewMode === 'grid') buildWeekGrid();
   if(isSearching()) runSearch();
   if(typeof showScrollTodayIfNeeded === 'function'){
     requestAnimationFrame(showScrollTodayIfNeeded);
   }
 }
 
-function buildGroupSwitcher(){
-  const options = [
-    {id:'both', label:'Все'},
-    {id:'106', label:'106'},
-    {id:'107', label:'107'}
-  ];
-  const frag = document.createDocumentFragment();
-  options.forEach(opt=>{
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'group-btn';
-    btn.dataset.group = opt.id;
-    btn.textContent = opt.label;
-    btn.onclick = ()=> applyGroupView(opt.id, true);
-    frag.appendChild(btn);
-  });
-  dom.groupSwitcher.innerHTML = '';
-  dom.groupSwitcher.appendChild(frag);
-}
-
-function syncDeepLinkUrl(){
-  try{
-    const url = new URL(window.location.href);
-    if(groupView === 'both'){
-      url.searchParams.set('date', currentDate);
-    } else {
-      url.searchParams.delete('date');
-    }
-    window.history.replaceState(null, '', url.pathname + url.search + url.hash);
-  }catch(e){}
-}
 function weekdayIndex(dateStr){
   const d = new Date(dateStr + "T00:00:00");
   return d.getDay();
@@ -3026,7 +2941,8 @@ function updateActivePill(hadFocusInRail){
     activePill.classList.remove('pop');
     void activePill.offsetWidth;
     activePill.classList.add('pop');
-    activePill.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
+    const pr = activePill.getBoundingClientRect(), rr = dom.rail.getBoundingClientRect();
+    dom.rail.scrollBy({left: (pr.left + pr.width/2) - (rr.left + rr.width/2), behavior:'smooth'});
     if(hadFocusInRail) activePill.focus({preventScroll:true});
   }
   const showTodayBtn = currentDate !== TODAY;
@@ -3038,13 +2954,14 @@ function updateActivePill(hadFocusInRail){
 function goToDate(){
   if(groupView !== 'both'){
     render();
+    if(currentViewMode === 'grid') buildWeekGrid();
     return;
   }
   const hadFocusInRail = dom.rail.contains(document.activeElement);
   buildRail();
   updateActivePill(hadFocusInRail);
   updateWeekNav();
-  syncDeepLinkUrl();
+  if(currentViewMode === 'grid') buildWeekGrid();
   dom.daySwap.classList.add('swapping');
   dom.dayTitle.classList.add('swapping');
   window.setTimeout(()=>{
@@ -3057,8 +2974,7 @@ function goToDate(){
 }
 
 function jumpToToday(){
-  // Кнопка «Сегодня» всегда ведёт на реальное сегодня, а не на ту дату,
-  // что осталась в URL / deep-link от прошлого открытия календаря.
+  // Кнопка «Сегодня» всегда ведёт на реальное сегодня.
   const target = todayTarget();
   if(target !== currentDate){
     currentDate = target;
@@ -3112,7 +3028,12 @@ const teacherFullNames = {
   "Гульянц С.С.": "Гульянц Светлана Станиславовна",
   "Михайлова М.В.": "Михайлова Марина Владимировна",
   "Машкина А.В.": "Машкина Анастасия Владимировна",
-  "Редькина Д.И.": "Редькина Дарья Игоревна"
+  "Редькина Д.И.": "Редькина Дарья Игоревна",
+  "Редькина Д.А.": "Редькина Дарья Игоревна",
+  "Сергеева И.Е.": "Сергеева И.Е.",
+  "Окорочков И.В.": "Окорочков И.В.",
+  "Горпенко К.Д.": "Горпенко К.Д.",
+  "Корноухова Д.Д.": "Корноухова Д.Д."
 };
 
 function cleanShortDesc(str) {
@@ -3240,6 +3161,7 @@ function renderPulseCard(){
     html = pulseRowHtml(group, groupView);
   }
   dom.pulseCard.innerHTML = html;
+  renderNextUpWidget();
 }
 
 function slotProgressHtml(range, now){
@@ -3247,7 +3169,7 @@ function slotProgressHtml(range, now){
   return `<div class="slot-progress"><div class="slot-progress-fill" style="width:${pct}%"></div></div>`;
 }
 
-function slotHtml(it, i, group, isLive, now, nowIdx=-1, nextIdx=-1){
+function slotHtml(it, i, group, isLive, now, nowIdx=-1, nextIdx=-1, iso=currentDate){
   const range = isLive ? parseRange(it.t) : null;
   let cls = "slot";
   let timeLeftHtml = '';
@@ -3265,12 +3187,12 @@ function slotHtml(it, i, group, isLive, now, nowIdx=-1, nextIdx=-1){
       cls += " past";
     }
   }
-  const ariaLabel = `${it.t}, ${it.w}`;
+  const ariaLabel = escapeAttr(`${it.t}, ${it.w}`);
   return `
     <div class="${cls}" style="--i:${i}" data-group="${group}" data-idx="${i}"
          tabindex="0" role="button" aria-haspopup="dialog" aria-label="${ariaLabel}">
       <div class="time">${it.t}${timeLeftHtml}</div>
-      <div class="what"><b>${it.w}</b><span>${cleanShortDesc(it.d)}</span></div>
+      <div class="what"><b>${escapeHtml(it.w)}</b><span class="slot-desc">${escapeHtml(slotDescText(it))}</span>${noteBadgeHtml(group, iso, it)}</div>
       ${progressHtml}
     </div>`;
 }
@@ -3354,7 +3276,7 @@ function renderFeed(container, group){
     } else {
       const now = isToday ? minutesNow() : null;
       const {nowIdx, nextIdx} = isToday ? computeLiveIndices(items, now) : {nowIdx:-1, nextIdx:-1};
-      html += items.map((it,i)=> slotHtml(it, i, group, isToday, now, nowIdx, nextIdx)).join("");
+      html += items.map((it,i)=> slotHtml(it, i, group, isToday, now, nowIdx, nextIdx, iso)).join("");
     }
     html += `</div>`;
   }
@@ -3420,6 +3342,8 @@ let lastFocused = null;
 
 let lockedScrollY = 0;
 function lockBodyScroll(){
+  // Уже заблокировано (одно окно открыто поверх другого) — не сбрасываем сохранённую позицию.
+  if(document.body.style.position === 'fixed') return;
   lockedScrollY = window.scrollY || window.pageYOffset || 0;
   document.body.style.position = 'fixed';
   document.body.style.top = `-${lockedScrollY}px`;
@@ -3429,13 +3353,20 @@ function lockBodyScroll(){
   document.body.style.overflow = 'hidden';
 }
 function unlockBodyScroll(){
+  // Если поверх ещё открыто другое окно — скролл остаётся заблокированным.
+  if(dom.sheet.classList.contains('open') ||
+     dom.calSheet.classList.contains('open') ||
+     dom.installSheet.classList.contains('open') ||
+     (dom.themeMenu && dom.themeMenu.classList.contains('open')) ||
+     (dom.groupMenu && dom.groupMenu.classList.contains('open'))) return;
+  const wasLocked = document.body.style.position === 'fixed';
   document.body.style.position = '';
   document.body.style.top = '';
   document.body.style.left = '';
   document.body.style.right = '';
   document.body.style.width = '';
   document.body.style.overflow = '';
-  window.scrollTo(0, lockedScrollY);
+  if(wasLocked) window.scrollTo(0, lockedScrollY);
 }
 
 const ICS_TZ_OFFSET_HOURS = 3;
@@ -3465,13 +3396,14 @@ function itemToVevent(dateISO, it, groupLabel){
   const range = it.t.split(/[-–—]/);
   if(range.length !== 2) return null;
   const start = range[0].trim(), end = range[1].trim();
-  const location = it.sub && it.sub.length
+  const mine = mySub(it);
+  const location = mine ? (mine.where || '') : it.sub && it.sub.length
     ? it.sub.map(s=>{
         const prefix = s.label != null ? s.label : (s.n != null ? `${s.n} гр` : '');
         return [prefix, s.where].filter(Boolean).join(' ');
       }).join('; ')
     : (it.d.split('·').pop() || '').trim();
-  const descr = it.sub && it.sub.length
+  const descr = mine ? ((subKind(mine).kind === 'num' && mine.label ? mine.label + ': ' : '') + subSummary(mine)) : it.sub && it.sub.length
     ? it.sub.map(s=>{
         const prefix = s.label != null ? s.label : (s.n != null ? `${s.n} гр` : '');
         const whoWhere = [s.who, s.where].filter(Boolean).join(' · ');
@@ -3552,7 +3484,7 @@ function dayScheduleText(dateISO){
       body += 'пар нет — весь день свободна\n';
     } else {
       items.forEach(it=>{
-        const desc = cleanShortDesc(it.d);
+        const desc = slotDescText(it);
         body += `${it.t} — ${it.w}${desc ? ' (' + desc + ')' : ''}\n`;
       });
     }
@@ -3586,29 +3518,6 @@ async function shareDay(dateISO){
   }
 }
 
-function fillSheet(group, iso, it){
-  sheetCtx = { group, iso, item: it };
-
-  dom.sheet.classList.remove('g106','g107');
-  dom.sheet.classList.add(group);
-  dom.sheetTime.textContent = `${dayNum(iso)} ${monthShort(iso)} · ${weekdayNames[weekdayIndex(iso)]} · ${it.t}`;
-  dom.sheetTitle.textContent = it.w;
-  dom.sheetMeta.innerHTML = it.sub && it.sub.length
-    ? it.sub.map(s=>{
-        const prefix = s.label != null ? s.label : (s.n != null ? `${s.n} гр` : '');
-        const whoWhere = [s.who ? expandMetaPart(s.who) : null, s.where || null]
-          .filter(Boolean).join(' · ');
-        const line = whoWhere ? `${prefix}: ${whoWhere}` : prefix;
-        return `<span>${line}</span>`;
-      }).join("")
-    : (it.d || '').split("·").map(part=>`<span>${expandMetaPart(part)}</span>`).join("");
-
-  relState.expanded = false;
-  renderRelated(group, iso, it);
-  dom.sheetGotoBtn.style.display = (groupView === 'both' && iso === currentDate) ? 'none' : '';
-  const body = dom.sheet.querySelector('.sheet-body');
-  if(body) body.scrollTop = 0;
-}
 
 function openSlot(group, idx, sourceEl){
   let items;
@@ -3913,108 +3822,10 @@ function applyTheme(id, persist){
   });
 }
 
-function buildThemeSwitcher(){
-  const frag = document.createDocumentFragment();
-
-  // Load custom themes
-  const customThemes = loadCustomThemes();
-  const allThemes = [...THEMES, ...customThemes];
-
-  allThemes.forEach(t=>{
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'theme-swatch';
-    if (t.custom) btn.classList.add('custom-theme-item');
-    btn.dataset.theme = t.id;
-    btn.title = t.name;
-    btn.setAttribute('aria-label', t.name);
-    btn.setAttribute('aria-pressed', 'false');
-    btn.style.background = `linear-gradient(135deg, ${t.bg} 40%, ${t.a} 70%, ${t.b} 100%)`;
-    btn.onclick = ()=> applyTheme(t.id, true);
-
-    // Add delete button for custom themes
-    if (t.custom) {
-      const delBtn = document.createElement('button');
-      delBtn.className = 'custom-theme-delete';
-      delBtn.innerHTML = '×';
-      delBtn.title = 'Удалить тему';
-      delBtn.onclick = (e) => {
-        e.stopPropagation();
-        deleteCustomTheme(t.id);
-      };
-      btn.appendChild(delBtn);
-    }
-
-    frag.appendChild(btn);
-  });
-
-  // Add "Create custom theme" button
-  const createBtn = document.createElement('button');
-  createBtn.type = 'button';
-  createBtn.className = 'theme-swatch custom-theme-btn';
-  createBtn.title = 'Создать свою тему';
-  createBtn.setAttribute('aria-label', 'Создать свою тему');
-  createBtn.onclick = openCustomThemeModal;
-  frag.appendChild(createBtn);
-
-  dom.themeSwitcher.innerHTML = '';
-  dom.themeSwitcher.appendChild(frag);
-}
 
 // Theme Menu Functions
-function openThemeMenu(){
-  buildThemeMenuGrid();
-  updateThemeMenuInfo();
-  dom.themeMenu.classList.add('open');
-  dom.themeMenuScrim.classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
 
-function closeThemeMenu(){
-  dom.themeMenu.classList.remove('open');
-  dom.themeMenuScrim.classList.remove('open');
-  document.body.style.overflow = '';
-}
 
-function buildThemeMenuGrid(){
-  const currentId = currentThemeId();
-  const grid = dom.themeMenuGrid;
-  if(!grid) return;
-  grid.innerHTML = '';
-
-  const customThemes = loadCustomThemes();
-  const allThemes = [...THEMES, ...customThemes];
-
-  allThemes.forEach(t => {
-    const card = document.createElement('div');
-    card.className = 'theme-card';
-    if(t.id === currentId) card.classList.add('active');
-
-    const preview = document.createElement('div');
-    preview.className = 'theme-preview';
-    preview.style.background = `linear-gradient(135deg, ${t.bg} 0%, ${t.a} 50%, ${t.b} 100%)`;
-
-    const name = document.createElement('p');
-    name.className = 'theme-card-name';
-    name.textContent = t.name;
-
-    const desc = document.createElement('p');
-    desc.className = 'theme-card-description';
-    desc.textContent = t.description || getThemeDescription(t.id);
-
-    card.appendChild(preview);
-    card.appendChild(name);
-    card.appendChild(desc);
-
-    card.onclick = () => {
-      applyTheme(t.id, true);
-      buildThemeMenuGrid();
-      updateThemeMenuInfo();
-    };
-
-    grid.appendChild(card);
-  });
-}
 
 function getThemeDescription(id){
   const descriptions = {
@@ -4049,238 +3860,598 @@ function resetToSystemTheme(){
 }
 
 
-// View Mode Switcher (List vs Grid)
-let currentViewMode = 'list';
+/* =====================================================================
+   Подгруппы (ТЗ 6.1)
+   ===================================================================== */
+const SUBGROUP_KEY = 'schedule-subgroup-106-107';
+let subPref = (function(){
+  try{
+    const p = JSON.parse(localStorage.getItem(SUBGROUP_KEY) || 'null') || {};
+    return { sub: ['all','1','2','3'].includes(p.sub) ? p.sub : 'all' };
+  }catch(e){ return { sub:'all' }; }
+})();
 
-function switchViewMode(mode) {
-  currentViewMode = mode;
-
-  // Update button states
-  document.querySelectorAll('.view-mode-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.mode === mode);
-  });
-
-  if (mode === 'grid') {
-    // Hide list view
-    document.getElementById('dayBlock').style.display = 'none';
-    document.getElementById('daySwap').style.display = 'none';
-    // Show grid view
-    document.getElementById('weekGridContainer').classList.add('show');
-    buildWeekGrid();
-  } else {
-    // Show list view
-    document.getElementById('dayBlock').style.display = 'block';
-    document.getElementById('daySwap').style.display = 'block';
-    // Hide grid view
-    document.getElementById('weekGridContainer').classList.remove('show');
-  }
+function saveSubPref(){
+  try{ localStorage.setItem(SUBGROUP_KEY, JSON.stringify(subPref)); }catch(e){}
 }
 
-function buildWeekGrid() {
-  const weekStart = getWeekStart(currentDate);
-  const grid = document.getElementById('weekGrid');
-  if (!grid) return;
-
-  let html = '<div class="week-grid-header">';
-  html += '<div class="week-grid-time-label">Время</div>';
-
-  // Day headers
-  for (let i = 0; i < 7; i++) {
-    const iso = isoPlusDays(weekStart, i);
-    const wd = weekdayNames[weekdayIndex(iso)];
-    const isToday = iso === TODAY;
-    html += `<div class="week-grid-day-label ${isToday ? 'today' : ''}">${wd}<br>${dayNum(iso)} ${monthShort(iso)}</div>`;
-  }
-  html += '</div>';
-
-  // Time slots (9:00 - 21:00)
-  for (let hour = 9; hour <= 20; hour++) {
-    html += '<div class="week-grid-time">' + hour + ':00</div>';
-
-    for (let i = 0; i < 7; i++) {
-      const iso = isoPlusDays(weekStart, i);
-      const classes = getClassesAtHour(iso, hour);
-      html += '<div class="week-grid-cell">' + renderGridCell(classes) + '</div>';
-    }
-  }
-
-  grid.innerHTML = html;
+function subKind(s){
+  const label = String(s.label != null ? s.label : '');
+  const n = s.n != null ? String(s.n) : ((label.match(/^\s*(\d)/) || [])[1] || null);
+  if(n) return { kind:'num', val:n };
+  return { kind:'other', val:null };
 }
 
-function getClassesAtHour(iso, hour) {
-  const result = [];
-  ['g106', 'g107'].forEach(group => {
-    const items = getDaySchedule(group, iso);
-    items.forEach((item, idx) => {
-      const range = parseRange(item.t);
-      if (!range) return;
-      const startHour = Math.floor(range[0] / 60);
-      if (startHour === hour) {
-        result.push({ group, item, idx });
-      }
+function subIsMine(s){
+  const k = subKind(s);
+  return k.kind === 'num' && subPref.sub !== 'all' && k.val === subPref.sub;
+}
+
+// Подгруппа пользователя внутри пары (или null, если выбор не задан / не подходит этой паре).
+function mySub(it){
+  if(!it || !Array.isArray(it.sub) || !it.sub.length) return null;
+  return it.sub.find(subIsMine) || null;
+}
+
+function subSummary(s){
+  const parts = [s.who || null, s.where || null].filter(Boolean);
+  if(!s.who && s.label) parts.unshift(s.label);
+  return parts.join(' · ');
+}
+
+function slotDescText(it){
+  const s = mySub(it);
+  return s ? cleanShortDesc(subSummary(s)) : cleanShortDesc(it.d);
+}
+
+/* ---------- Меню «Группа и подгруппа» (кнопка слева сверху) ---------- */
+function groupMenuLabelText(){
+  const sub = subPref.sub === 'all' ? '' : `${subPref.sub} подгр.`;
+  if(groupView === 'both'){
+    return sub ? { full:`Все · ${sub}`, short:`Все · ${sub}` } : { full:'Все группы', short:'Все' };
+  }
+  const t = sub ? `${groupView} · ${sub}` : groupView;
+  return { full:t, short:t };
+}
+
+function updateGroupMenuUI(){
+  const lab = groupMenuLabelText();
+  if(dom.groupMenuBtnLabel){
+    dom.groupMenuBtnLabel.innerHTML = lab.full === lab.short
+      ? escapeHtml(lab.full)
+      : `<span class="gm-full">${escapeHtml(lab.full)}</span><span class="gm-short">${escapeHtml(lab.short)}</span>`;
+  }
+  if(dom.groupMenuBtn){
+    dom.groupMenuBtn.dataset.group = groupView;
+    const g = groupView === 'both' ? 'все группы' : `группа ${groupView}`;
+    const s = subPref.sub === 'all' ? 'все подгруппы' : `${subPref.sub} подгруппа`;
+    dom.groupMenuBtn.setAttribute('aria-label', `Группа и подгруппа: ${g}, ${s}`);
+  }
+  if(dom.groupMenu){
+    dom.groupMenu.querySelectorAll('.gm-card').forEach(b=>{
+      const on = b.dataset.group === groupView;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', String(on));
     });
+    dom.groupMenu.querySelectorAll('.gm-sub').forEach(b=>{
+      const on = b.dataset.sub === subPref.sub;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+  }
+}
+
+let groupMenuLastFocus = null;
+function openGroupMenu(){
+  if(!dom.groupMenu || dom.groupMenu.classList.contains('open')) return;
+  groupMenuLastFocus = document.activeElement;
+  updateGroupMenuUI();
+  dom.groupMenu.inert = false;
+  dom.groupMenu.setAttribute('aria-hidden','false');
+  dom.groupMenu.classList.add('open');
+  dom.groupMenuScrim.classList.add('open');
+  lockBodyScroll();
+  if(dom.groupMenuClose) dom.groupMenuClose.focus({preventScroll:true});
+}
+function closeGroupMenu(){
+  if(!dom.groupMenu || !dom.groupMenu.classList.contains('open')) return;
+  dom.groupMenu.classList.remove('open');
+  dom.groupMenuScrim.classList.remove('open');
+  dom.groupMenu.setAttribute('aria-hidden','true');
+  dom.groupMenu.inert = true;
+  unlockBodyScroll();
+  if(groupMenuLastFocus && typeof groupMenuLastFocus.focus === 'function') groupMenuLastFocus.focus({preventScroll:true});
+  groupMenuLastFocus = null;
+}
+function setSubPref(v){
+  if(!['all','1','2','3'].includes(v)) return;
+  subPref.sub = v;
+  saveSubPref();
+  updateGroupMenuUI();
+  refreshSlotExtras();
+}
+
+dom.groupMenuBtn.addEventListener('click', openGroupMenu);
+dom.groupMenuClose.addEventListener('click', closeGroupMenu);
+dom.groupMenuDone.addEventListener('click', closeGroupMenu);
+dom.groupMenuScrim.addEventListener('click', closeGroupMenu);
+dom.groupMenuReset.addEventListener('click', ()=>{
+  subPref.sub = 'all';
+  saveSubPref();
+  applyGroupView('both', true);   // перерисует интерфейс и обновит меню
+  refreshSlotExtras();
+});
+dom.groupMenu.addEventListener('click', e=>{
+  const card = e.target.closest('.gm-card');
+  if(card){ applyGroupView(card.dataset.group, true); return; }
+  const sb = e.target.closest('.gm-sub');
+  if(sb) setSubPref(sb.dataset.sub);
+});
+document.addEventListener('keydown', e=>{
+  if(e.key === 'Escape' && dom.groupMenu.classList.contains('open')) closeGroupMenu();
+});
+
+/* =====================================================================
+   Личные заметки к парам (ТЗ 6.2)
+   ===================================================================== */
+const NOTES_KEY = 'schedule-notes-106-107';
+let notesStore = null;
+
+function notesAll(){
+  if(notesStore) return notesStore;
+  try{ notesStore = JSON.parse(localStorage.getItem(NOTES_KEY) || '{}') || {}; }catch(e){ notesStore = {}; }
+  if(typeof notesStore !== 'object' || Array.isArray(notesStore)) notesStore = {};
+  return notesStore;
+}
+function noteKey(group, iso, it){ return `${iso}|${group}|${it.t}|${it.w}`; }
+function getNote(group, iso, it){
+  const v = notesAll()[noteKey(group, iso, it)];
+  return typeof v === 'string' ? v.trim() : '';
+}
+function setNote(group, iso, it, text){
+  const all = notesAll(), key = noteKey(group, iso, it);
+  const clean = String(text || '').slice(0, 280).trim();
+  if(clean) all[key] = clean; else delete all[key];
+  try{ localStorage.setItem(NOTES_KEY, JSON.stringify(all)); }catch(e){}
+}
+function noteBadgeHtml(group, iso, it){
+  const t = getNote(group, iso, it);
+  return t ? `<span class="note-badge" title="${escapeAttr(t)}">📌 <i>${escapeHtml(t)}</i></span>` : '';
+}
+
+// Обновляет подписи подгрупп и бейджи заметок в уже отрисованных слотах — без полной перерисовки
+// (иначе лента сбрасывала бы прокрутку к «сегодня»).
+function refreshSlotExtras(){
+  document.querySelectorAll('.slot[data-group]').forEach(el=>{
+    const day = el.closest('.feed-day');
+    const iso = day ? day.dataset.iso : currentDate;
+    const group = el.dataset.group;
+    const it = getDaySchedule(group, iso)[Number(el.dataset.idx)];
+    const what = el.querySelector('.what');
+    if(!it || !what) return;
+    const desc = what.querySelector('.slot-desc');
+    if(desc) desc.textContent = slotDescText(it);
+    const old = what.querySelector('.note-badge');
+    if(old) old.remove();
+    const html = noteBadgeHtml(group, iso, it);
+    if(html) what.insertAdjacentHTML('beforeend', html);
   });
-  return result;
+  renderNextUpWidget();
+  if(currentViewMode === 'grid') buildWeekGrid();
 }
 
-function renderGridCell(classes) {
-  if (classes.length === 0) return '';
-
-  return classes.map(c => {
-    const groupClass = c.group === 'g106' ? 'g106' : 'g107';
-    return `
-      <div class="week-grid-class ${groupClass}" onclick="openSlot('${c.group}', ${c.idx})">
-        <div class="week-grid-class-title">${escapeHtml(c.item.w)}</div>
-        <div class="week-grid-class-time">${c.item.t}</div>
-      </div>
-    `;
-  }).join('');
+let noteTimer = null;
+function renderNoteBox(group, iso, it){
+  const input = document.getElementById('sheetNoteInput');
+  const clear = document.getElementById('sheetNoteClear');
+  if(!input || !clear) return;
+  const v = getNote(group, iso, it);
+  input.value = v;
+  clear.hidden = !v;
 }
 
-// Next Up Widget
-function renderNextUpWidget() {
-  const widget = document.getElementById('nextUpWidget');
-  if (!widget) return;
+document.getElementById('sheetNoteInput').addEventListener('input', e=>{
+  if(!sheetCtx) return;
+  const ctx = sheetCtx, text = e.target.value;
+  document.getElementById('sheetNoteClear').hidden = !text.trim();
+  clearTimeout(noteTimer);
+  noteTimer = setTimeout(()=>{
+    setNote(ctx.group, ctx.iso, ctx.item, text);
+    refreshSlotExtras();
+  }, 200);
+});
+document.getElementById('sheetNoteClear').addEventListener('click', ()=>{
+  if(!sheetCtx) return;
+  clearTimeout(noteTimer);
+  setNote(sheetCtx.group, sheetCtx.iso, sheetCtx.item, '');
+  document.getElementById('sheetNoteInput').value = '';
+  document.getElementById('sheetNoteClear').hidden = true;
+  refreshSlotExtras();
+});
 
+/* =====================================================================
+   Карточка пары: мета-данные, ссылки на преподавателей, инфо-окна
+   ===================================================================== */
+const TEACHER_RE = /((?:проф\.|доц\.|ст\. пр\.|ассист\.)\s+)?([А-ЯЁ][а-яё-]+)\s+([А-ЯЁ]\.[А-ЯЁ]\.)/g;
+
+function expandKeepSpace(t){
+  if(!t.trim()) return t;
+  const lead = (t.match(/^\s*/) || [''])[0], trail = (t.match(/\s*$/) || [''])[0];
+  return lead + expandMetaPart(t) + trail;
+}
+
+// Экранирует текст и превращает ФИО преподавателей в кнопки «показать все пары преподавателя».
+function linkifyTeachers(raw){
+  const s = String(raw == null ? '' : raw);
+  const re = new RegExp(TEACHER_RE.source, 'g');
+  let out = '', last = 0, m;
+  while((m = re.exec(s))){
+    out += escapeHtml(expandKeepSpace(s.slice(last, m.index)));
+    out += `<button type="button" class="meta-teacher-link" data-q="${escapeAttr(m[2])}" title="Все пары преподавателя">${escapeHtml(expandMetaPart(m[0]))}</button>`;
+    last = m.index + m[0].length;
+  }
+  out += escapeHtml(expandKeepSpace(s.slice(last)));
+  return out;
+}
+
+function sheetMetaHtml(it){
+  if(it.sub && it.sub.length){
+    const mine = mySub(it);
+    const rows = it.sub.map(s=>{
+      const prefix = s.label != null ? s.label : (s.n != null ? `${s.n} подгр.` : '');
+      const whoWhere = [s.who ? linkifyTeachers(s.who) : '', s.where ? escapeHtml(s.where) : '']
+        .filter(Boolean).join(' · ');
+      const line = whoWhere ? `${escapeHtml(prefix)}: ${whoWhere}` : escapeHtml(prefix);
+      const isMine = s === mine;
+      const cls = isMine ? 'sub-mine' : (mine ? 'sub-dim' : '');
+      return {
+        isMine,
+        html: `<span${cls ? ` class="${cls}"` : ''}>${line}${isMine ? ' <em class="mine-pill">Ваша подгруппа</em>' : ''}</span>`
+      };
+    });
+    rows.sort((a, b)=> (b.isMine ? 1 : 0) - (a.isMine ? 1 : 0));
+    return rows.map(r=> r.html).join('');
+  }
+  return String(it.d || '').split('·').map(p=> `<span>${linkifyTeachers(p)}</span>`).join('');
+}
+
+dom.sheetMeta.addEventListener('click', e=>{
+  const b = e.target.closest('.meta-teacher-link');
+  if(!b || !b.dataset.q) return;
+  closeSheet();
+  dom.searchInput.value = b.dataset.q;
+  syncSearchMode();
+});
+
+function fillSheet(group, iso, it){
+  sheetCtx = { group, iso, item: it };
+
+  // Возвращаем разметку карточки пары (её мог скрыть openInfoSheet).
+  dom.sheetCustom.style.display = 'none';
+  dom.sheetCustom.innerHTML = '';
+  dom.sheetMeta.style.display = '';
+  dom.sheetRelated.style.display = '';
+  dom.sheetNote.style.display = '';
+  dom.sheetActions.style.display = '';
+
+  dom.sheet.classList.remove('g106','g107');
+  dom.sheet.classList.add(group);
+  dom.sheetTime.textContent = `${dayNum(iso)} ${monthShort(iso)} · ${weekdayNames[weekdayIndex(iso)]} · ${it.t}`;
+  dom.sheetTitle.textContent = it.w;
+  dom.sheetMeta.innerHTML = sheetMetaHtml(it);
+
+  relState.expanded = false;
+  renderRelated(group, iso, it);
+  renderNoteBox(group, iso, it);
+  dom.sheetGotoBtn.style.display = (groupView === 'both' && iso === currentDate) ? 'none' : '';
+  dom.sheetBody.scrollTop = 0;
+}
+
+// Универсальное информационное окно (статистика, горячие клавиши) поверх того же bottom-sheet.
+// Разметку карточки пары не трогаем — только прячем и подставляем содержимое в #sheetCustom.
+function openInfoSheet(timeLabel, titleText, htmlContent){
+  sheetCtx = null;
+  dom.sheet.classList.remove('g106','g107');
+  dom.sheetMeta.style.display = 'none';
+  dom.sheetRelated.style.display = 'none';
+  dom.sheetNote.style.display = 'none';
+  dom.sheetActions.style.display = 'none';
+  dom.sheetTime.textContent = timeLabel;
+  dom.sheetTitle.textContent = titleText;
+  dom.sheetCustom.innerHTML = htmlContent;
+  dom.sheetCustom.style.display = 'block';
+  dom.sheetBody.scrollTop = 0;
+  if(!dom.sheet.classList.contains('open')) lastFocused = document.activeElement;
+  openSheet();
+}
+
+// Открыть карточку пары по (группа, дата, индекс) — для «Что дальше» и сетки недели.
+function openPair(group, iso, idx){
+  const it = getDaySchedule(group, iso)[idx];
+  if(!it) return;
+  lastFocused = document.activeElement;
+  fillSheet(group, iso, it);
+  openSheet();
+}
+
+/* =====================================================================
+   «Что дальше» — две независимые колонки (ТЗ 5.2)
+   ===================================================================== */
+function getNextUpForGroup(group){
   const now = minutesNow();
-  const groups = groupView === 'both' ? ['g106', 'g107'] : [groupView === '106' ? 'g106' : 'g107'];
-
-  const upcoming = [];
-  groups.forEach(g => {
-    getDaySchedule(g, TODAY).forEach((item, idx) => {
-      const range = parseRange(item.t);
-      if (range && range[0] > now) {
-        upcoming.push({ group: g, item, idx, start: range[0], end: range[1] });
-      }
-    });
-  });
-
-  upcoming.sort((a, b) => a.start - b.start);
-  const next = upcoming.slice(0, 3);
-
-  if (!next.length) {
-    widget.innerHTML = '<div class="next-up-done">🎉 Сегодня больше пар нет</div>';
-    widget.style.display = 'block';
-    return;
+  const mk = iso=> getDaySchedule(group, iso).map((item, idx)=>({ group, iso, idx, item, range: parseRange(item.t) }));
+  const upcomingToday = mk(TODAY).filter(x=> x.range && x.range[0] > now);
+  if(upcomingToday.length){
+    return { mode:'today', dateISO: TODAY, items: upcomingToday, minutesUntilFirst: upcomingToday[0].range[0] - now };
   }
-
-  const minutesUntil = next[0].start - now;
-  const hours = Math.floor(minutesUntil / 60);
-  const mins = minutesUntil % 60;
-  const timeUntil = hours > 0 ? `через ${hours}ч ${mins}м` : `через ${mins}м`;
-
-  let html = '<div class="next-up-label">Что дальше</div>';
-
-  if (minutesUntil <= 10) {
-    html += `<div class="next-up-countdown">⏰ Начало через ${mins} мин</div>`;
+  for(let iso = isoPlusDays(TODAY, 1); iso <= OVERALL_END; iso = isoPlusDays(iso, 1)){
+    const items = mk(iso);
+    if(items.length) return { mode:'future', dateISO: iso, items };
   }
-
-  next.forEach((item, i) => {
-    const groupBadge = item.group === 'g106' ? '106' : '107';
-    const groupColor = item.group === 'g106' ? 'var(--g106)' : 'var(--g107)';
-    const isPrimary = i === 0;
-
-    html += `
-      <div class="next-up-card ${isPrimary ? 'primary' : ''}" onclick="openSlot('${item.group}', ${item.idx})">
-        ${isPrimary ? `<div class="next-up-time">${timeUntil} · ${item.item.t}</div>` : `<div class="next-up-time">${item.item.t}</div>`}
-        <div class="next-up-title">${escapeHtml(item.item.w)}</div>
-        <div class="next-up-meta">
-          <span style="background: ${groupColor}20; color: ${groupColor}; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">${groupBadge}</span>
-          ${item.item.d ? `<span>${escapeHtml(item.item.d)}</span>` : ''}
-        </div>
-      </div>
-    `;
-  });
-
-  widget.innerHTML = html;
-  widget.style.display = 'block';
-  widget.classList.toggle('highlight', minutesUntil <= 5);
+  return { mode:'none' };
 }
 
-// Statistics
-function calculateStats() {
-  const weekStart = getWeekStart(currentDate);
-  let totalClasses = 0;
-  let totalMinutes = 0;
-  const dayStats = {};
-  const teacherCount = new Map();
-  const subjectCount = new Map();
+function nextUpDateLabel(iso){
+  const short = `${dayNum(iso)} ${monthShort(iso)}`;
+  return daysFromToday(iso) === 1 ? `завтра, ${short}` : `${short}, ${weekdayNames[weekdayIndex(iso)]}`;
+}
 
-  for (let i = 0; i < 7; i++) {
-    const iso = isoPlusDays(weekStart, i);
-    const dayName = weekdayNames[weekdayIndex(iso)];
-    dayStats[dayName] = 0;
+function nextUpCardHtml(x, primary){
+  const desc = slotDescText(x.item);
+  return `<div class="next-up-card${primary ? ' primary' : ''}" role="button" tabindex="0" data-g="${x.group}" data-d="${x.iso}" data-i="${x.idx}">
+    <div class="next-up-time">${escapeHtml(x.item.t)}</div>
+    <div class="next-up-title">${escapeHtml(x.item.w)}</div>
+    ${desc ? `<div class="next-up-meta"><span>${escapeHtml(desc)}</span></div>` : ''}
+    ${noteBadgeHtml(x.group, x.iso, x.item)}
+  </div>`;
+}
 
-    ['g106', 'g107'].forEach(g => {
-      const items = getDaySchedule(g, iso);
-      dayStats[dayName] += items.length;
-      totalClasses += items.length;
+const NU_MOBILE_QUERY = '(max-width: 560px)';
+// На телефоне (обе группы) колонки узкие, поэтому показываем по 2 карточки на группу, иначе виджет слишком высокий.
+function nextUpLimit(groupsCount){
+  return (groupsCount > 1 && window.matchMedia(NU_MOBILE_QUERY).matches) ? 2 : 3;
+}
 
-      items.forEach(item => {
-        const range = parseRange(item.t);
-        if (range) totalMinutes += range[1] - range[0];
-
-        // Count subjects
-        const subj = item.w;
-        subjectCount.set(subj, (subjectCount.get(subj) || 0) + 1);
-
-        // Extract teachers
-        if (item.d) {
-          const teacherMatch = item.d.match(/(проф\.|доц\.|ст\. пр\.|ассист\.)\s+([А-ЯЁ][а-яё]+\s+[А-ЯЁ]\.[А-ЯЁ]\.)/g);
-          if (teacherMatch) {
-            teacherMatch.forEach(t => {
-              teacherCount.set(t, (teacherCount.get(t) || 0) + 1);
-            });
-          }
-        }
-      });
-    });
+function nextUpColumn(group, lim){
+  const info = getNextUpForGroup(group);
+  const moreHtml = n=> n > 0 ? `<div class="nu-more">+ ещё ${n}</div>` : '';
+  const num = group === 'g106' ? '106' : '107';
+  let status = '', cards = '', minutes = null;
+  if(info.mode === 'today'){
+    minutes = info.minutesUntilFirst;
+    status = `Сегодня · через ${formatLeft(minutes)}`;
+    if(minutes <= 10) status += ` <span class="nu-soon">⏰ Через ${minutes} мин</span>`;
+    cards = info.items.slice(0, lim).map((x, i)=> nextUpCardHtml(x, i === 0)).join('') + moreHtml(info.items.length - lim);
+  } else if(info.mode === 'future'){
+    status = `След. · ${nextUpDateLabel(info.dateISO)}`;
+    cards = info.items.slice(0, lim).map((x, i)=> nextUpCardHtml(x, i === 0)).join('') + moreHtml(info.items.length - lim);
+  } else {
+    cards = '<div class="nu-empty">🎉 Пар больше нет — до конца семестра свободно</div>';
   }
-
-  const busiestDay = Object.entries(dayStats).sort((a, b) => b[1] - a[1])[0];
-  const topTeacher = Array.from(teacherCount.entries()).sort((a, b) => b[1] - a[1])[0];
-  const topSubject = Array.from(subjectCount.entries()).sort((a, b) => b[1] - a[1])[0];
-
   return {
-    totalClasses,
-    totalHours: Math.floor(totalMinutes / 60),
-    avgPerDay: (totalClasses / 7).toFixed(1),
-    busiestDay: busiestDay ? `${busiestDay[0]} (${busiestDay[1]})` : 'N/A',
-    topTeacher: topTeacher ? `${topTeacher[0].split(' ').slice(-1)[0]} (${topTeacher[1]})` : 'N/A',
-    topSubject: topSubject ? topSubject[0].substring(0, 20) + (topSubject[0].length > 20 ? '...' : '') : 'N/A',
+    minutes,
+    html: `<div class="nu-col ${group}"><div class="nu-col-head"><span class="nu-g">${num}</span><span class="nu-status">${status}</span></div>${cards}</div>`
   };
 }
 
-function showStats() {
-  const stats = calculateStats();
-  const html = `
-    <div style="padding: 20px; max-width: 600px;">
-      <h3 style="margin: 0 0 20px; font-size: 20px; color: var(--text);">📊 Статистика недели</h3>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-value">${stats.totalClasses}</div>
-          <div class="stat-label">Всего пар</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">${stats.totalHours}ч</div>
-          <div class="stat-label">Часов занятий</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">${stats.avgPerDay}</div>
-          <div class="stat-label">В среднем/день</div>
-        </div>
-      </div>
-      <div style="margin-top: 20px; font-size: 14px; color: var(--text-dim); line-height: 1.8;">
-        <div><strong style="color: var(--text);">Самый загруженный день:</strong> ${stats.busiestDay}</div>
-        <div><strong style="color: var(--text);">Частый преподаватель:</strong> ${stats.topTeacher}</div>
-        <div><strong style="color: var(--text);">Популярный предмет:</strong> ${stats.topSubject}</div>
-      </div>
-    </div>
-  `;
-  dom.sheetBody.innerHTML = html;
-  dom.sheetBody.style.padding = '0';
-  dom.sheet.classList.remove('g106', 'g107');
-  openSheet();
+function renderNextUpWidget(){
+  const w = dom.nextUpWidget;
+  if(!w) return;
+  const groups = groupView === 'both' ? ['g106','g107'] : [groupView === '106' ? 'g106' : 'g107'];
+  const lim = nextUpLimit(groups.length);
+  const cols = groups.map(g=> nextUpColumn(g, lim));
+  w.innerHTML =
+    `<div class="next-up-header"><div class="next-up-label">Что дальше</div></div>` +
+    `<div class="next-up-columns${groupView !== 'both' ? ' single' : ''}">${cols.map(c=> c.html).join('')}</div>`;
+  w.style.display = 'block';
+  w.classList.toggle('highlight', cols.some(c=> c.minutes != null && c.minutes <= 5));
+}
+
+function openFromCard(e){
+  const c = e.target.closest('[data-g][data-d][data-i]');
+  if(!c) return false;
+  openPair(c.dataset.g, c.dataset.d, Number(c.dataset.i));
+  return true;
+}
+try{ window.matchMedia(NU_MOBILE_QUERY).addEventListener('change', ()=> renderNextUpWidget()); }catch(e){}
+dom.nextUpWidget.addEventListener('click', openFromCard);
+dom.nextUpWidget.addEventListener('keydown', e=>{
+  if(e.key !== 'Enter' && e.key !== ' ') return;
+  if(openFromCard(e)) e.preventDefault();
+});
+
+/* =====================================================================
+   Режим «Список / Сетка» и недельная сетка (ТЗ 5.3, 7)
+   ===================================================================== */
+const VIEW_MODE_KEY = 'schedule-view-mode-106-107';
+let currentViewMode = 'list';
+
+function loadViewMode(){
+  try{ return localStorage.getItem(VIEW_MODE_KEY) === 'grid' ? 'grid' : 'list'; }catch(e){ return 'list'; }
+}
+
+function switchViewMode(mode, persist = true){
+  currentViewMode = mode === 'grid' ? 'grid' : 'list';
+  if(persist){ try{ localStorage.setItem(VIEW_MODE_KEY, currentViewMode); }catch(e){} }
+
+  document.querySelectorAll('.view-mode-btn').forEach(btn=>{
+    const active = btn.dataset.mode === currentViewMode;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-pressed', String(active));
+  });
+
+  const grid = currentViewMode === 'grid';
+  document.getElementById('dayBlock').style.display = grid ? 'none' : '';
+  dom.daySwap.style.display = grid ? 'none' : '';
+  dom.weekGridContainer.classList.toggle('show', grid);
+  if(grid) buildWeekGrid();
+  if(typeof showScrollTodayIfNeeded === 'function') requestAnimationFrame(showScrollTodayIfNeeded);
+}
+
+function gridSlotHtml(x){
+  const desc = slotDescText(x.item);
+  return `<button type="button" class="gv-c ${x.g}" data-g="${x.g}" data-d="${x.iso}" data-i="${x.idx}">` +
+    `<span class="gv-c-time">${escapeHtml(x.item.t)}</span>` +
+    `<span class="gv-c-title">${escapeHtml(x.item.w)}</span>` +
+    (desc ? `<span class="gv-c-desc">${escapeHtml(desc)}</span>` : '') +
+    noteBadgeHtml(x.g, x.iso, x.item) +
+    `</button>`;
+}
+
+function gridDayCardHtml(iso, groups){
+  const holiday = HOLIDAYS[iso];
+  const tag = iso === TODAY
+    ? '<span class="gv-tag">сегодня</span>'
+    : (holiday ? `<span class="gv-tag">${escapeHtml(holiday)}</span>` : '');
+  const cols = groups.map(g=>{
+    const items = holiday ? [] : getDaySchedule(g, iso).map((item, idx)=>({ g, iso, idx, item }));
+    const body = items.length
+      ? items.map(gridSlotHtml).join('')
+      : `<div class="gv-empty${holiday ? '' : ' free'}">${holiday ? 'выходной' : 'пар нет'}</div>`;
+    const tagHtml = groups.length > 1 ? `<div class="gv-gtag">${g === 'g106' ? '106' : '107'}</div>` : '';
+    return `<div class="gv-gcol ${g}">${tagHtml}${body}</div>`;
+  }).join('');
+  return `<section class="gv-day-card${iso === TODAY ? ' today' : ''}" aria-label="${weekdayNames[weekdayIndex(iso)]}, ${dayNum(iso)} ${monthShort(iso)}">` +
+    `<div class="gv-day-head"><span>${weekdayNames[weekdayIndex(iso)]}</span><b>${dayNum(iso)}</b><span>${monthShort(iso)}</span>${tag}</div>` +
+    `<div class="gv-day-cols${groups.length > 1 ? ' both' : ''}">${cols}</div></section>`;
+}
+
+function buildWeekGrid(){
+  const box = dom.weekGrid;
+  if(!box) return;
+  const ws = getWeekStart(currentDate), we = isoPlusDays(ws, 6);
+  const groups = groupView === 'both' ? ['g106','g107'] : [groupView === '106' ? 'g106' : 'g107'];
+
+  const isRegular = ws >= REGULAR_START;
+  const parity = isRegular ? weekTypeFor(ws) : null;
+  const chip = isRegular ? `<span class="parity-chip ${parity === 1 ? 'p1' : 'p2'}">${parity === 1 ? 'Ч' : 'З'}</span>` : '';
+  const prevDisabled = isoPlusDays(ws, -1) < OVERALL_START;
+  const nextDisabled = isoPlusDays(ws, 7) > OVERALL_END;
+  const todayInWeek = TODAY >= ws && TODAY <= we;
+
+  let html = `<div class="gv-nav">` +
+    `<button type="button" class="week-arrow" onclick="shiftWeek(-1)" aria-label="Предыдущая неделя"${prevDisabled ? ' disabled' : ''}>‹</button>` +
+    `<div class="week-label" aria-live="polite">${formatWeekRange(ws, we)}${chip}</div>` +
+    (todayInWeek ? '' : `<button type="button" class="gv-today" onclick="jumpToToday()" title="Вернуться к текущей неделе">Сегодня</button>`) +
+    `<button type="button" class="week-arrow" onclick="shiftWeek(1)" aria-label="Следующая неделя"${nextDisabled ? ' disabled' : ''}>›</button>` +
+    `<button type="button" class="calendar-btn" onclick="openCalSheet()" aria-label="Выбрать дату" title="Выбрать дату">📅</button>` +
+    `<button type="button" class="calendar-btn" onclick="showStats()" aria-label="Статистика недели" title="Статистика недели">📊</button>` +
+    `</div><div class="gv-days">`;
+
+  for(let i = 0; i < 7; i++){
+    const iso = isoPlusDays(ws, i);
+    if(iso < OVERALL_START || iso > OVERALL_END) continue;
+    const empty = !HOLIDAYS[iso] && groups.every(g=> getDaySchedule(g, iso).length === 0);
+    if(weekdayIndex(iso) === 0 && empty) continue;   // воскресенье без пар скрываем
+    html += gridDayCardHtml(iso, groups);
+  }
+  box.innerHTML = html + `</div>`;
+}
+
+dom.weekGrid.addEventListener('click', e=>{
+  const c = e.target.closest('.gv-c');
+  if(c) openPair(c.dataset.g, c.dataset.d, Number(c.dataset.i));
+});
+
+/* =====================================================================
+   Статистика и горячие клавиши (ТЗ 6.4)
+   ===================================================================== */
+function teachersOf(it){
+  const set = new Set();
+  const grab = str=>{
+    if(!str) return;
+    const re = /([А-ЯЁ][а-яё-]+)\s+[А-ЯЁ]\.[А-ЯЁ]\./g;
+    let m;
+    while((m = re.exec(String(str)))) set.add(m[1]);
+  };
+  grab(it.d);
+  if(Array.isArray(it.sub)) it.sub.forEach(s=> grab(s.who));
+  return set;
+}
+
+function topOf(map){
+  let best = null;
+  map.forEach((v, k)=>{ if(!best || v > best[1]) best = [k, v]; });
+  return best;
+}
+
+function calculateStats(group){
+  const weekStart = getWeekStart(currentDate);
+  let totalClasses = 0, totalMinutes = 0, activeDays = 0;
+  const dayStats = [];
+  const teacherCount = new Map(), subjectCount = new Map();
+
+  for(let i = 0; i < 7; i++){
+    const iso = isoPlusDays(weekStart, i);
+    const items = getDaySchedule(group, iso);
+    if(items.length){ activeDays++; dayStats.push([weekdayNames[weekdayIndex(iso)], items.length]); }
+    totalClasses += items.length;
+    items.forEach(it=>{
+      const range = parseRange(it.t);
+      if(range) totalMinutes += range[1] - range[0];
+      subjectCount.set(it.w, (subjectCount.get(it.w) || 0) + 1);
+      teachersOf(it).forEach(t=> teacherCount.set(t, (teacherCount.get(t) || 0) + 1));
+    });
+  }
+
+  const busiest = dayStats.slice().sort((a, b)=> b[1] - a[1])[0];
+  const topTeacher = topOf(teacherCount), topSubject = topOf(subjectCount);
+  const cut = (s, n)=> s.length > n ? s.slice(0, n - 1) + '…' : s;
+  return {
+    totalClasses,
+    totalHours: Math.round(totalMinutes / 6) / 10,
+    avgPerDay: activeDays ? (totalClasses / activeDays).toFixed(1) : '0',
+    busiestDay: busiest ? `${busiest[0]} (${busiest[1]})` : '—',
+    topTeacher: topTeacher ? `${topTeacher[0]} (${topTeacher[1]})` : '—',
+    topSubject: topSubject ? cut(topSubject[0], 34) : '—'
+  };
+}
+
+function showStats(){
+  const groups = groupView === 'both' ? ['g106','g107'] : [groupView === '106' ? 'g106' : 'g107'];
+  const ws = getWeekStart(currentDate), we = isoPlusDays(ws, 6);
+  const st = groups.map(g=>({ g, s: calculateStats(g) }));
+  const head = st.map(x=> `<th class="${x.g}">${x.g === 'g106' ? '106' : '107'}</th>`).join('');
+  const row = (label, key)=> `<tr><th scope="row">${label}</th>${st.map(x=> `<td>${escapeHtml(String(x.s[key]))}</td>`).join('')}</tr>`;
+  const html =
+    `<table class="stats-table"><thead><tr><th></th>${head}</tr></thead><tbody>` +
+    row('Всего пар', 'totalClasses') +
+    row('Часов занятий', 'totalHours') +
+    row('В среднем за уч. день', 'avgPerDay') +
+    row('Самый загруженный день', 'busiestDay') +
+    row('Частый преподаватель', 'topTeacher') +
+    row('Частый предмет', 'topSubject') +
+    `</tbody></table>`;
+  openInfoSheet(formatWeekRange(ws, we), '📊 Статистика недели', html);
+}
+
+function showKeyboardHelp(){
+  const rows = [
+    ['Поиск', '/ или Ctrl+K'],
+    ['След. / пред. день', 'j / k'],
+    ['Сегодня', 't'],
+    ['След. / пред. неделя', 'e / w'],
+    ['Обе группы / 106 / 107', '1 / 2 / 3'],
+    ['Календарь', 'c'],
+    ['Статистика недели', 's'],
+    ['Эта подсказка', '?'],
+    ['Закрыть окно', 'Esc']
+  ];
+  const html = `<div class="kbd-list">${rows.map(([l, k])=> `<div class="kbd-row"><span>${l}</span><kbd>${k}</kbd></div>`).join('')}</div>`;
+  openInfoSheet('Подсказка', '⌨️ Горячие клавиши', html);
+}
+
+/* Перезагрузка расписания после фонового обновления data.json (сообщение DATA_UPDATED от sw.js). */
+function reloadScheduleData(){
+  return loadData().then(()=>{
+    generateGroupMaps();
+    pairIndex = null;
+    pairsBySubject = null;
+    render();
+    renderPulseCard();
+    if(currentViewMode === 'grid') buildWeekGrid();
+    if(isSearching()) runSearch();
+  });
 }
 
 function checkDayRollover(){
@@ -4288,7 +4459,7 @@ function checkDayRollover(){
   if(fresh !== TODAY){
     const wasOnToday = currentDate === TODAY;
     TODAY = fresh;
-    if(wasOnToday) currentDate = pickInitialDate();
+    if(wasOnToday) currentDate = todayTarget();
     if(groupView === 'both'){
       buildRail();
       updateActivePill(false);
@@ -4380,53 +4551,6 @@ document.addEventListener('keydown', e => {
   }
 });
 
-function showKeyboardHelp() {
-  const helpHTML = `
-    <div style="padding: 20px; max-width: 500px;">
-      <h3 style="margin: 0 0 16px; font-size: 20px; color: var(--text);">⌨️ Горячие клавиши</h3>
-      <div style="display: grid; gap: 12px; font-size: 14px;">
-        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line);">
-          <span style="color: var(--text-dim);">Поиск</span>
-          <kbd style="background: var(--panel-2); padding: 4px 8px; border-radius: 4px; font-family: monospace; color: var(--text);">/ или Ctrl+K</kbd>
-        </div>
-        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line);">
-          <span style="color: var(--text-dim);">След/пред день</span>
-          <kbd style="background: var(--panel-2); padding: 4px 8px; border-radius: 4px; font-family: monospace; color: var(--text);">j / k</kbd>
-        </div>
-        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line);">
-          <span style="color: var(--text-dim);">Сегодня</span>
-          <kbd style="background: var(--panel-2); padding: 4px 8px; border-radius: 4px; font-family: monospace; color: var(--text);">t</kbd>
-        </div>
-        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line);">
-          <span style="color: var(--text-dim);">След/пред неделя</span>
-          <kbd style="background: var(--panel-2); padding: 4px 8px; border-radius: 4px; font-family: monospace; color: var(--text);">w / e</kbd>
-        </div>
-        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line);">
-          <span style="color: var(--text-dim);">Обе группы / 106 / 107</span>
-          <kbd style="background: var(--panel-2); padding: 4px 8px; border-radius: 4px; font-family: monospace; color: var(--text);">1 / 2 / 3</kbd>
-        </div>
-        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line);">
-          <span style="color: var(--text-dim);">Календарь</span>
-          <kbd style="background: var(--panel-2); padding: 4px 8px; border-radius: 4px; font-family: monospace; color: var(--text);">c</kbd>
-        </div>
-        <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-          <span style="color: var(--text-dim);">Закрыть модалки</span>
-          <kbd style="background: var(--panel-2); padding: 4px 8px; border-radius: 4px; font-family: monospace; color: var(--text);">Esc</kbd>
-        </div>
-        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-top: 1px solid var(--line);">
-          <span style="color: var(--text-dim);">Статистика</span>
-          <kbd style="background: var(--panel-2); padding: 4px 8px; border-radius: 4px; font-family: monospace; color: var(--text);">s</kbd>
-        </div>
-      </div>
-    </div>
-  `;
-
-  // Reuse detail sheet for help
-  dom.sheetBody.innerHTML = helpHTML;
-  dom.sheetBody.style.padding = '0';
-  dom.sheet.classList.remove('g106', 'g107');
-  openSheet();
-}
 
 dom.sheetIcsBtn.addEventListener('click', exportSlotICS);
 
@@ -4495,6 +4619,10 @@ function initServiceWorker(){
         });
       });
     }).catch(()=>{});
+  });
+
+  navigator.serviceWorker.addEventListener('message', e=>{
+    if(e.data && e.data.type === 'DATA_UPDATED') reloadScheduleData().catch(()=>{});
   });
 
   let reloading = false;
@@ -4845,7 +4973,9 @@ function findPairs(q){
   const merged = new Map();
   buildPairIndex().forEach(e=>{
     if(!groups.includes(e.group)) return;
-    if(!tokens.every(t=> e.hay.includes(t))) return;
+    const noteTxt = normText(getNote(e.group, e.iso, e.item));
+    const hay = noteTxt ? e.hay + ' | ' + noteTxt : e.hay;
+    if(!tokens.every(t=> hay.includes(t))) return;
     const key = [e.iso, e.item.t, e.item.w, e.item.d || ''].join('|');
     let r = merged.get(key);
     if(!r){
@@ -4878,7 +5008,7 @@ function drawSearchResults(){
   const { results, pastStart, shown, re } = searchState;
   const scope = groupView === 'both' ? 'Группы 106 · 107' : `Группа ${groupView}`;
   if(!results.length){
-    dom.searchResults.innerHTML = `<div class="sr-card"><div class="sr-empty">Ничего не найдено.<br>Попробуйте другое слово${groupView === 'both' ? '' : ' или переключитесь на «Все»'}.</div></div>`;
+    dom.searchResults.innerHTML = `<div class="sr-card"><div class="sr-empty">Ничего не найдено.<br>Попробуйте другое слово${groupView === 'both' ? '' : ' или выберите «Все группы» в меню слева сверху'}.</div></div>`;
     return;
   }
   let html = `<div class="sr-card"><div class="sr-head"><span>Найдено: ${results.length}</span><span>${scope}</span></div>`;
@@ -5061,7 +5191,19 @@ function renderRelated(group, iso, item){
   const hiddenCount = (prev.length - prevShow.length) + (next.length - nextShow.length);
   relState.entries = prevShow.concat(nextShow);
 
+  const nowM = minutesNow();
+  const passedCount = list.filter(e=>{
+    if(e.iso < TODAY) return true;
+    if(e.iso > TODAY) return false;
+    const r = parseRange(e.item.t);
+    return !!r && r[1] < nowM;
+  }).length;
+  const leftCount = list.length - passedCount;
+  const pct = Math.round((cur + 1) / list.length * 100);
+
   let html = `<div class="rel-head"><h4>Пары по предмету</h4><span>эта — ${cur + 1} из ${list.length}</span></div>`;
+  html += `<div class="rel-progress" role="progressbar" aria-label="Прохождение дисциплины" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><div class="rel-progress-bar" style="width:${pct}%"></div></div>`;
+  html += `<div class="rel-progress-label">Проведено: ${passedCount} · Осталось: ${leftCount}</div>`;
   html += `<div class="rel-sub">Предыдущие</div>`;
   html += prevShow.length
     ? prevShow.map((e, i)=> relRowHtml(e, i)).join('')
@@ -5100,13 +5242,23 @@ dom.sheetGotoBtn.addEventListener('click', ()=>{
   goToPair(iso, idx >= 0 ? [{ group, idx }] : []);
 });
 
+function showDataError(){
+  const el = document.createElement('div');
+  el.className = 'data-error';
+  el.setAttribute('role', 'alert');
+  el.textContent = 'Не удалось загрузить расписание (data.json). Проверьте подключение и что файл data.json лежит рядом с index.html.';
+  const wrap = document.getElementById('pageWrap');
+  wrap.insertBefore(el, dom.pulseCard);
+}
+
 async function initBoard(){
   await loadData();
   generateGroupMaps();
+  if(dataLoadFailed) showDataError();
   buildThemeSwitcher();
   applyTheme(currentThemeId(), false);
-  buildGroupSwitcher();
   applyGroupView(currentGroupView(), false);
+  switchViewMode(loadViewMode(), false);
   updateScrollTopBtn();
   initServiceWorker();
   initInstallFlow();
@@ -5142,6 +5294,7 @@ async function initBoard(){
     const dayChanged = checkDayRollover();
     if(dayChanged){
       render();
+      if(currentViewMode === 'grid') buildWeekGrid();
       if(remindersEnabled()) scheduleNextReminder();
     } else if(groupView === 'both'){
       refreshLiveIndicators(dom.g106Slots, dayItems.g106);
@@ -5152,7 +5305,6 @@ async function initBoard(){
       refreshFeedLiveIndicators(container, group);
     }
     renderPulseCard();
-    renderNextUpWidget();
   };
   window.setInterval(liveTick, 60000);
   document.addEventListener('visibilitychange', ()=>{
@@ -5162,70 +5314,7 @@ async function initBoard(){
   goToDate();
 }
 
-initBoard();
-</script>
-
-<!-- Custom Theme Creator Modal -->
-<div class="custom-theme-modal" id="customThemeModal">
-  <div class="custom-theme-panel">
-    <h3>Создать свою тему</h3>
-
-    <div class="custom-theme-field">
-      <label for="customThemeName">Название темы</label>
-      <input type="text" id="customThemeName" placeholder="Моя тема" maxlength="30">
-    </div>
-
-    <div class="custom-theme-field">
-      <label for="customThemeBase">Основной цвет</label>
-      <input type="color" id="customThemeBase" value="#1a1512">
-    </div>
-
-    <div class="custom-theme-field">
-      <label for="customThemeAccent">Акцентный цвет</label>
-      <input type="color" id="customThemeAccent" value="#d3a86a">
-    </div>
-
-    <div class="custom-theme-field">
-      <label>Режим</label>
-      <div class="custom-theme-mode">
-        <label>
-          <input type="radio" name="themeMode" value="dark" checked>
-          <span>🌙 Тёмный</span>
-        </label>
-        <label>
-          <input type="radio" name="themeMode" value="light">
-          <span>☀️ Светлый</span>
-        </label>
-      </div>
-    </div>
-
-    <div class="custom-theme-preview" id="customThemePreview">
-      <div class="custom-theme-preview-title">Предпросмотр</div>
-      <div class="custom-theme-preview-card">
-        <span class="custom-theme-preview-accent">Группа 106</span>
-        <div style="margin-top: 8px; font-size: 13px;">Основы российской государственности</div>
-      </div>
-    </div>
-
-    <div class="custom-theme-actions">
-      <button class="custom-theme-btn-secondary" onclick="closeCustomThemeModal()">Отмена</button>
-      <button class="custom-theme-btn-primary" onclick="saveCustomTheme()">Сохранить</button>
-    </div>
-  </div>
-</div>
-
-<!-- Notification Permission Prompt -->
-<div class="notification-prompt" id="notificationPrompt">
-  <h3>🔔 Не пропустите пары</h3>
-  <p>Получайте уведомления за 5 минут до начала занятия</p>
-  <div class="notification-prompt-actions">
-    <button class="btn-later" onclick="dismissNotificationPrompt()">Позже</button>
-    <button class="btn-enable" onclick="enableNotifications()">Включить</button>
-  </div>
-</div>
-
-<script>
-// Custom Theme Functions
+/* ===== Утилиты цвета (для редактора тем) ===== */
 function hexToRGB(hex) {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
@@ -5274,264 +5363,7 @@ function hslToHex(h, s, l) {
   return rgbToHex((r + m) * 255, (g + m) * 255, (b + m) * 255);
 }
 
-function adjustLightness(hex, amount) {
-  const [h, s, l] = hexToHSL(hex);
-  const newL = Math.max(0, Math.min(100, l + amount));
-  return hslToHex(h, s, newL);
-}
-
-function generateCustomThemePalette(baseHex, accentHex, isDark) {
-  const baseHSL = hexToHSL(baseHex);
-  const [r, g, b] = hexToRGB(accentHex);
-
-  return {
-    bg: baseHex,
-    panel: adjustLightness(baseHex, isDark ? 5 : -5),
-    panel2: adjustLightness(baseHex, isDark ? 10 : -10),
-    line: adjustLightness(baseHex, isDark ? 20 : -20),
-    text: isDark ? '#f0e4d4' : '#2a2416',
-    textDim: isDark ? '#a49078' : '#6f604c',
-    g106: accentHex,
-    g106Dim: adjustLightness(accentHex, -15),
-    g106Soft: `rgba(${r},${g},${b},${isDark ? 0.12 : 0.10})`,
-    g107: adjustLightness(accentHex, isDark ? 10 : -10),
-    g107Dim: adjustLightness(accentHex, -20),
-    g107Soft: `rgba(${r},${g},${b},${isDark ? 0.15 : 0.12})`,
-    free: isDark ? '#8fbf7a' : '#52693a',
-    parity1: adjustLightness(accentHex, isDark ? -5 : -10),
-    parity1Soft: `rgba(${r},${g},${b},${isDark ? 0.14 : 0.12})`,
-    parity2: adjustLightness(accentHex, isDark ? -10 : -15),
-    parity2Soft: `rgba(${r},${g},${b},${isDark ? 0.16 : 0.14})`,
-    shadow: isDark ? '0 10px 30px -12px rgba(0,0,0,0.6)' : '0 10px 26px -14px rgba(90,55,20,0.25)',
-  };
-}
-
-function updateCustomThemePreview() {
-  const base = document.getElementById('customThemeBase').value;
-  const accent = document.getElementById('customThemeAccent').value;
-  const mode = document.querySelector('input[name="themeMode"]:checked').value;
-  const isDark = mode === 'dark';
-
-  const palette = generateCustomThemePalette(base, accent, isDark);
-  const preview = document.getElementById('customThemePreview');
-
-  preview.style.setProperty('--preview-bg', palette.bg);
-  preview.style.setProperty('--preview-panel', palette.panel);
-  preview.style.setProperty('--preview-line', palette.line);
-  preview.style.setProperty('--preview-text', palette.text);
-  preview.style.setProperty('--preview-accent', palette.g106);
-  preview.style.setProperty('--preview-accent-soft', palette.g106Soft);
-  preview.style.background = palette.bg;
-  preview.style.color = palette.text;
-  preview.querySelector('.custom-theme-preview-card').style.background = palette.panel;
-  preview.querySelector('.custom-theme-preview-card').style.borderColor = palette.line;
-}
-
-function openCustomThemeModal() {
-  document.getElementById('customThemeModal').classList.add('open');
-  document.getElementById('customThemeName').value = '';
-  document.getElementById('customThemeBase').value = '#1a1512';
-  document.getElementById('customThemeAccent').value = '#d3a86a';
-  document.querySelector('input[name="themeMode"][value="dark"]').checked = true;
-  updateCustomThemePreview();
-}
-
-function closeCustomThemeModal() {
-  document.getElementById('customThemeModal').classList.remove('open');
-}
-
-function saveCustomTheme() {
-  const name = document.getElementById('customThemeName').value.trim() || 'Моя тема';
-  const base = document.getElementById('customThemeBase').value;
-  const accent = document.getElementById('customThemeAccent').value;
-  const mode = document.querySelector('input[name="themeMode"]:checked').value;
-  const isDark = mode === 'dark';
-
-  const palette = generateCustomThemePalette(base, accent, isDark);
-  const id = 'custom-' + Date.now();
-
-  const customTheme = {
-    id,
-    name,
-    bg: base,
-    a: accent,
-    b: palette.g107,
-    palette,
-    mode,
-    custom: true
-  };
-
-  // Save to localStorage
-  let customThemes = [];
-  try {
-    const saved = localStorage.getItem(CUSTOM_THEMES_KEY);
-    if (saved) customThemes = JSON.parse(saved);
-  } catch(e) {}
-
-  customThemes.push(customTheme);
-
-  try {
-    localStorage.setItem(CUSTOM_THEMES_KEY, JSON.stringify(customThemes));
-  } catch(e) {
-    alert('Не удалось сохранить тему');
-    return;
-  }
-
-  // Add theme CSS
-  addCustomThemeCSS(customTheme);
-
-  // Rebuild theme switcher
-  buildThemeSwitcher();
-
-  // Apply new theme
-  applyTheme(id, true);
-
-  closeCustomThemeModal();
-}
-
-function addCustomThemeCSS(theme) {
-  const p = theme.palette;
-  const css = `
-  :root[data-theme="${theme.id}"]{
-    color-scheme: ${theme.mode};
-    --bg: ${p.bg};
-    --panel: ${p.panel};
-    --panel-2: ${p.panel2};
-    --line: ${p.line};
-    --g106: ${p.g106};
-    --g106-dim: ${p.g106Dim};
-    --g106-soft: ${p.g106Soft};
-    --g107: ${p.g107};
-    --g107-dim: ${p.g107Dim};
-    --g107-soft: ${p.g107Soft};
-    --text: ${p.text};
-    --text-dim: ${p.textDim};
-    --free: ${p.free};
-    --parity-1: ${p.parity1};
-    --parity-1-soft: ${p.parity1Soft};
-    --parity-2: ${p.parity2};
-    --parity-2-soft: ${p.parity2Soft};
-    --shadow: ${p.shadow};
-  }`;
-
-  let styleEl = document.getElementById('custom-themes-style');
-  if (!styleEl) {
-    styleEl = document.createElement('style');
-    styleEl.id = 'custom-themes-style';
-    document.head.appendChild(styleEl);
-  }
-  styleEl.textContent += css;
-}
-
-function loadCustomThemes() {
-  try {
-    const saved = localStorage.getItem(CUSTOM_THEMES_KEY);
-    if (!saved) return [];
-    const customThemes = JSON.parse(saved);
-    customThemes.forEach(theme => addCustomThemeCSS(theme));
-    return customThemes;
-  } catch(e) {
-    return [];
-  }
-}
-
-function deleteCustomTheme(themeId) {
-  if (!confirm('Удалить эту тему?')) return;
-
-  try {
-    let customThemes = JSON.parse(localStorage.getItem(CUSTOM_THEMES_KEY) || '[]');
-    customThemes = customThemes.filter(t => t.id !== themeId);
-    localStorage.setItem(CUSTOM_THEMES_KEY, JSON.stringify(customThemes));
-
-    // Switch to default if deleting current theme
-    if (currentThemeId() === themeId) {
-      applyTheme('mocha', true);
-    }
-
-    buildThemeSwitcher();
-  } catch(e) {}
-}
-
-// Event listeners for preview updates
-document.addEventListener('DOMContentLoaded', () => {
-  const baseInput = document.getElementById('customThemeBase');
-  const accentInput = document.getElementById('customThemeAccent');
-  const modeInputs = document.querySelectorAll('input[name="themeMode"]');
-
-  if (baseInput) baseInput.addEventListener('input', updateCustomThemePreview);
-  if (accentInput) accentInput.addEventListener('input', updateCustomThemePreview);
-  modeInputs.forEach(input => input.addEventListener('change', updateCustomThemePreview));
-
-  // Close modal on backdrop click
-  document.getElementById('customThemeModal')?.addEventListener('click', (e) => {
-    if (e.target.classList.contains('custom-theme-modal')) {
-      closeCustomThemeModal();
-    }
-  });
-
-  // Close modal on Escape
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && document.getElementById('customThemeModal').classList.contains('open')) {
-      closeCustomThemeModal();
-    }
-  });
-});
-</script>
-<style>
-#customThemeModal{display:none!important}
-body.searching #nextUpWidget{display:none!important}
-.week-arrow,.calendar-btn,.day-export-btn,.day-share-btn,.group-btn,.theme-swatch,.theme-menu-trigger,.tm-ib,.tm-sw{position:relative}
-.week-arrow::after,.calendar-btn::after,.day-export-btn::after,.day-share-btn::after,.group-btn::after,.theme-swatch::after,.theme-menu-trigger::after,.tm-ib::after,.tm-sw::after,.sheet-close::after{content:"";position:absolute;inset:-8px}
-/* сетка недели */
-.week-grid-container{max-width:920px;margin:16px auto 0;padding:0 max(12px,env(safe-area-inset-left)) 40px}
-.gv-nav{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.gv-nav .week-label{flex:1}
-.gv-scroll{overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;margin:0 -12px;padding:0 12px 10px;scrollbar-width:none}
-.gv-days{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(150px,44vw);gap:10px}
-@media(min-width:900px){.gv-days{grid-auto-columns:1fr}}
-.gv-col{scroll-snap-align:start;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.gv-col.today{border-color:var(--g107)}
-.gv-h{padding:9px 10px;font-size:12px;font-weight:800;color:var(--text-dim);background:var(--panel-2)}
-.gv-h b{color:var(--text)}.gv-col.today .gv-h{color:var(--g107);background:var(--g107-soft)}
-.gv-c{display:block;width:100%;text-align:left;border:0;border-left:3px solid var(--g106);border-bottom:1px solid var(--line);background:none;color:var(--text);padding:8px 10px;cursor:pointer;position:relative}
-.gv-c.g107{border-left-color:var(--g107)}
-.gv-c span{display:block;font-size:11px;font-weight:700;color:var(--text-dim)}
-.gv-c b{display:block;font-size:12.5px;font-weight:600;margin-top:1px;padding-right:22px}
-.gv-c i{position:absolute;top:8px;right:8px;font-style:normal;font-size:9.5px;font-weight:800;color:var(--text-dim)}
-.gv-e{padding:14px 10px;font-size:12px;font-weight:600;color:var(--free)}
-/* меню тем и редактор */
-.tm-acts{position:absolute;right:6px;bottom:6px;display:flex;gap:4px}
-.tm-ib{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--text-dim);font-size:14px;line-height:1;cursor:pointer;padding:0}
-.tm-rest{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;font-size:13px;color:var(--text-dim)}
-.tm-rest .theme-btn{flex:0 0 auto}
-.tm-ed h3{margin:0 0 10px}
-.tm-name,.tm-in input[type=text]{width:100%;font:inherit;font-size:16px;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;outline:none}
-.tm-name:focus,.tm-in input[type=text]:focus{border-color:var(--g106)}
-.tm-in{display:flex;gap:8px}
-.tm-in input[type=color]{flex:0 0 48px;height:44px;padding:3px;border:1px solid var(--line);border-radius:10px;background:var(--bg);cursor:pointer}
-.tm-in input.bad{border-color:#e5484d}
-.tm-f{margin-top:12px}.tm-f label{display:block;font-size:12px;font-weight:700;color:var(--text-dim);margin-bottom:6px}
-.tm-pal{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.tm-sw{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);padding:0;cursor:pointer}
-.tm-mode{display:flex;gap:6px;margin-top:14px}
-.tm-mode button{flex:1;padding:10px 6px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);color:var(--text-dim);font-weight:700;font-size:13px;cursor:pointer}
-.tm-mode button.on{border-color:var(--g106);color:var(--g106);background:var(--g106-soft)}
-.tm-adv{margin-top:12px;font-size:13px;color:var(--text-dim)}.tm-adv summary{cursor:pointer;padding:8px 0;font-weight:700}
-.tm-hint{font-size:11.5px;margin:10px 0 0}
-.tm-prev{margin-top:14px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg);color:var(--text)}
-.tm-pv-h{padding:8px 12px;font-weight:800;font-size:13px;color:var(--g106);background:var(--panel-2)}.tm-pv-h i{font-style:normal;color:var(--g107);margin-left:8px}
-.tm-pv-s{padding:9px 12px;font-size:12.5px;background:var(--panel);border-top:1px solid var(--line);border-left:3px solid transparent}
-.tm-pv-s b{color:var(--text-dim);margin-right:6px}.tm-pv-s.now{background:var(--g107-soft);border-left-color:var(--g107)}
-.tm-btns{display:flex;gap:8px;margin-top:14px}
-@media(max-width:600px){
-  .theme-switcher{gap:6px;padding:5px 7px}
-  .theme-switcher .theme-swatch:not(.active){display:none}
-  .theme-menu{top:auto;bottom:0;left:0;transform:translateY(100%);width:100%;max-height:88vh;max-height:88dvh;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
-  .theme-menu.open{transform:none}
-  .theme-grid{grid-template-columns:repeat(2,1fr)}
-}
-</style>
-<script>
+/* ===== Темы: меню, редактор, адаптация под систему ===== */
 (function(){
 'use strict';
 const HK='hidden-themes-106-107',K=CUSTOM_THEMES_KEY;
@@ -5659,254 +5491,6 @@ ${field('c1','Фон',BG)}${field('c2','Акцент',AC)}
     saveCustoms(l);applyTheme(t.id,true);resetEd();refresh()};
   paint();
 }
-
-/* ── мобильные правки: сетка недели, «Что дальше» ── */
-window.openPair=function(g,iso,i){const it=getDaySchedule(g,iso)[i];if(!it)return;
-  lastFocused=document.activeElement;fillSheet(g,iso,it);
-  dom.sheetScrim.classList.add('open');dom.sheet.classList.add('open');dom.sheet.setAttribute('aria-hidden','false');dom.sheet.inert=false;
-  lockBodyScroll();dom.sheet.querySelector('.sheet-close').focus({preventScroll:true})};
-window.gvShift=function(n){currentDate=isoPlusDays(currentDate,n*7);
-  if(currentDate<OVERALL_START)currentDate=OVERALL_START;if(currentDate>OVERALL_END)currentDate=OVERALL_END;buildWeekGrid()};
-window.buildWeekGrid=function(){
-  const ws=getWeekStart(currentDate),box=$('#weekGridContainer');
-  const days=[...Array(7)].map((_,i)=>isoPlusDays(ws,i)).filter(d=>d>=OVERALL_START&&d<=OVERALL_END);
-  const gs=groupView==='both'?['g106','g107']:[groupView==='106'?'g106':'g107'];
-  const st0=x=>(parseRange(x.it.t)||[0])[0];
-  let h=`<div class="gv-nav"><button type="button" class="week-arrow" onclick="gvShift(-1)" aria-label="Предыдущая неделя">‹</button><div class="week-label">${formatWeekRange(ws,isoPlusDays(ws,6))}</div><button type="button" class="week-arrow" onclick="gvShift(1)" aria-label="Следующая неделя">›</button></div><div class="gv-scroll"><div class="gv-days">`;
-  days.forEach(d=>{
-    const items=gs.flatMap(g=>getDaySchedule(g,d).map((it,idx)=>({g,it,idx}))).sort((a,b)=>st0(a)-st0(b));
-    h+=`<div class="gv-col${d===TODAY?' today':''}"><div class="gv-h">${weekdayNames[weekdayIndex(d)]} <b>${dayNum(d)}</b> ${monthShort(d)}</div>`+
-      (HOLIDAYS[d]?`<div class="gv-e">${HOLIDAYS[d]}</div>`:items.length?items.map(x=>`<button type="button" class="gv-c ${x.g}" data-g="${x.g}" data-d="${d}" data-i="${x.idx}"><span>${x.it.t}</span><b>${escapeHtml(x.it.w)}</b>${gs.length>1?`<i>${x.g==='g106'?106:107}</i>`:''}</button>`).join(''):'<div class="gv-e">Свободно</div>')+'</div>';
-  });
-  box.innerHTML=h+'</div></div>';
-  const t=box.querySelector('.gv-col.today');if(t)t.scrollIntoView({inline:'center',block:'nearest'});
-};
-$('#weekGridContainer').addEventListener('click',e=>{const c=e.target.closest('.gv-c');if(c)openPair(c.dataset.g,c.dataset.d,+c.dataset.i)});
-
-const _nu=renderNextUpWidget;
-window.renderNextUpWidget=function(){_nu();const w=$('#nextUpWidget');if(!w)return;
-  w.innerHTML=w.innerHTML.replace(/openSlot\('(g10[67])', (\d+)\)/g,(m,g,i)=>`openPair('${g}','${TODAY}',${i})`)};
-const _rp=renderPulseCard;
-window.renderPulseCard=function(){_rp();renderNextUpWidget()};
-
-saveCustoms(rd(K,[]));
-buildEditor();
-})();
-</script>
-  <style>
-#customThemeModal{display:none!important}
-body.searching #nextUpWidget{display:none!important}
-html[data-touch] .week-arrow,html[data-touch] .calendar-btn,html[data-touch] .day-export-btn,html[data-touch] .day-share-btn,html[data-touch] .group-btn,html[data-touch] .theme-swatch,html[data-touch] .theme-menu-trigger{position:relative}
-html[data-touch] .week-arrow::after,html[data-touch] .calendar-btn::after,html[data-touch] .day-export-btn::after,html[data-touch] .day-share-btn::after,html[data-touch] .group-btn::after,html[data-touch] .theme-swatch::after,html[data-touch] .theme-menu-trigger::after,html[data-touch] .sheet-close::after{content:"";position:absolute;inset:-8px}
-.tm-ib,.tm-sw{position:relative}
-html[data-touch] .tm-ib::after,html[data-touch] .tm-sw::after{content:"";position:absolute;inset:-8px}
-/* сетка недели */
-.week-grid-container{max-width:920px;margin:16px auto 0;padding:0 max(12px,env(safe-area-inset-left)) 40px}
-.gv-nav{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.gv-nav .week-label{flex:1}
-.gv-scroll{overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;margin:0 -12px;padding:0 12px 10px;scrollbar-width:none}
-.gv-days{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(150px,44vw);gap:10px}
-@media(min-width:900px){.gv-days{grid-auto-columns:1fr}}
-.gv-col{scroll-snap-align:start;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.gv-col.today{border-color:var(--g107)}
-.gv-h{padding:9px 10px;font-size:12px;font-weight:800;color:var(--text-dim);background:var(--panel-2)}
-.gv-h b{color:var(--text)}.gv-col.today .gv-h{color:var(--g107);background:var(--g107-soft)}
-.gv-c{display:block;width:100%;text-align:left;border:0;border-left:3px solid var(--g106);border-bottom:1px solid var(--line);background:none;color:var(--text);padding:8px 10px;cursor:pointer;position:relative}
-.gv-c.g107{border-left-color:var(--g107)}
-.gv-c span{display:block;font-size:11px;font-weight:700;color:var(--text-dim)}
-.gv-c b{display:block;font-size:12.5px;font-weight:600;margin-top:1px;padding-right:22px}
-.gv-c i{position:absolute;top:8px;right:8px;font-style:normal;font-size:9.5px;font-weight:800;color:var(--text-dim)}
-.gv-e{padding:14px 10px;font-size:12px;font-weight:600;color:var(--free)}
-/* меню тем и редактор */
-.tm-acts{position:absolute;right:6px;bottom:6px;display:flex;gap:4px}
-.tm-ib{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--text-dim);font-size:14px;line-height:1;cursor:pointer;padding:0}
-.tm-rest{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;font-size:13px;color:var(--text-dim)}
-.tm-rest .theme-btn{flex:0 0 auto}
-.tm-ed h3{margin:0 0 10px}
-.tm-name,.tm-in input[type=text]{width:100%;font:inherit;font-size:16px;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;outline:none}
-.tm-name:focus,.tm-in input[type=text]:focus{border-color:var(--g106)}
-.tm-in{display:flex;gap:8px}
-.tm-in input[type=color]{flex:0 0 48px;height:44px;padding:3px;border:1px solid var(--line);border-radius:10px;background:var(--bg);cursor:pointer}
-.tm-in input.bad{border-color:#e5484d}
-.tm-f{margin-top:12px}.tm-f label{display:block;font-size:12px;font-weight:700;color:var(--text-dim);margin-bottom:6px}
-.tm-pal{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.tm-sw{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);padding:0;cursor:pointer}
-.tm-mode{display:flex;gap:6px;margin-top:14px}
-.tm-mode button{flex:1;padding:10px 6px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);color:var(--text-dim);font-weight:700;font-size:13px;cursor:pointer}
-.tm-mode button.on{border-color:var(--g106);color:var(--g106);background:var(--g106-soft)}
-.tm-adv{margin-top:12px;font-size:13px;color:var(--text-dim)}.tm-adv summary{cursor:pointer;padding:8px 0;font-weight:700}
-.tm-hint{font-size:11.5px;margin:10px 0 0}
-.tm-prev{margin-top:14px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg);color:var(--text)}
-.tm-pv-h{padding:8px 12px;font-weight:800;font-size:13px;color:var(--g106);background:var(--panel-2)}.tm-pv-h i{font-style:normal;color:var(--g107);margin-left:8px}
-.tm-pv-s{padding:9px 12px;font-size:12.5px;background:var(--panel);border-top:1px solid var(--line);border-left:3px solid transparent}
-.tm-pv-s b{color:var(--text-dim);margin-right:6px}.tm-pv-s.now{background:var(--g107-soft);border-left-color:var(--g107)}
-.tm-btns{display:flex;gap:8px;margin-top:14px}
-html[data-device="mobile"] .theme-switcher{gap:6px;padding:5px 7px}
-html[data-device="mobile"] .theme-switcher .theme-swatch:not(.active){display:none}
-html[data-device="mobile"] .theme-menu{top:auto;bottom:0;left:0;transform:translateY(100%);width:100%;max-height:88vh;max-height:88dvh;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
-html[data-device="mobile"] .theme-menu.open{transform:none}
-html[data-device="mobile"] .theme-grid{grid-template-columns:repeat(2,1fr)}
-html[data-device="tablet"] .theme-grid{grid-template-columns:repeat(3,1fr)}
-html[data-standalone][data-touch] body{overscroll-behavior-y:contain}
-html[data-os="android"][data-standalone] .scroll-top-btn{bottom:max(28px,env(safe-area-inset-bottom) + 16px)}
-</style>
-<script>
-(function(){
-'use strict';
-const HK='hidden-themes-106-107',K=CUSTOM_THEMES_KEY;
-const $=s=>document.querySelector(s),cl=(n,a,b)=>Math.min(b,Math.max(a,n));
-const rd=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}};
-const wr=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
-
-/* ── цвет: HEX / rgb() / hsl() / «12 34 56» → #rrggbb ── */
-function parse(s){
-  s=String(s||'').trim().toLowerCase();let m;
-  if(m=s.match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/)){let h=m[1];if(h.length==3)h=[...h].map(c=>c+c).join('');return'#'+h}
-  const n=s.match(/-?\d+(?:\.\d+)?/g);if(!n||n.length!=3)return null;const v=n.map(Number);
-  if(/hsl|%/.test(s))return hslToHex(((v[0]%360)+360)%360,cl(v[1],0,100),cl(v[2],0,100));
-  return rgbToHex(...v.map(x=>cl(x,0,255)));
-}
-const lum=h=>{const[r,g,b]=hexToRGB(h).map(x=>{x/=255;return x<=.03928?x/12.92:((x+.055)/1.055)**2.4});return .2126*r+.7152*g+.0722*b};
-const ctr=(a,b)=>{const x=lum(a),y=lum(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
-const mix=(a,b,t)=>{const p=hexToRGB(a),q=hexToRGB(b);return rgbToHex(...p.map((v,i)=>v+(q[i]-v)*t))};
-const soft=(c,a)=>`rgba(${hexToRGB(c).join(',')},${a})`;
-const isDark=t=>t.mode==='dark'||(t.mode!=='light'&&lum(t.c1)<.18);
-
-/* ── палитра из двух цветов (фон + акцент); adv — ручные правки ── */
-function pal(c1,c2,mode,adv){
-  adv=adv||{};const dark=isDark({mode,c1}),H=hexToHSL(c1),A=hexToHSL(c2),bg=c1;
-  const text=adv.text||hslToHex(H[0],Math.min(H[1],22),dark?92:11);
-  const panel=adv.panel||mix(bg,'#ffffff',dark?.05:.5),line=adv.line||mix(bg,text,dark?.18:.15);
-  const fit=h=>{let L=A[2],c;for(let i=0;i<24;i++){c=hslToHex(((h%360)+360)%360,Math.max(A[1],25),cl(L,6,94));if(ctr(c,bg)>=3.2)break;L+=dark?3:-3}return c};
-  const g1=adv.g106||fit(A[0]),g2=adv.g107||fit(A[0]+40),q1=fit(A[0]+80),q2=fit(A[0]+210),dim=c=>mix(c,bg,.3);
-  return{bg,panel,'panel-2':mix(bg,text,dark?.1:.07),line,text,'text-dim':mix(text,bg,.42),
-    g106:g1,'g106-dim':dim(g1),'g106-soft':soft(g1,.13),g107:g2,'g107-dim':dim(g2),'g107-soft':soft(g2,.15),
-    free:dark?'#8fbf7a':'#52693a','parity-1':q1,'parity-1-soft':soft(q1,.15),'parity-2':q2,'parity-2-soft':soft(q2,.15),
-    shadow:dark?'0 10px 30px -12px rgba(0,0,0,.6)':'0 10px 26px -14px rgba(60,40,20,.25)'};
-}
-const vars=p=>Object.entries(p).map(([k,v])=>`--${k}:${v}`).join(';');
-const toCss=t=>`:root[data-theme="${t.id}"]{color-scheme:${isDark(t)?'dark':'light'};${vars(pal(t.c1,t.c2,t.mode,t.adv))}}`;
-function norm(t){t.c1=t.c1||t.bg;t.c2=t.c2||t.a;t.mode=(t.mode==='light'||t.mode==='dark')?t.mode:'auto';
-  const p=pal(t.c1,t.c2,t.mode,t.adv);t.bg=t.c1;t.a=p.g106;t.b=p.g107;t.custom=true;t.css=toCss(t);return t}
-
-/* ── хранилище тем ── */
-const styleEl=()=>{let e=$('#custom-themes-style');if(!e){e=document.createElement('style');e.id='custom-themes-style';document.head.appendChild(e)}return e};
-const customs=()=>rd(K,[]).map(norm);
-function saveCustoms(l){const n=l.map(norm);wr(K,n);styleEl().textContent=n.map(t=>t.css).join('')}
-window.loadCustomThemes=customs;
-const hidden=()=>rd(HK,[]),allThemes=()=>[...THEMES,...customs()];
-const visible=()=>{const h=hidden();return allThemes().filter(t=>!h.includes(t.id))};
-const grad=t=>`linear-gradient(135deg,${t.bg} 40%,${t.a} 70%,${t.b} 100%)`;
-const refresh=()=>{buildThemeSwitcher();buildThemeMenuGrid();updateThemeMenuInfo()};
-const mkBtn=(txt,label,fn)=>{const b=document.createElement('button');b.type='button';b.className='tm-ib';b.textContent=txt;b.title=label;b.setAttribute('aria-label',label);b.onclick=e=>{e.stopPropagation();fn()};return b};
-
-window.buildThemeSwitcher=function(){
-  const sw=dom.themeSwitcher,gear=sw.querySelector('.theme-menu-trigger');
-  sw.querySelectorAll('.theme-swatch').forEach(e=>e.remove());
-  visible().forEach(t=>{const b=document.createElement('button');b.type='button';b.className='theme-swatch';b.dataset.theme=t.id;
-    b.title=t.name;b.setAttribute('aria-label',t.name);b.setAttribute('aria-pressed','false');b.style.background=grad(t);
-    b.onclick=()=>applyTheme(t.id,true);sw.insertBefore(b,gear)});
-  applyTheme(currentThemeId(),false);
-};
-window.openThemeMenu=function(){buildThemeMenuGrid();updateThemeMenuInfo();dom.themeMenu.classList.add('open');dom.themeMenuScrim.classList.add('open');lockBodyScroll()};
-window.closeThemeMenu=function(){if(!dom.themeMenu.classList.contains('open'))return;dom.themeMenu.classList.remove('open');dom.themeMenuScrim.classList.remove('open');unlockBodyScroll()};
-window.openCustomThemeModal=function(){openThemeMenu();$('#tmEd').scrollIntoView({block:'start'})};
-
-function hide(id){if(visible().length<=1)return alert('Нельзя скрыть последнюю тему');
-  const h=hidden();h.push(id);wr(HK,h);if(currentThemeId()===id)applyTheme(visible()[0].id,true);refresh()}
-function del(id){if(!confirm('Удалить эту тему?'))return;saveCustoms(rd(K,[]).filter(t=>t.id!==id));
-  if(currentThemeId()===id)applyTheme('mocha',true);refresh()}
-
-window.buildThemeMenuGrid=function(){
-  const g=dom.themeMenuGrid,cur=currentThemeId(),h=hidden();g.innerHTML='';
-  allThemes().filter(t=>!h.includes(t.id)).forEach(t=>{
-    const c=document.createElement('div');c.className='theme-card'+(t.id===cur?' active':'');c.tabIndex=0;c.setAttribute('role','button');
-    c.innerHTML=`<div class="theme-preview" style="background:${grad(t)}"></div><p class="theme-card-name"></p><p class="theme-card-description">${t.custom?'Своя тема':getThemeDescription(t.id)}</p>`;
-    c.querySelector('.theme-card-name').textContent=t.name;
-    const pick=()=>{applyTheme(t.id,true);buildThemeMenuGrid();updateThemeMenuInfo()};
-    c.onclick=pick;c.onkeydown=e=>{if(e.target===c&&(e.key==='Enter'||e.key===' ')){e.preventDefault();pick()}};
-    const a=document.createElement('div');a.className='tm-acts';
-    if(t.custom)a.appendChild(mkBtn('✎','Изменить',()=>edit(t)));
-    a.appendChild(mkBtn('×',t.custom?'Удалить':'Скрыть',()=>t.custom?del(t.id):hide(t.id)));
-    c.appendChild(a);g.appendChild(c);
-  });
-  const p=g.parentElement;p.querySelector('.tm-rest')?.remove();
-  const n=h.filter(id=>allThemes().some(t=>t.id===id)).length;
-  if(n){const r=document.createElement('div');r.className='tm-rest';r.innerHTML=`<span>Скрыто тем: ${n}</span><button type="button" class="theme-btn">Вернуть все</button>`;
-    r.querySelector('button').onclick=()=>{wr(HK,[]);refresh()};p.appendChild(r)}
-};
-
-/* ── редактор тем ── */
-const BG=['#1a1512','#121a3a','#0b3d0b','#5a1020','#10151c','#f1e3d0','#fefae0','#f1faee','#e9d8a6','#ffffff'];
-const AC=['#d3a86a','#e63946','#c68642','#8a8a4b','#606c38','#2a9d8f','#4c6ef5','#9b5de5','#f15bb5','#fb8500'];
-const ADV=[['panel','Панели'],['text','Текст'],['g106','Акцент 106'],['g107','Акцент 107'],['line','Линии']];
-const DEF=()=>({c1:'#1a1512',c2:'#d3a86a',mode:'auto',adv:{}});
-let st=DEF(),editId=null,host;
-const field=(k,l,pr)=>`<div class="tm-f"><label>${l}</label><div class="tm-in"><input type="color" data-k="${k}" data-t="p" aria-label="${l}"><input type="text" data-k="${k}" data-t="t" placeholder="#d3a86a · rgb(211,168,106) · hsl(37,52%,62%)" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="${l}: значение"></div>${pr?`<div class="tm-pal" data-k="${k}">${pr.map(c=>`<button type="button" class="tm-sw" style="background:${c}" data-c="${c}" aria-label="${c}"></button>`).join('')}</div>`:''}</div>`;
-function paint(skip){
-  const p=pal(st.c1,st.c2,st.mode,st.adv);
-  host.querySelectorAll('input[data-k]').forEach(i=>{const k=i.dataset.k,main=k==='c1'||k==='c2';
-    if(i.dataset.t==='p')i.value=main?st[k]:(st.adv[k]||p[k]);else if(i!==skip)i.value=main?st[k]:(st.adv[k]||'')});
-  host.querySelectorAll('.tm-mode button').forEach(b=>b.classList.toggle('on',b.dataset.m===st.mode));
-  $('#tmPrev').style.cssText=vars(p);
-}
-function setVal(k,v){if(k==='c1'||k==='c2'){if(v)st[k]=v}else if(v)st.adv[k]=v;else delete st.adv[k]}
-function resetEd(){editId=null;st=DEF();$('#tmName').value='';$('#tmEdTitle').textContent='Создать свою тему';paint()}
-function edit(t){editId=t.id;st={c1:t.c1,c2:t.c2,mode:t.mode,adv:{...(t.adv||{})}};$('#tmName').value=t.name;
-  $('#tmEdTitle').textContent='Изменить тему';paint();host.scrollIntoView({behavior:'smooth',block:'start'})}
-function buildEditor(){
-  host=document.createElement('div');host.className='theme-menu-section tm-ed';host.id='tmEd';
-  host.innerHTML=`<h3 id="tmEdTitle">Создать свою тему</h3><input id="tmName" class="tm-name" maxlength="24" placeholder="Название темы" aria-label="Название темы">
-${field('c1','Фон',BG)}${field('c2','Акцент',AC)}
-<div class="tm-mode" role="group" aria-label="Режим">${[['auto','Авто'],['dark','Тёмная'],['light','Светлая']].map(([v,l])=>`<button type="button" data-m="${v}">${l}</button>`).join('')}</div>
-<details class="tm-adv"><summary>Тонкая настройка (необязательно)</summary>${ADV.map(([k,l])=>field(k,l)).join('')}<p class="tm-hint">Пустое поле — цвет подберётся автоматически. Принимаются HEX, rgb(…), hsl(…) или просто три числа.</p></details>
-<div class="tm-prev" id="tmPrev"><div class="tm-pv-h">Группа 106 <i>107</i></div><div class="tm-pv-s"><b>09:00–10:30</b>Математический анализ</div><div class="tm-pv-s now"><b>10:40–12:10</b>Алгебра</div></div>
-<div class="tm-btns"><button type="button" id="tmSave" class="theme-btn primary">Сохранить тему</button><button type="button" id="tmClear" class="theme-btn">Очистить</button></div>`;
-  dom.themeMenu.querySelectorAll('.theme-menu-section')[1].before(host);
-  host.addEventListener('input',e=>{const t=e.target,k=t.dataset.k;if(!k)return;
-    if(t.dataset.t==='p')setVal(k,t.value);
-    else{const raw=t.value.trim(),v=raw?parse(raw):'';t.classList.toggle('bad',!!raw&&!v);if(raw&&!v)return;setVal(k,v)}
-    paint(t)});
-  host.addEventListener('change',()=>paint());
-  host.addEventListener('click',e=>{
-    const sw=e.target.closest('.tm-sw');if(sw){setVal(sw.parentElement.dataset.k,sw.dataset.c);paint();return}
-    const m=e.target.closest('.tm-mode button');if(m){st.mode=m.dataset.m;paint()}});
-  $('#tmClear').onclick=resetEd;
-  $('#tmSave').onclick=()=>{
-    const t=norm({id:editId||'custom-'+Date.now(),name:$('#tmName').value.trim()||'Моя тема',c1:st.c1,c2:st.c2,mode:st.mode,adv:{...st.adv}});
-    const l=rd(K,[]),i=l.findIndex(x=>x.id===t.id);if(i>=0)l[i]=t;else l.push(t);
-    saveCustoms(l);applyTheme(t.id,true);resetEd();refresh()};
-  paint();
-}
-
-/* ── мобильные правки: сетка недели, «Что дальше» ── */
-window.openPair=function(g,iso,i){const it=getDaySchedule(g,iso)[i];if(!it)return;
-  lastFocused=document.activeElement;fillSheet(g,iso,it);
-  dom.sheetScrim.classList.add('open');dom.sheet.classList.add('open');dom.sheet.setAttribute('aria-hidden','false');dom.sheet.inert=false;
-  lockBodyScroll();dom.sheet.querySelector('.sheet-close').focus({preventScroll:true})};
-window.gvShift=function(n){currentDate=isoPlusDays(currentDate,n*7);
-  if(currentDate<OVERALL_START)currentDate=OVERALL_START;if(currentDate>OVERALL_END)currentDate=OVERALL_END;buildWeekGrid()};
-window.buildWeekGrid=function(){
-  const ws=getWeekStart(currentDate),box=$('#weekGridContainer');
-  const days=[...Array(7)].map((_,i)=>isoPlusDays(ws,i)).filter(d=>d>=OVERALL_START&&d<=OVERALL_END);
-  const gs=groupView==='both'?['g106','g107']:[groupView==='106'?'g106':'g107'];
-  const st0=x=>(parseRange(x.it.t)||[0])[0];
-  let h=`<div class="gv-nav"><button type="button" class="week-arrow" onclick="gvShift(-1)" aria-label="Предыдущая неделя">‹</button><div class="week-label">${formatWeekRange(ws,isoPlusDays(ws,6))}</div><button type="button" class="week-arrow" onclick="gvShift(1)" aria-label="Следующая неделя">›</button></div><div class="gv-scroll"><div class="gv-days">`;
-  days.forEach(d=>{
-    const items=gs.flatMap(g=>getDaySchedule(g,d).map((it,idx)=>({g,it,idx}))).sort((a,b)=>st0(a)-st0(b));
-    h+=`<div class="gv-col${d===TODAY?' today':''}"><div class="gv-h">${weekdayNames[weekdayIndex(d)]} <b>${dayNum(d)}</b> ${monthShort(d)}</div>`+
-      (HOLIDAYS[d]?`<div class="gv-e">${HOLIDAYS[d]}</div>`:items.length?items.map(x=>`<button type="button" class="gv-c ${x.g}" data-g="${x.g}" data-d="${d}" data-i="${x.idx}"><span>${x.it.t}</span><b>${escapeHtml(x.it.w)}</b>${gs.length>1?`<i>${x.g==='g106'?106:107}</i>`:''}</button>`).join(''):'<div class="gv-e">Свободно</div>')+'</div>';
-  });
-  box.innerHTML=h+'</div></div>';
-  const t=box.querySelector('.gv-col.today');if(t)t.scrollIntoView({inline:'center',block:'nearest'});
-};
-$('#weekGridContainer').addEventListener('click',e=>{const c=e.target.closest('.gv-c');if(c)openPair(c.dataset.g,c.dataset.d,+c.dataset.i)});
-
-const _nu=renderNextUpWidget;
-window.renderNextUpWidget=function(){_nu();const w=$('#nextUpWidget');if(!w)return;
-  w.innerHTML=w.innerHTML.replace(/openSlot\('(g10[67])', (\d+)\)/g,(m,g,i)=>`openPair('${g}','${TODAY}',${i})`)};
-const _rp=renderPulseCard;
-window.renderPulseCard=function(){_rp();renderNextUpWidget()};
 
 /* ── адаптация под систему (data-os / data-device / data-touch ставятся в <head>) ── */
 const DS=document.documentElement.dataset,OS=DS.os,STANDALONE='standalone' in DS;
@@ -5924,7 +5508,20 @@ window.downloadIcs=function(name,content){
 
 saveCustoms(rd(K,[]));
 buildEditor();
+
+/* выбранная тема скрыта или удалена — откат к системной (terracotta / mocha) */
+(function(){
+  const id = currentThemeId();
+  if(allThemes().some(t=>t.id===id) && !hidden().includes(id)) return;
+  const light = !!(window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches);
+  let sys = light ? 'terracotta' : 'mocha';
+  const vis = visible();
+  if(!vis.some(t=>t.id===sys) && vis.length) sys = vis[0].id;
+  applyTheme(sys, false);
 })();
+})();
+
+initBoard();
 </script>
 </body>
-  </html>
+</html>
