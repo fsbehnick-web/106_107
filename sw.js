@@ -10,7 +10,7 @@
 //
 // ВАЖНО: при каждом релизе с изменениями в index.html увеличивайте CACHE_VERSION —
 // иначе activate не увидит разницы и старая оболочка останется в кэше.
-const CACHE_VERSION = 'v9';
+const CACHE_VERSION = 'v10';
 const CACHE_NAME = `schedule-106-107-shell-${CACHE_VERSION}`;
 
 const SHELL_ASSETS = [
@@ -53,24 +53,29 @@ async function notifyClients(message) {
 function dataJsonStrategy(event, req) {
   const work = caches.open(CACHE_NAME).then(async (cache) => {
     const cached = await cache.match(req);
+    // Клонируем ДО того, как cached уйдёт в respondWith и будет прочитан браузером,
+    // иначе позже cached.clone() бросит «body already used».
+    const cachedCopy = cached ? cached.clone() : null;
 
     const refresh = fetch(req)
       .then(async (res) => {
         if (!res || !res.ok) return null;
         const fresh = res.clone();
-        let changed = !cached;
-        if (cached) {
+        let changed = !cachedCopy;
+        if (cachedCopy) {
           try {
-            const [oldText, newText] = await Promise.all([cached.clone().text(), res.clone().text()]);
+            const [oldText, newText] = await Promise.all([
+              cachedCopy.text(),
+              res.clone().text()
+            ]);
             changed = oldText !== newText;
           } catch (e) {
-            changed = true;
+            changed = false; // ошибка чтения не должна запускать цикл перерисовки
           }
         }
         await cache.put(req, fresh);
-        // Сообщаем только о реальных изменениях и только если раньше был кэш
-        // (первая загрузка — не «обновление»).
-        if (changed && cached) await notifyClients({ type: 'DATA_UPDATED' });
+        // Сообщаем только о реальных изменениях и только если раньше был кэш.
+        if (changed && cachedCopy) await notifyClients({ type: 'DATA_UPDATED' });
         return res;
       })
       .catch(() => null);

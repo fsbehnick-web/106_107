@@ -2460,7 +2460,7 @@ html[data-device="mobile"] .group-menu-trigger{padding:5px 10px;gap:6px}
 <button class="kbd-help-btn" id="kbdHelpBtn" type="button" onclick="showKeyboardHelp()" title="Горячие клавиши (?)" aria-label="Горячие клавиши">⌨️</button>
 
 <div class="app-version-row">
-  <div class="app-version" aria-hidden="true">v2.0 · 14.10.2026</div>
+  <div class="app-version" aria-hidden="true">v2.1 · 14.10.2026</div>
   <button class="app-version-refresh" id="versionRefreshBtn" type="button" aria-label="Проверить наличие обновлений" title="Проверить наличие обновлений">↻</button>
 </div>
 
@@ -2483,19 +2483,25 @@ let g107 = {};
 
 let weeklyTemplate = {};
 let dataLoadFailed = false;
+let lastRawData = '';
 async function loadData() {
   try {
     const response = await fetch('./data.json');
     if (!response.ok) throw new Error('HTTP ' + response.status);
-    const data = await response.json();
+    const text = await response.text();
+    if (text === lastRawData) return false; // данные те же — перерисовка не нужна
+    const data = JSON.parse(text);
+    lastRawData = text;
     sharedSchedule = data.sharedSchedule || {};
     own106 = data.own106 || {};
     own107 = data.own107 || {};
     weeklyTemplate = data.weeklyTemplate || {};
     dataLoadFailed = false;
+    return true;
   } catch (e) {
     console.error('Failed to load schedule data:', e);
     dataLoadFailed = true;
+    return false;
   }
 }
 
@@ -4376,7 +4382,8 @@ function showKeyboardHelp(){
 
 /* Перезагрузка расписания после фонового обновления data.json (сообщение DATA_UPDATED от sw.js). */
 function reloadScheduleData(){
-  return loadData().then(()=>{
+  return loadData().then((changed)=>{
+    if(!changed) return;
     generateGroupMaps();
     pairIndex = null;
     pairsBySubject = null;
