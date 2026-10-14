@@ -991,9 +991,8 @@ try{if((window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||na
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
-    animation: slotIn .4s var(--ease) both;
+    animation: slotIn .4s var(--ease) backwards;
     animation-delay: calc(var(--i, 0) * 0.045s);
-    will-change: opacity, transform;
     transition: var(--t-bg), border-left-color .3s var(--ease), padding-left .3s var(--ease);
   }
   @media (hover: hover){
@@ -1047,7 +1046,7 @@ try{if((window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||na
     color: var(--free);
     font-size:13px;
     font-weight:600;
-    animation: slotIn .45s var(--ease) both;
+    animation: slotIn .45s var(--ease) backwards;
   }
 
   .sheet-scrim{
@@ -2461,7 +2460,7 @@ html[data-device="mobile"] .group-menu-trigger{padding:5px 10px;gap:6px}
 <button class="kbd-help-btn" id="kbdHelpBtn" type="button" onclick="showKeyboardHelp()" title="Горячие клавиши (?)" aria-label="Горячие клавиши">⌨️</button>
 
 <div class="app-version-row">
-  <div class="app-version" aria-hidden="true">v1.9 · 14.10.2026</div>
+  <div class="app-version" aria-hidden="true">v2.0 · 14.10.2026</div>
   <button class="app-version-refresh" id="versionRefreshBtn" type="button" aria-label="Проверить наличие обновлений" title="Проверить наличие обновлений">↻</button>
 </div>
 
@@ -3179,7 +3178,19 @@ function slotHtml(it, i, group, isLive, now, nowIdx=-1, nextIdx=-1, iso=currentD
     </div>`;
 }
 
+let slotAnimGuard = 0;
+function releaseSlotAnimations(){
+  window.clearTimeout(slotAnimGuard);
+  slotAnimGuard = window.setTimeout(()=>{
+    document.querySelectorAll('.slot, .empty-day').forEach(el=>{
+      el.style.animation = 'none';
+      el.style.opacity = '';
+    });
+  }, 1200);
+}
+
 function renderSlots(container, items, emptyText, group){
+  releaseSlotAnimations();
   if(items.length===0){
     container.innerHTML = `<div class="empty-day">${emptyText}</div>`;
     return;

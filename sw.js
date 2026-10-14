@@ -10,7 +10,7 @@
 //
 // ВАЖНО: при каждом релизе с изменениями в index.html увеличивайте CACHE_VERSION —
 // иначе activate не увидит разницы и старая оболочка останется в кэше.
-const CACHE_VERSION = 'v8';
+const CACHE_VERSION = 'v9';
 const CACHE_NAME = `schedule-106-107-shell-${CACHE_VERSION}`;
 
 const SHELL_ASSETS = [
