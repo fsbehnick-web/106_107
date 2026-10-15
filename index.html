@@ -238,7 +238,7 @@ try{if((window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||na
     outline: 2px solid var(--g106);
     outline-offset: 2px;
   }
-  html{ scroll-padding-top: 136px; }
+  html{ scroll-padding-top: calc(var(--hdr-h, 136px) + 8px); }
   body{
     margin:0;
     background: var(--bg);
@@ -307,10 +307,10 @@ try{if((window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||na
       "search search search";
     align-items: center;
     gap: 8px;
-    margin: 0 -16px 14px;
-    padding: max(10px, env(safe-area-inset-top)) 16px 10px;
+    margin: 0 calc(-1 * max(16px, env(safe-area-inset-right))) 14px calc(-1 * max(16px, env(safe-area-inset-left)));
+    padding: calc(env(safe-area-inset-top, 0px) + 10px) max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left));
     background: var(--bg);
-    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    background: linear-gradient(var(--bg), var(--bg)) top / 100% env(safe-area-inset-top, 0px) no-repeat, color-mix(in srgb, var(--bg) 90%, transparent);
     -webkit-backdrop-filter: saturate(1.2) blur(12px);
     backdrop-filter: saturate(1.2) blur(12px);
     border-bottom: 1px solid var(--line);
@@ -1504,7 +1504,7 @@ try{if((window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||na
     align-items:center;
     justify-content:center;
     gap: 12px;
-    padding: max(10px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) 10px max(14px, env(safe-area-inset-left));
+    padding: calc(env(safe-area-inset-top, 0px) + 10px) max(14px, env(safe-area-inset-right)) 10px max(14px, env(safe-area-inset-left));
     background: var(--panel);
     border-bottom: 1px solid var(--line);
     box-shadow: 0 8px 24px -10px rgba(0,0,0,0.45);
@@ -2073,7 +2073,7 @@ html[data-touch] .week-arrow::after,html[data-touch] .calendar-btn::after,html[d
 .tm-ib,.tm-sw{position:relative}
 html[data-touch] .tm-ib::after,html[data-touch] .tm-sw::after{content:"";position:absolute;inset:-8px}
 /* меню тем и редактор */
-.tm-acts{position:absolute;right:6px;bottom:6px;display:flex;gap:4px}
+.tm-acts{position:absolute;right:6px;top:6px;display:flex;gap:4px}
 .tm-ib{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--text-dim);font-size:14px;line-height:1;cursor:pointer;padding:0}
 .tm-rest{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;font-size:13px;color:var(--text-dim)}
 .tm-rest .theme-btn{flex:0 0 auto}
@@ -2103,6 +2103,18 @@ html[data-device="mobile"] .theme-menu.open{transform:none}
 html[data-device="mobile"] .theme-grid{grid-template-columns:repeat(2,1fr)}
 html[data-device="tablet"] .theme-grid{grid-template-columns:repeat(3,1fr)}
 html[data-standalone][data-touch] body{overscroll-behavior-y:contain}
+.view-mode-switcher{overflow:hidden}
+.view-mode-btn{display:flex;align-items:center;justify-content:center}
+@media (max-width:479px){.vm-t{display:none}.view-mode-btn{padding:0}}
+.theme-switcher{max-width:min(44vw,260px);overflow-x:auto;scrollbar-width:none}
+.theme-switcher::-webkit-scrollbar{display:none}
+.theme-switcher .theme-swatch,.theme-switcher .theme-menu-trigger{flex:0 0 auto}
+.tm-sug{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.tm-sug small{flex:0 0 100%;font-size:11px;color:var(--text-dim)}
+.tm-badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;font-size:11px;color:var(--text-dim);align-items:center}
+.tm-badge{font-weight:700;padding:2px 8px;border-radius:99px;border:1px solid var(--line)}
+.tm-badge.ok{color:var(--free)}.tm-badge.warn{color:#e5484d;border-color:#e5484d}
+.tm-tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.tm-toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 24px);transform:translateX(-50%);z-index:900;max-width:calc(100vw - 32px);padding:10px 16px;border-radius:12px;background:var(--text);color:var(--bg);font-size:13px;font-weight:700;box-shadow:var(--shadow);pointer-events:none}
 html[data-os="android"][data-standalone] .scroll-top-btn{bottom:max(28px,env(safe-area-inset-bottom) + 16px)}
 
 /* ===== Меню группы и подгруппы (кнопка слева сверху) ===== */
@@ -2156,6 +2168,8 @@ html[data-device="mobile"] .group-menu-trigger{padding:0 10px;gap:6px}
 .gm-subs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .gm-sub{min-width:0;padding:11px 6px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);color:var(--text-dim);font:inherit;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;transition:border-color .25s var(--ease), background-color .25s var(--ease), color .25s var(--ease)}
 .gm-sub.active{border-color:var(--g106);background:var(--g106-soft);color:var(--g106)}
+.gm-hint[hidden]{display:none}
+.tm-badges:empty{display:none}
 .gm-hint{margin:10px 0 0;font-size:12px;line-height:1.45;color:var(--text-dim)}
 @media (max-width:460px){ .gm-subs{grid-template-columns:repeat(2,1fr)} }
 @media (max-width:420px){
@@ -2314,7 +2328,7 @@ html[data-device="mobile"] .group-menu-trigger{padding:0 10px;gap:6px}
       <button type="button" class="gm-sub" data-sub="2" aria-pressed="false">2 подгруппа</button>
       <button type="button" class="gm-sub" data-sub="3" aria-pressed="false">3 подгруппа</button>
     </div>
-    <p class="gm-hint">В расписании и карточке пары будут сразу отображаться преподаватель и аудитория выбранной подгруппы.</p>
+    <p class="gm-hint" data-once="sub">Покажем преподавателя и аудиторию этой подгруппы.</p>
   </div>
 
   <div class="theme-menu-section">
@@ -2368,8 +2382,8 @@ html[data-device="mobile"] .group-menu-trigger{padding:0 10px;gap:6px}
     </button>
 
     <div class="view-mode-switcher" id="viewModeSwitcher" role="group" aria-label="Вид расписания">
-      <button class="view-mode-btn active" data-mode="list" type="button" onclick="switchViewMode('list')">📋 Список</button>
-      <button class="view-mode-btn" data-mode="grid" type="button" onclick="switchViewMode('grid')">📅 Сетка</button>
+      <button class="view-mode-btn active" data-mode="list" type="button" onclick="switchViewMode('list')" title="Список" aria-label="Список"><span aria-hidden="true">📋</span><span class="vm-t"> Список</span></button>
+      <button class="view-mode-btn" data-mode="grid" type="button" onclick="switchViewMode('grid')" title="Сетка" aria-label="Сетка"><span aria-hidden="true">📅</span><span class="vm-t"> Сетка</span></button>
     </div>
 
     <div class="theme-switcher" id="themeSwitcher" role="group" aria-label="Выбор темы оформления">
@@ -3946,12 +3960,8 @@ function slotDescText(it){
 
 /* ---------- Меню «Группа и подгруппа» (кнопка слева сверху) ---------- */
 function groupMenuLabelText(){
-  const sub = subPref.sub === 'all' ? '' : `${subPref.sub} подгр.`;
-  if(groupView === 'both'){
-    return sub ? { full:`Все · ${sub}`, short:`Все · ${sub}` } : { full:'Все группы', short:'Все' };
-  }
-  const t = sub ? `${groupView} · ${sub}` : groupView;
-  return { full:t, short:t };
+  if(groupView === 'both') return { full:'Все группы', short:'Все' };
+  return { full:groupView, short:groupView };
 }
 
 function updateGroupMenuUI(){
@@ -3983,10 +3993,16 @@ function updateGroupMenuUI(){
 }
 
 let groupMenuLastFocus = null;
+/* Подсказки показываются один раз: элементы с data-once скрываются, когда окно открыто повторно */
+function hintSeen(k){ try{ return localStorage.getItem('hint-seen-106-107:'+k) === '1'; }catch(e){ return false; } }
+function hintMark(k){ try{ localStorage.setItem('hint-seen-106-107:'+k, '1'); }catch(e){} }
+function hintsOnOpen(root){ root.querySelectorAll('[data-once]').forEach(e=>{ e.hidden = hintSeen(e.dataset.once); }); }
+function hintsOnClose(root){ root.querySelectorAll('[data-once]:not([hidden])').forEach(e=>{ if(e.textContent.trim()) hintMark(e.dataset.once); }); }
 function openGroupMenu(){
   if(!dom.groupMenu || dom.groupMenu.classList.contains('open')) return;
   groupMenuLastFocus = document.activeElement;
   updateGroupMenuUI();
+  hintsOnOpen(dom.groupMenu);
   dom.groupMenu.inert = false;
   dom.groupMenu.setAttribute('aria-hidden','false');
   dom.groupMenu.classList.add('open');
@@ -3996,6 +4012,7 @@ function openGroupMenu(){
 }
 function closeGroupMenu(){
   if(!dom.groupMenu || !dom.groupMenu.classList.contains('open')) return;
+  hintsOnClose(dom.groupMenu);
   dom.groupMenu.classList.remove('open');
   dom.groupMenuScrim.classList.remove('open');
   dom.groupMenu.setAttribute('aria-hidden','true');
@@ -4775,11 +4792,9 @@ function openInstallSheet(){
   lastFocused = document.activeElement;
   const isIOS = isIOSDevice();
   dom.installHintBody.innerHTML = isIOS
-    ? `<div>Установите приложение на экран «Домой» — оно будет открываться отдельно от Safari и работать офлайн.</div>
-       <div>1. Нажмите <b>Поделиться</b> <span class="install-hint-icon">⎋</span> внизу экрана</div>
-       <div>2. Выберите <b>«На экран Домой»</b></div>
-       <div>3. Нажмите <b>Добавить</b></div>`
-    : `<div>Установите приложение — оно будет открываться отдельно от браузера и работать офлайн, как обычное приложение.</div>`;
+    ? `<div><b>Поделиться</b> <span class="install-hint-icon">⎋</span> → <b>«На экран Домой»</b></div>`
+    : `<div>Работает офлайн, как обычное приложение.</div>`;
+  try{ localStorage.setItem(INSTALL_DISMISS_KEY, '1'); }catch(e){}
   dom.installBtnRow.innerHTML = '';
   if(!isIOS && deferredInstallPrompt){
     const btn = document.createElement('button');
@@ -5008,19 +5023,23 @@ function updateNotifUI(){
   btn.textContent = on ? 'Вкл' : 'Выкл';
   btn.disabled = !supported || perm === 'denied';
   hint.classList.remove('warn');
+  hint.removeAttribute('data-once');
+  hint.hidden = false;
   if(!supported){
     status.textContent = 'Недоступны в этом браузере';
     const ios = document.documentElement.getAttribute('data-os') === 'ios';
     hint.textContent = ios
-      ? 'На iPhone и iPad уведомления работают, когда приложение установлено на экран «Домой».'
-      : 'Этот браузер не поддерживает уведомления.';
+      ? 'На iPhone нужна установка на экран «Домой».'
+      : 'Браузер не поддерживает уведомления.';
   } else if(perm === 'denied'){
     status.textContent = 'Доступ заблокирован';
-    hint.textContent = 'Разрешите уведомления для этого сайта в настройках браузера (значок замка рядом с адресом → «Уведомления»), затем вернитесь сюда и включите переключатель.';
+    hint.textContent = 'Разрешите уведомления в настройках браузера и вернитесь сюда.';
     hint.classList.add('warn');
   } else if(on){
     status.textContent = `Включены · за ${REMIND_LEAD_MINUTES} минут до начала пары`;
-    hint.textContent = 'Напоминания приходят для выбранной группы и подгруппы, пока приложение открыто или работает в фоне.';
+    hint.textContent = 'Для выбранной группы и подгруппы.';
+    hint.dataset.once = 'notif-on';
+    hint.hidden = hintSeen('notif-on');
   } else {
     status.textContent = 'Выключены';
     hint.textContent = '';
@@ -5580,19 +5599,20 @@ function parse(s){
 const lum=h=>{const[r,g,b]=hexToRGB(h).map(x=>{x/=255;return x<=.03928?x/12.92:((x+.055)/1.055)**2.4});return .2126*r+.7152*g+.0722*b};
 const ctr=(a,b)=>{const x=lum(a),y=lum(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
 const mix=(a,b,t)=>{const p=hexToRGB(a),q=hexToRGB(b);return rgbToHex(...p.map((v,i)=>v+(q[i]-v)*t))};
+const lift=(c,bg,m)=>{const to=lum(bg)<.4?'#ffffff':'#000000';let r=c;for(let i=0;i<14&&ctr(r,bg)<m;i++)r=mix(r,to,.12);return r};
 const soft=(c,a)=>`rgba(${hexToRGB(c).join(',')},${a})`;
 const isDark=t=>t.mode==='dark'||(t.mode!=='light'&&lum(t.c1)<.18);
 
 /* ── палитра из двух цветов (фон + акцент); adv — ручные правки ── */
 function pal(c1,c2,mode,adv){
   adv=adv||{};const dark=isDark({mode,c1}),H=hexToHSL(c1),A=hexToHSL(c2),bg=c1;
-  const text=adv.text||hslToHex(H[0],Math.min(H[1],22),dark?92:11);
+  const text=adv.text||lift(hslToHex(H[0],Math.min(H[1],22),dark?92:11),bg,7);
   const panel=adv.panel||mix(bg,'#ffffff',dark?.05:.5),line=adv.line||mix(bg,text,dark?.18:.15);
-  const fit=h=>{let L=A[2],c;for(let i=0;i<24;i++){c=hslToHex(((h%360)+360)%360,Math.max(A[1],25),cl(L,6,94));if(ctr(c,bg)>=3.2)break;L+=dark?3:-3}return c};
-  const g1=adv.g106||fit(A[0]),g2=adv.g107||fit(A[0]+40),q1=fit(A[0]+80),q2=fit(A[0]+210),dim=c=>mix(c,bg,.3);
-  return{bg,panel,'panel-2':mix(bg,text,dark?.1:.07),line,text,'text-dim':mix(text,bg,.42),
+  const fit=(h,m=4.5)=>{let L=A[2],c;for(let i=0;i<24;i++){c=hslToHex(((h%360)+360)%360,Math.max(A[1],25),cl(L,6,94));if(ctr(c,bg)>=m)break;L+=dark?3:-3}return lift(c,bg,m)};
+  const g1=adv.g106||fit(A[0]),g2=adv.g107||fit(A[0]+55),q1=fit(A[0]+100,3.2),q2=fit(A[0]+210,3.2),dim=c=>mix(c,bg,.3);
+  return{bg,panel,'panel-2':mix(bg,text,dark?.1:.07),line,text,'text-dim':lift(mix(text,bg,.42),bg,4.5),
     g106:g1,'g106-dim':dim(g1),'g106-soft':soft(g1,.13),g107:g2,'g107-dim':dim(g2),'g107-soft':soft(g2,.15),
-    free:dark?'#8fbf7a':'#52693a','parity-1':q1,'parity-1-soft':soft(q1,.15),'parity-2':q2,'parity-2-soft':soft(q2,.15),
+    free:lift(dark?'#8fbf7a':'#52693a',bg,4.5),'parity-1':q1,'parity-1-soft':soft(q1,.15),'parity-2':q2,'parity-2-soft':soft(q2,.15),
     shadow:dark?'0 10px 30px -12px rgba(0,0,0,.6)':'0 10px 26px -14px rgba(60,40,20,.25)'};
 }
 const vars=p=>Object.entries(p).map(([k,v])=>`--${k}:${v}`).join(';');
@@ -5653,7 +5673,7 @@ window.buildThemeMenuGrid=function(){
     const pick=()=>{applyTheme(t.id,true);buildThemeMenuGrid();updateThemeMenuInfo()};
     c.onclick=pick;c.onkeydown=e=>{if(e.target===c&&(e.key==='Enter'||e.key===' ')){e.preventDefault();pick()}};
     const a=document.createElement('div');a.className='tm-acts';
-    if(t.custom)a.appendChild(mkBtn('✎','Изменить',()=>edit(t)));
+    if(t.custom){a.appendChild(mkBtn('⤴','Поделиться',()=>share(t)));a.appendChild(mkBtn('✎','Изменить',()=>edit(t)))}
     a.appendChild(mkBtn('×',t.custom?'Удалить':'Скрыть',()=>t.custom?del(t.id):hide(t.id)));
     c.appendChild(a);g.appendChild(c);
   });
@@ -5663,20 +5683,50 @@ window.buildThemeMenuGrid=function(){
     r.querySelector('button').onclick=()=>{wr(HK,[]);refresh()};p.appendChild(r)}
 };
 
+/* ── пересылка тем: компактный код в ссылке (#theme=…); данные из ссылки проверяются и пересобираются ── */
+const enc=o=>{let s='';new TextEncoder().encode(JSON.stringify(o)).forEach(b=>s+=String.fromCharCode(b));return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')};
+const dec=c=>{c=c.replace(/-/g,'+').replace(/_/g,'/');c+='='.repeat((4-c.length%4)%4);return JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(c),ch=>ch.charCodeAt(0))))};
+const link=t=>location.origin+location.pathname+'#theme='+enc({v:1,n:t.name,c1:t.c1,c2:t.c2,m:t.mode,a:t.adv&&Object.keys(t.adv).length?t.adv:undefined});
+function unpack(s){try{s=String(s||'').trim();const m=s.match(/theme=([A-Za-z0-9_-]+)/),o=dec(m?m[1]:s),c1=parse(o.c1),c2=parse(o.c2);if(!c1||!c2)return null;
+  const adv={};ADV.forEach(([k])=>{const v=o.a&&parse(o.a[k]);if(v)adv[k]=v});
+  return{name:String(o.n||'').replace(/[\u0000-\u001f<>]/g,'').trim().slice(0,24)||'Тема',c1,c2,mode:o.m==='light'||o.m==='dark'?o.m:'auto',adv}}catch(e){return null}}
+let toastT;function toast(msg){let e=$('.tm-toast');if(!e){e=document.createElement('div');e.className='tm-toast';e.setAttribute('role','status');document.body.appendChild(e)}
+  e.textContent=msg;e.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>e.hidden=true,2600)}
+async function share(t){const url=link(t);
+  try{if(navigator.share){await navigator.share({title:'Тема «'+t.name+'»',text:'Тема оформления для расписания 106/107',url});return}}catch(e){if(e&&e.name==='AbortError')return}
+  try{await navigator.clipboard.writeText(url);toast('Ссылка на тему скопирована')}catch(e){prompt('Скопируйте ссылку на тему:',url)}}
+function addImported(o){const l=rd(K,[]),same=l.find(x=>x.name===o.name&&x.c1===o.c1&&x.c2===o.c2&&x.mode===o.mode&&JSON.stringify(x.adv||{})===JSON.stringify(o.adv));
+  const t=same||norm({id:'custom-'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),...o});
+  if(!same){l.push(t);saveCustoms(l)}
+  const h=hidden();if(h.includes(t.id))wr(HK,h.filter(x=>x!==t.id));
+  applyTheme(t.id,true);refresh()}
+function fromHash(){if(!/theme=/.test(location.hash))return;const o=unpack(location.hash);history.replaceState(null,'',location.pathname+location.search);
+  if(!o)return toast('Не удалось прочитать тему из ссылки');
+  if(confirm('Добавить тему «'+o.name+'» и применить её?'))addImported(o)}
+
 /* ── редактор тем ── */
 const BG=['#1a1512','#121a3a','#0b3d0b','#5a1020','#10151c','#f1e3d0','#fefae0','#f1faee','#e9d8a6','#ffffff'];
-const AC=['#d3a86a','#e63946','#c68642','#8a8a4b','#606c38','#2a9d8f','#4c6ef5','#9b5de5','#f15bb5','#fb8500'];
 const ADV=[['panel','Панели'],['text','Текст'],['g106','Акцент 106'],['g107','Акцент 107'],['line','Линии']];
 const DEF=()=>({c1:'#1a1512',c2:'#d3a86a',mode:'auto',adv:{}});
 let st=DEF(),editId=null,host;
-const field=(k,l,pr)=>`<div class="tm-f"><label>${l}</label><div class="tm-in"><input type="color" data-k="${k}" data-t="p" aria-label="${l}"><input type="text" data-k="${k}" data-t="t" placeholder="#d3a86a · rgb(211,168,106) · hsl(37,52%,62%)" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="${l}: значение"></div>${pr?`<div class="tm-pal" data-k="${k}">${pr.map(c=>`<button type="button" class="tm-sw" style="background:${c}" data-c="${c}" aria-label="${c}"></button>`).join('')}</div>`:''}</div>`;
+const field=(k,l,pr)=>`<div class="tm-f"><label>${l}</label><div class="tm-in"><input type="color" data-k="${k}" data-t="p" aria-label="${l}"><input type="text" data-k="${k}" data-t="t" placeholder="#hex · rgb() · hsl()" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="${l}: значение"></div>${pr?`<div class="tm-pal" data-k="${k}">${pr.map(c=>`<button type="button" class="tm-sw" style="background:${c}" data-c="${c}" aria-label="${c}"></button>`).join('')}</div>`:''}</div>`;
 function paint(skip){
   const p=pal(st.c1,st.c2,st.mode,st.adv);
   host.querySelectorAll('input[data-k]').forEach(i=>{const k=i.dataset.k,main=k==='c1'||k==='c2';
     if(i.dataset.t==='p')i.value=main?st[k]:(st.adv[k]||p[k]);else if(i!==skip)i.value=main?st[k]:(st.adv[k]||'')});
   host.querySelectorAll('.tm-mode button').forEach(b=>b.classList.toggle('on',b.dataset.m===st.mode));
   $('#tmPrev').style.cssText=vars(p);
+  $('#tmSug').innerHTML=[...new Set(sugg())].map(c=>`<button type="button" class="tm-sw" style="background:${c}" data-c="${c}" aria-label="${c}"></button>`).join('');
+  const bd=(l,a)=>{const r=ctr(a,p.bg);return`<span class="tm-badge ${r>=4.5?'ok':'warn'}">${l} ${r.toFixed(1)}:1</span>`};
+  const weak=[['текст',p.text],['106',p.g106],['107',p.g107],['доп.',p['text-dim']]].filter(([,c])=>ctr(c,p.bg)<4.5);
+  $('#tmBadges').innerHTML=weak.length?'⚠ '+weak.map(([l,c])=>bd(l,c)).join(''):'';
 }
+/* акценты из гармоний фона: родственный, триада, комплементарный… — стабильны при смене акцента */
+function sugg(){const bg=st.c1,dark=isDark(st),h=hexToHSL(bg)[0];
+  return[0,30,150,180,210,300].map(d=>{let L=dark?68:38,c;for(let i=0;i<20;i++){c=hslToHex(((h+d)%360+360)%360,62,cl(L,6,94));if(ctr(c,bg)>=4.5)break;L+=dark?3:-3}return lift(c,bg,4.5)})}
+function rnd(){const h=Math.random()*360,dark=Math.random()<.6,d=[30,150,180,210][Math.random()*4|0];
+  st.c1=hslToHex(h,15+Math.random()*30,dark?8+Math.random()*8:90+Math.random()*6);
+  st.c2=hslToHex(h+d,60+Math.random()*25,dark?66:40);st.mode='auto';st.adv={};paint()}
 function setVal(k,v){if(k==='c1'||k==='c2'){if(v)st[k]=v}else if(v)st.adv[k]=v;else delete st.adv[k]}
 function resetEd(){editId=null;st=DEF();$('#tmName').value='';$('#tmEdTitle').textContent='Создать свою тему';paint()}
 function edit(t){editId=t.id;st={c1:t.c1,c2:t.c2,mode:t.mode,adv:{...(t.adv||{})}};$('#tmName').value=t.name;
@@ -5684,11 +5734,14 @@ function edit(t){editId=t.id;st={c1:t.c1,c2:t.c2,mode:t.mode,adv:{...(t.adv||{})
 function buildEditor(){
   host=document.createElement('div');host.className='theme-menu-section tm-ed';host.id='tmEd';
   host.innerHTML=`<h3 id="tmEdTitle">Создать свою тему</h3><input id="tmName" class="tm-name" maxlength="24" placeholder="Название темы" aria-label="Название темы">
-${field('c1','Фон',BG)}${field('c2','Акцент',AC)}
+${field('c1','Фон',BG)}${field('c2','Акцент')}<div class="tm-sug" id="tmSug" data-k="c2"></div>
 <div class="tm-mode" role="group" aria-label="Режим">${[['auto','Авто'],['dark','Тёмная'],['light','Светлая']].map(([v,l])=>`<button type="button" data-m="${v}">${l}</button>`).join('')}</div>
-<details class="tm-adv"><summary>Тонкая настройка (необязательно)</summary>${ADV.map(([k,l])=>field(k,l)).join('')}<p class="tm-hint">Пустое поле — цвет подберётся автоматически. Принимаются HEX, rgb(…), hsl(…) или просто три числа.</p></details>
+<details class="tm-adv"><summary>Тонкая настройка (необязательно)</summary>${ADV.map(([k,l])=>field(k,l)).join('')}<p class="tm-hint">Пусто — подберётся само.</p></details>
+<div class="tm-tools"><button type="button" id="tmRnd" class="theme-btn">🎲 Подобрать цвета</button><button type="button" id="tmShare" class="theme-btn">⤴ Поделиться</button></div>
 <div class="tm-prev" id="tmPrev"><div class="tm-pv-h">Группа 106 <i>107</i></div><div class="tm-pv-s"><b>09:00–10:30</b>Математический анализ</div><div class="tm-pv-s now"><b>10:40–12:10</b>Алгебра</div></div>
-<div class="tm-btns"><button type="button" id="tmSave" class="theme-btn primary">Сохранить тему</button><button type="button" id="tmClear" class="theme-btn">Очистить</button></div>`;
+<div class="tm-badges" id="tmBadges"></div>
+<div class="tm-btns"><button type="button" id="tmSave" class="theme-btn primary">Сохранить тему</button><button type="button" id="tmClear" class="theme-btn">Очистить</button></div>
+<details class="tm-adv"><summary>Импорт темы по ссылке или коду</summary><div class="tm-in" style="margin-top:8px"><input type="text" id="tmImp" placeholder="Ссылка или код темы" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Ссылка или код темы"><button type="button" id="tmImpBtn" class="theme-btn primary">Добавить</button></div></details>`;
   dom.themeMenu.querySelectorAll('.theme-menu-section')[1].before(host);
   host.addEventListener('input',e=>{const t=e.target,k=t.dataset.k;if(!k)return;
     if(t.dataset.t==='p')setVal(k,t.value);
@@ -5699,6 +5752,9 @@ ${field('c1','Фон',BG)}${field('c2','Акцент',AC)}
     const sw=e.target.closest('.tm-sw');if(sw){setVal(sw.parentElement.dataset.k,sw.dataset.c);paint();return}
     const m=e.target.closest('.tm-mode button');if(m){st.mode=m.dataset.m;paint()}});
   $('#tmClear').onclick=resetEd;
+  $('#tmRnd').onclick=rnd;
+  $('#tmShare').onclick=()=>share({name:$('#tmName').value.trim()||'Моя тема',c1:st.c1,c2:st.c2,mode:st.mode,adv:{...st.adv}});
+  $('#tmImpBtn').onclick=()=>{const o=unpack($('#tmImp').value);if(!o)return toast('Не удалось прочитать тему');addImported(o);$('#tmImp').value='';toast('Тема «'+o.name+'» добавлена')};
   $('#tmSave').onclick=()=>{
     const t=norm({id:editId||'custom-'+Date.now(),name:$('#tmName').value.trim()||'Моя тема',c1:st.c1,c2:st.c2,mode:st.mode,adv:{...st.adv}});
     const l=rd(K,[]),i=l.findIndex(x=>x.id===t.id);if(i>=0)l[i]=t;else l.push(t);
@@ -5722,6 +5778,10 @@ window.downloadIcs=function(name,content){
 
 saveCustoms(rd(K,[]));
 buildEditor();
+setTimeout(fromHash,600);addEventListener('hashchange',fromHash);
+/* реальная высота шапки → scroll-padding-top (прыжки к парам не прячутся под шапкой) */
+const hh=document.getElementById('boardHeader');
+if(hh){const setH=()=>document.documentElement.style.setProperty('--hdr-h',hh.offsetHeight+'px');setH();window.ResizeObserver?new ResizeObserver(setH).observe(hh):addEventListener('resize',setH)}
 
 /* выбранная тема скрыта или удалена — откат к системной (terracotta / mocha) */
 (function(){
