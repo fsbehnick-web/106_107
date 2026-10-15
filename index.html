@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" id="themeColorMeta" content="#1a1512">
+<meta name="theme-color" id="themeColorMeta" content="#1c1714">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -14,8 +14,8 @@
 <script>
 (function(){
   try{
-    var BUILTIN = {mocha:'#1a1512', terracotta:'#f1e3d0', 'crimson-cloud':'#F1FAEE', 'forest-cream':'#0B3D0B',
-      'bronze-night':'#121A3A', 'olive-wine':'#5A1020', 'rust-sand':'#E9D8A6', 'moss-ivory':'#FEFAE0'};
+    var BUILTIN = {mocha:'#1c1714', terracotta:'#f2e6d6', 'crimson-cloud':'#f4f7f0', 'forest-cream':'#16261a',
+      'bronze-night':'#161d35', 'olive-wine':'#47202a', 'rust-sand':'#eee3c8', 'moss-ivory':'#faf6e4'};
     var root = document.documentElement, meta = document.getElementById('themeColorMeta');
     var light = !!(window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches);
     var system = light ? 'terracotta' : 'mocha';
@@ -33,7 +33,7 @@
     // выбранная тема скрыта или удалена — откат к системной
     var id = (saved && known && hidden.indexOf(saved) < 0) ? saved : system;
     if(saved || id !== 'mocha') root.setAttribute('data-theme', id);
-    if(meta) meta.setAttribute('content', custom && id === saved ? (custom.bg || custom.c1) : (BUILTIN[id] || '#1a1512'));
+    if(meta) meta.setAttribute('content', custom && id === saved ? (custom.bg || custom.c1) : (BUILTIN[id] || '#1c1714'));
   }catch(e){}
 })();
 </script>
@@ -53,174 +53,174 @@ try{if((window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||na
 <style>
   :root{
     color-scheme: dark;
-    --bg: #1a1512;
-    --panel: #241d17;
-    --panel-2: #2c231c;
-    --line: #3d3025;
-    --g106: #d3a86a;
-    --g106-dim: #a17f4d;
-    --g106-soft: rgba(211,168,106,0.12);
-    --g107: #9c2f45;
-    --g107-dim: #722236;
-    --g107-soft: rgba(156,47,69,0.15);
-    --text: #f0e4d4;
-    --text-dim: #a4907a;
-    --free: #8fbf7a;
-    --parity-1: #9c8a4e;
-    --parity-1-soft: rgba(156,138,78,0.16);
-    --parity-2: #7d6a8f;
-    --parity-2-soft: rgba(125,106,143,0.18);
-    --shadow: 0 10px 30px -12px rgba(0,0,0,0.6);
+    --bg: #1c1714;
+    --panel: #251e19;
+    --panel-2: #2d251f;
+    --line: #3b3027;
+    --g106: #cdb083;
+    --g106-dim: #a08a68;
+    --g106-soft: rgba(205,176,131,0.12);
+    --g107: #c98583;
+    --g107-dim: #9c6a69;
+    --g107-soft: rgba(201,133,131,0.12);
+    --text: #efe4d6;
+    --text-dim: #ab9a86;
+    --free: #97b886;
+    --parity-1: #ab9d70;
+    --parity-1-soft: rgba(171,157,112,0.12);
+    --parity-2: #a592b0;
+    --parity-2-soft: rgba(165,146,176,0.12);
+    --shadow: 0 10px 30px -12px rgba(0,0,0,0.55);
     --ease: cubic-bezier(.22,1,.36,1);
     --t-color: color .3s var(--ease);
     --t-bg: background-color .3s var(--ease);
   }
   :root[data-theme="terracotta"]{
     color-scheme: light;
-    --bg: #f1e3d0;
-    --panel: #faf3e6;
-    --panel-2: #ecdcc3;
-    --line: #ddc6a4;
-    --g106: #6b5a3a;
-    --g106-dim: #8f7c56;
-    --g106-soft: rgba(107,90,58,0.10);
-    --g107: #b1512f;
-    --g107-dim: #8a3e24;
-    --g107-soft: rgba(177,81,47,0.12);
-    --text: #382d1e;
-    --text-dim: #6f604c;
-    --free: #52693a;
-    --parity-1: #7a6b35;
-    --parity-1-soft: rgba(122,107,53,0.12);
-    --parity-2: #6b5578;
-    --parity-2-soft: rgba(107,85,120,0.12);
-    --shadow: 0 10px 26px -14px rgba(90,55,20,0.25);
+    --bg: #f2e6d6;
+    --panel: #f8f0e4;
+    --panel-2: #ecdfcb;
+    --line: #dccdb4;
+    --g106: #6e5f44;
+    --g106-dim: #8f8062;
+    --g106-soft: rgba(110,95,68,0.1);
+    --g107: #91523a;
+    --g107-dim: #ab7660;
+    --g107-soft: rgba(145,82,58,0.1);
+    --text: #3a2f23;
+    --text-dim: #6a5b48;
+    --free: #52683d;
+    --parity-1: #6e623b;
+    --parity-1-soft: rgba(110,98,59,0.1);
+    --parity-2: #6d5b77;
+    --parity-2-soft: rgba(109,91,119,0.1);
+    --shadow: 0 10px 26px -14px rgba(90,55,20,0.2);
   }
   :root[data-theme="crimson-cloud"]{
     color-scheme: light;
-    --bg: #F1FAEE;
-    --panel: #fdfefe;
-    --panel-2: #e3f3ed;
-    --line: #d0e8df;
-    --g106: #E63946;
-    --g106-dim: #b92d38;
-    --g106-soft: rgba(230,57,70,0.12);
-    --g107: #a8324a;
-    --g107-dim: #7a2436;
-    --g107-soft: rgba(168,50,74,0.14);
-    --text: #2d3436;
-    --text-dim: #636e72;
-    --free: #55a573;
-    --parity-1: #d4626e;
-    --parity-1-soft: rgba(212,98,110,0.12);
-    --parity-2: #c85063;
-    --parity-2-soft: rgba(200,80,99,0.12);
-    --shadow: 0 10px 26px -14px rgba(230,57,70,0.2);
+    --bg: #f4f7f0;
+    --panel: #fbfcf8;
+    --panel-2: #e9f0e6;
+    --line: #d8e4d8;
+    --g106: #a84d57;
+    --g106-dim: #c07a82;
+    --g106-soft: rgba(168,77,87,0.1);
+    --g107: #85455f;
+    --g107-dim: #a56d84;
+    --g107-soft: rgba(133,69,95,0.1);
+    --text: #2f3436;
+    --text-dim: #5f686b;
+    --free: #437558;
+    --parity-1: #9f5550;
+    --parity-1-soft: rgba(159,85,80,0.1);
+    --parity-2: #99566e;
+    --parity-2-soft: rgba(153,86,110,0.1);
+    --shadow: 0 10px 26px -14px rgba(168,77,87,0.18);
   }
   :root[data-theme="forest-cream"]{
     color-scheme: dark;
-    --bg: #0B3D0B;
-    --panel: #0f4d0f;
-    --panel-2: #155815;
-    --line: #206420;
-    --g106: #F5E6CC;
-    --g106-dim: #c9ba9f;
-    --g106-soft: rgba(245,230,204,0.14);
-    --g107: #d4c4a8;
-    --g107-dim: #a89a7e;
-    --g107-soft: rgba(212,196,168,0.12);
-    --text: #f0ead8;
-    --text-dim: #9fa68e;
-    --free: #7fc99d;
-    --parity-1: #e2d5b9;
-    --parity-1-soft: rgba(226,213,185,0.14);
-    --parity-2: #cec0a4;
-    --parity-2-soft: rgba(206,192,164,0.12);
-    --shadow: 0 10px 30px -12px rgba(0,0,0,0.7);
+    --bg: #16261a;
+    --panel: #1e3123;
+    --panel-2: #263c2c;
+    --line: #334d39;
+    --g106: #d8cbb2;
+    --g106-dim: #aa9f89;
+    --g106-soft: rgba(216,203,178,0.12);
+    --g107: #a8c2a5;
+    --g107-dim: #829a80;
+    --g107-soft: rgba(168,194,165,0.12);
+    --text: #eee8d6;
+    --text-dim: #a6b5a2;
+    --free: #93c9a2;
+    --parity-1: #c9bc9f;
+    --parity-1-soft: rgba(201,188,159,0.12);
+    --parity-2: #9fb89d;
+    --parity-2-soft: rgba(159,184,157,0.12);
+    --shadow: 0 10px 30px -12px rgba(0,0,0,0.55);
   }
   :root[data-theme="bronze-night"]{
     color-scheme: dark;
-    --bg: #121A3A;
-    --panel: #1a2449;
-    --panel-2: #212d56;
-    --line: #2d3966;
-    --g106: #C68642;
-    --g106-dim: #9d6a34;
-    --g106-soft: rgba(198,134,66,0.15);
-    --g107: #a87136;
-    --g107-dim: #7e5528;
-    --g107-soft: rgba(168,113,54,0.13);
-    --text: #e8dac8;
-    --text-dim: #8f98b2;
-    --free: #7fa089;
-    --parity-1: #b8915f;
-    --parity-1-soft: rgba(184,145,95,0.14);
-    --parity-2: #9e7d56;
-    --parity-2-soft: rgba(158,125,86,0.12);
-    --shadow: 0 10px 30px -12px rgba(0,0,0,0.65);
+    --bg: #161d35;
+    --panel: #1e2640;
+    --panel-2: #252e4a;
+    --line: #323c5c;
+    --g106: #cfaa7a;
+    --g106-dim: #a4865f;
+    --g106-soft: rgba(207,170,122,0.12);
+    --g107: #c08f7e;
+    --g107-dim: #96705f;
+    --g107-soft: rgba(192,143,126,0.12);
+    --text: #eadfcf;
+    --text-dim: #9aa3bd;
+    --free: #88a893;
+    --parity-1: #b99d72;
+    --parity-1-soft: rgba(185,157,114,0.12);
+    --parity-2: #a79583;
+    --parity-2-soft: rgba(167,149,131,0.12);
+    --shadow: 0 10px 30px -12px rgba(0,0,0,0.6);
   }
   :root[data-theme="olive-wine"]{
     color-scheme: dark;
-    --bg: #5A1020;
-    --panel: #6e1929;
-    --panel-2: #7f2133;
-    --line: #93303f;
-    --g106: #8A8A4B;
-    --g106-dim: #6e6e3c;
-    --g106-soft: rgba(138,138,75,0.16);
-    --g107: #a39858;
-    --g107-dim: #7e7544;
-    --g107-soft: rgba(163,152,88,0.14);
-    --text: #f0e8d0;
-    --text-dim: #b49a86;
-    --free: #8fa87a;
-    --parity-1: #9c9860;
-    --parity-1-soft: rgba(156,152,96,0.15);
-    --parity-2: #878754;
-    --parity-2-soft: rgba(135,135,84,0.13);
-    --shadow: 0 10px 30px -12px rgba(0,0,0,0.7);
+    --bg: #47202a;
+    --panel: #542a34;
+    --panel-2: #60333d;
+    --line: #74454f;
+    --g106: #b7b886;
+    --g106-dim: #8f9066;
+    --g106-soft: rgba(183,184,134,0.12);
+    --g107: #d4bb92;
+    --g107-dim: #a8946f;
+    --g107-soft: rgba(212,187,146,0.12);
+    --text: #f1e9d6;
+    --text-dim: #cdb3a4;
+    --free: #a8bf92;
+    --parity-1: #b4b080;
+    --parity-1-soft: rgba(180,176,128,0.12);
+    --parity-2: #c9a39c;
+    --parity-2-soft: rgba(201,163,156,0.12);
+    --shadow: 0 10px 30px -12px rgba(0,0,0,0.6);
   }
   :root[data-theme="rust-sand"]{
     color-scheme: light;
-    --bg: #E9D8A6;
-    --panel: #f3e8c8;
-    --panel-2: #dccb9a;
-    --line: #cabb8e;
-    --g106: #9B2226;
-    --g106-dim: #7a1b1e;
-    --g106-soft: rgba(155,34,38,0.14);
-    --g107: #b83b3f;
-    --g107-dim: #8d2e31;
-    --g107-soft: rgba(184,59,63,0.12);
-    --text: #3a2817;
-    --text-dim: #6f5d44;
-    --free: #6a8e4f;
-    --parity-1: #ae4b4e;
-    --parity-1-soft: rgba(174,75,78,0.13);
-    --parity-2: #94393c;
-    --parity-2-soft: rgba(148,57,60,0.11);
-    --shadow: 0 10px 26px -14px rgba(155,34,38,0.25);
+    --bg: #eee3c8;
+    --panel: #f6eed8;
+    --panel-2: #e4d7b8;
+    --line: #d4c8a6;
+    --g106: #8a4a45;
+    --g106-dim: #a97570;
+    --g106-soft: rgba(138,74,69,0.1);
+    --g107: #735628;
+    --g107-dim: #9a8052;
+    --g107-soft: rgba(115,86,40,0.1);
+    --text: #3b2b1e;
+    --text-dim: #6b5a42;
+    --free: #486436;
+    --parity-1: #755a29;
+    --parity-1-soft: rgba(117,90,41,0.1);
+    --parity-2: #7a5560;
+    --parity-2-soft: rgba(122,85,96,0.1);
+    --shadow: 0 10px 26px -14px rgba(138,74,69,0.2);
   }
   :root[data-theme="moss-ivory"]{
     color-scheme: light;
-    --bg: #FEFAE0;
-    --panel: #fffef5;
-    --panel-2: #f8f4d3;
-    --line: #e8e3c4;
-    --g106: #606C38;
-    --g106-dim: #4d562d;
-    --g106-soft: rgba(96,108,56,0.13);
-    --g107: #7a8a4a;
-    --g107-dim: #5f6c3a;
-    --g107-soft: rgba(122,138,74,0.11);
+    --bg: #faf6e4;
+    --panel: #fdfbf0;
+    --panel-2: #f2eed6;
+    --line: #e4dfc2;
+    --g106: #5c6838;
+    --g106-dim: #7f8a5c;
+    --g106-soft: rgba(92,104,56,0.1);
+    --g107: #6f6730;
+    --g107-dim: #9a9158;
+    --g107-soft: rgba(111,103,48,0.1);
     --text: #2e3319;
-    --text-dim: #6a7247;
-    --free: #5d8e4f;
-    --parity-1: #758648;
-    --parity-1-soft: rgba(117,134,72,0.12);
-    --parity-2: #677743;
-    --parity-2-soft: rgba(103,119,67,0.11);
-    --shadow: 0 10px 26px -14px rgba(96,108,56,0.22);
+    --text-dim: #656d42;
+    --free: #4a7343;
+    --parity-1: #62703e;
+    --parity-1-soft: rgba(98,112,62,0.1);
+    --parity-2: #7b6a4a;
+    --parity-2-soft: rgba(123,106,74,0.1);
+    --shadow: 0 10px 26px -14px rgba(92,104,56,0.18);
   }
   *{
     box-sizing:border-box;
@@ -1016,6 +1016,49 @@ try{if((window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||na
     white-space: nowrap;
   }
 
+  /* ===== Выравнивание пар двух групп по времени (дневной вид, «Все группы») =====
+     Обе колонки — subgrid одной сетки: строка = один временной слот, поэтому пары
+     с одинаковым временем начала лежат строго на одной горизонтальной линии. */
+  .columns.sync{
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+    align-items: stretch;
+    row-gap: 0;
+  }
+  .columns.sync .col{
+    display: grid;
+    grid-template-columns: minmax(0,1fr);
+    grid-template-rows: subgrid;
+    row-gap: 0;
+  }
+  .columns.sync .col-head{ grid-row: 1; margin-bottom: 6px; }
+  .columns.sync #g106Slots,
+  .columns.sync #g107Slots{ display: contents; padding: 0; }
+  .columns.sync .slot,
+  .columns.sync .sync-empty{ margin: 4px 10px; min-width: 0; }
+  .columns.sync .sync-empty{
+    min-height: 0;
+    padding: 8px 10px;
+    justify-content: center;
+    background: transparent;
+    animation: slotIn .4s var(--ease) backwards;
+    animation-delay: calc(var(--i, 0) * 0.045s);
+  }
+  @media (max-width: 560px){
+    .columns.sync{ column-gap: 8px; }
+    .columns.sync .col-head{ padding: 11px 10px; font-size: 12.5px; }
+    .columns.sync .col-head .free-tag{ display: none; }
+    .columns.sync .slot,
+    .columns.sync .sync-empty{ margin: 3px 6px; }
+    .columns.sync .slot{ grid-template-columns: 1fr; gap: 6px; padding: 10px; }
+    .columns.sync .slot .time{
+      flex-direction: row; flex-wrap: wrap; align-items: baseline;
+      gap: 0 4px; border-right: 0; padding-right: 0;
+    }
+    .columns.sync .slot .time-end::before{ content: "–"; margin-right: 2px; }
+    .columns.sync .slot .time-left{ margin-top: 0; flex-basis: 100%; }
+    .columns.sync .slot-top{ flex-wrap: wrap; }
+  }
+
   /* ===== Синхронный режим двух групп ===== */
   .sync-list{
     display: flex;
@@ -1453,23 +1496,19 @@ try{if((window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||na
     font-size: 10px;
     font-weight: 600;
     color: var(--text-dim);
-    opacity: .22;
+    opacity: 1;
     letter-spacing: .2px;
     pointer-events: none;
     user-select: none;
     transition: opacity .3s var(--ease);
   }
-  @media (hover: hover){
-    .app-version:hover{ opacity: .45; }
-  }
   .app-version-row{
-    position: fixed;
-    left: max(12px, env(safe-area-inset-left));
-    bottom: max(12px, env(safe-area-inset-bottom));
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
-    z-index: 40;
+    margin: 28px auto 8px;
+    opacity: .65;
   }
   .app-version-refresh{
     background: transparent;
@@ -1484,7 +1523,7 @@ try{if((window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||na
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: .35;
+    opacity: 1;
     transition: opacity .25s var(--ease), color .25s var(--ease), border-color .25s var(--ease);
   }
   @media (hover: hover){
@@ -2250,6 +2289,31 @@ html[data-device="mobile"] .group-menu-trigger{padding:0 10px;gap:6px}
 .gv-c-time{display:block;font-size:11px;font-weight:700;color:var(--text-dim)}
 .gv-c-title{display:block;font-size:12.5px;font-weight:600;margin-top:1px}
 .gv-c-desc{display:block;font-size:11px;color:var(--text-dim);margin-top:2px}
+/* Сетка недели, обе группы: ячейки — прямые дети грида, строка = временной слот */
+.gv-day-cols.synced{gap:0 1px}
+.gv-day-cols.synced > .gv-gtag{background:var(--panel)}
+.gv-day-cols.synced > .gv-gtag.g106{color:var(--g106);border-top:2px solid var(--g106)}
+.gv-day-cols.synced > .gv-gtag.g107{color:var(--g107);border-top:2px solid var(--g107)}
+.gv-day-cols.synced > .gv-c{background:var(--panel);align-self:stretch;min-width:0}
+.gv-day-cols.synced > .gv-c:hover{background:var(--panel-2)}
+.gv-c.gv-slot-empty{cursor:default;border-left-color:transparent}
+.gv-day-cols.synced > .gv-c.gv-slot-empty:hover{background:var(--panel)}
+.gv-slot-empty .gv-c-time,.gv-slot-empty .gv-c-desc{color:var(--text-dim);opacity:.6;font-weight:600}
+.gv-c.now,.gv-day-cols.synced > .gv-c.now{background:var(--g107-soft);border-left-color:var(--g107)}
+.gv-day-cols.synced > .gv-c.now:hover{background:var(--g107-soft)}
+.gv-c.now .gv-c-time{color:var(--g107)}
+.gv-c.past{opacity:.55}
+
+/* Точки количества пар в ленте дат */
+.pill-dots{display:flex;justify-content:center;align-items:center;gap:2px;min-height:4px;margin-top:3px}
+.pill-dots i{display:block;width:4px;height:4px;border-radius:50%;background:var(--text-dim);opacity:.75}
+.date-pill.active .pill-dots i{background:var(--g106);opacity:1}
+.date-pill.off .pill-dots i{opacity:.35}
+
+/* Нажимаемые строки виджета «сейчас / дальше» */
+.pulse-row[data-i]{cursor:pointer;border-radius:10px}
+.pulse-row[data-i]:focus-visible{outline:2px solid var(--g106);outline-offset:3px}
+@media (hover: hover){ .pulse-row[data-i]:hover .pulse-text b{text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px} }
 .gv-empty{padding:10px;font-size:12px;color:var(--text-dim)}
 .gv-empty.free{color:var(--free);font-weight:600}
 
@@ -2437,6 +2501,11 @@ html[data-device="mobile"] .group-menu-trigger{padding:0 10px;gap:6px}
   <div class="week-grid-container" id="weekGridContainer">
     <div class="week-grid" id="weekGrid"></div>
   </div>
+
+  <div class="app-version-row">
+    <div class="app-version" aria-hidden="true">v2.4 · 16.10.2026</div>
+    <button class="app-version-refresh" id="versionRefreshBtn" type="button" aria-label="Проверить наличие обновлений" title="Проверить наличие обновлений">↻</button>
+  </div>
 </div>
 
 <div class="sheet-scrim" id="sheetScrim" onclick="closeSheet()"></div>
@@ -2492,11 +2561,6 @@ html[data-device="mobile"] .group-menu-trigger{padding:0 10px;gap:6px}
 <button class="scroll-today-btn" id="scrollTodayBtn" onclick="scrollToTodayInFeed()" aria-label="К сегодняшнему дню" title="К сегодняшнему дню">⌄</button>
 <button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToPageTop()" aria-label="Наверх" title="Наверх">↑</button>
 <button class="kbd-help-btn" id="kbdHelpBtn" type="button" onclick="showKeyboardHelp()" title="Горячие клавиши (?)" aria-label="Горячие клавиши">⌨️</button>
-
-<div class="app-version-row">
-  <div class="app-version" aria-hidden="true">v2.3 · 15.10.2026</div>
-  <button class="app-version-refresh" id="versionRefreshBtn" type="button" aria-label="Проверить наличие обновлений" title="Проверить наличие обновлений">↻</button>
-</div>
 
 <!-- Notification Permission Prompt -->
 <div class="notification-prompt" id="notificationPrompt">
@@ -2949,7 +3013,10 @@ function buildRail(){
     pill.title = (iso===TODAY ? `${dayNum(iso)} ${monthShort(iso)} — сегодня` : `${dayNum(iso)} ${monthShort(iso)}`)
       + (isRegular ? ` · ${parity===1?'числитель':'знаменатель'}` : '')
       + (holidayName ? ` · ${holidayName}` : '');
-    pill.innerHTML = `<b>${dayNum(iso)}</b>${wd}`;
+    const dotN = holidayName ? 0 : Math.min(5, groupView === 'both'
+      ? Math.max(g106Items.length, g107Items.length)
+      : (groupView === '106' ? g106Items.length : g107Items.length));
+    pill.innerHTML = `<b>${dayNum(iso)}</b>${wd}<span class="pill-dots" aria-hidden="true">${'<i></i>'.repeat(dotN)}</span>`;
     const select = ()=>{ if(iso!==currentDate){ currentDate = iso; goToDate(); } };
     pill.onclick = select;
     pill.onkeydown = (e)=>{
@@ -3164,13 +3231,17 @@ function pulseStateFor(group){
   if(nowIdx !== -1){
     const range = parseRange(items[nowIdx].t);
     const pct = Math.min(100, Math.max(0, Math.round((now-range[0])/(range[1]-range[0])*100)));
-    return {status:'now', item:items[nowIdx], minutesLeft: range[1]-now, pct};
+    return {status:'now', idx:nowIdx, item:items[nowIdx], minutesLeft: range[1]-now, pct};
   }
   if(nextIdx !== -1){
     const range = parseRange(items[nextIdx].t);
-    return {status:'next', item:items[nextIdx], minutesUntil: range[0]-now};
+    return {status:'next', idx:nextIdx, item:items[nextIdx], minutesUntil: range[0]-now};
   }
   return {status:'done'};
+}
+
+function pulseBtnAttrs(group, idx){
+  return `role="button" tabindex="0" data-g="${group}" data-d="${TODAY}" data-i="${idx}"`;
 }
 
 function pulseRowHtml(group, label){
@@ -3187,7 +3258,7 @@ function pulseRowHtml(group, label){
   const st = pulseStateFor(group);
   if(st.status === 'now'){
     const minutesLeft = Math.max(st.minutesLeft, 0);
-    return `<div class="pulse-row" ${styleAttr}>
+    return `<div class="pulse-row" ${styleAttr} ${pulseBtnAttrs(group, st.idx)}>
       <span class="pulse-dot now"></span>
       <div class="pulse-text">
         <b>${label} · идёт пара</b>
@@ -3198,7 +3269,7 @@ function pulseRowHtml(group, label){
   }
   if(st.status === 'next'){
     const minutesUntil = Math.max(st.minutesUntil, 0);
-    return `<div class="pulse-row" ${styleAttr}>
+    return `<div class="pulse-row" ${styleAttr} ${pulseBtnAttrs(group, st.idx)}>
       <span class="pulse-dot next"></span>
       <div class="pulse-text">
         <b>${label} · пара через ${minutesUntil>0?formatLeft(minutesUntil):'<1м'}</b>
@@ -3411,6 +3482,73 @@ function refreshLiveIndicators(container, items){
   });
 }
 
+const SUBGRID_OK = !!(window.CSS && CSS.supports && CSS.supports('grid-template-rows', 'subgrid'));
+
+function clearSyncLayout(){
+  dom.columnsWrap.classList.remove('sync');
+  dom.columnsWrap.style.gridTemplateRows = '';
+  dom.columnsWrap.querySelectorAll('.col').forEach(c=>{ c.style.gridRow = ''; });
+}
+
+// Режим «обе группы»: строки сетки = все уникальные времена начала пар обеих групп за день.
+// Если у группы в этот слот пары нет — вместо неё «пар нет», так что строки всегда выровнены.
+// Общая раскладка для списка и сетки: строки = уникальные времена начала пар обеих групп.
+// Каждая строка: { g106: {it,i}|null, g107: {it,i}|null }.
+function buildTimeRows(gItems, hItems){
+  const src = { g106: gItems, g107: hItems };
+  const buckets = new Map();
+  ['g106','g107'].forEach(g=>{
+    src[g].forEach((it, i)=>{
+      const r = parseRange(it.t);
+      const key = r ? 'n' + r[0] : 's' + it.t;
+      if(!buckets.has(key)) buckets.set(key, { start: r ? r[0] : Infinity, g106: [], g107: [] });
+      buckets.get(key)[g].push({ it, i });
+    });
+  });
+  const rows = [];
+  [...buckets.values()].sort((a,b)=> a.start - b.start).forEach(b=>{
+    const n = Math.max(b.g106.length, b.g107.length, 1);
+    for(let j=0; j<n; j++) rows.push({ g106: b.g106[j] || null, g107: b.g107[j] || null });
+  });
+  return rows;
+}
+
+function renderSyncSlots(gItems, hItems){
+  releaseSlotAnimations();
+  const isToday = currentDate === TODAY;
+  const now = isToday ? minutesNow() : null;
+  const src = { g106: gItems, g107: hItems };
+  const live = {};
+  ['g106','g107'].forEach(g=>{
+    live[g] = isToday ? computeLiveIndices(src[g], now) : { nowIdx:-1, nextIdx:-1 };
+  });
+
+  const rows = buildTimeRows(gItems, hItems);
+
+  const out = { g106: [], g107: [] };
+  rows.forEach((row, k)=>{
+    const gridRow = k + 2; // строка 1 — заголовок колонки
+    ['g106','g107'].forEach(g=>{
+      const e = row[g];
+      if(e){
+        const html = slotHtml(e.it, e.i, g, isToday, now, live[g].nowIdx, live[g].nextIdx)
+          .replace(`style="--i:${e.i}"`, `style="--i:${k};grid-row:${gridRow}"`);
+        out[g].push(html);
+      } else {
+        const other = row[g === 'g106' ? 'g107' : 'g106'];
+        const when = other ? String(other.it.t).replace(/-/g, '–') + ' · окно' : 'окно';
+        out[g].push(`<div class="sync-empty" style="--i:${k};grid-row:${gridRow}" aria-hidden="true"><span>${escapeHtml(when)}</span></div>`);
+      }
+    });
+  });
+
+  dom.columnsWrap.classList.add('sync');
+  dom.columnsWrap.style.gridTemplateRows = `auto repeat(${rows.length}, auto)`;
+  dom.columnsWrap.querySelectorAll('.col').forEach(c=>{ c.style.gridRow = `1 / span ${rows.length + 1}`; });
+  dom.g106Slots.innerHTML = out.g106.join('');
+  dom.g107Slots.innerHTML = out.g107.join('');
+}
+
 function render(){
   const wIdx = weekdayIndex(currentDate);
   const found = dateList.find(d=>d[0]===currentDate);
@@ -3429,13 +3567,18 @@ function render(){
   const emptyText = holidayName ? `${holidayName} — занятий нет` : "Пар нет — весь день свободна";
 
   const gItems = getDaySchedule('g106', currentDate);
-  dayItems.g106 = gItems;
-  renderSlots(dom.g106Slots, gItems, emptyText, 'g106');
-  dom.g106Free.textContent = holidayName ? "выходной" : freeWindowsText(gItems);
-
   const hItems = getDaySchedule('g107', currentDate);
+  dayItems.g106 = gItems;
   dayItems.g107 = hItems;
-  renderSlots(dom.g107Slots, hItems, emptyText, 'g107');
+
+  if(groupView === 'both' && SUBGRID_OK && (gItems.length || hItems.length)){
+    renderSyncSlots(gItems, hItems);
+  } else {
+    clearSyncLayout();
+    renderSlots(dom.g106Slots, gItems, emptyText, 'g106');
+    renderSlots(dom.g107Slots, hItems, emptyText, 'g107');
+  }
+  dom.g106Free.textContent = holidayName ? "выходной" : freeWindowsText(gItems);
   dom.g107Free.textContent = holidayName ? "выходной" : freeWindowsText(hItems);
 
   const activeItems = groupView === '106' ? gItems : (groupView === '107' ? hItems : [...gItems, ...hItems]);
@@ -4004,14 +4147,14 @@ initSwipe(dom.daySwap, {
 const THEME_KEY = 'schedule-theme-106-107';
 const CUSTOM_THEMES_KEY = 'custom-themes-106-107-shared';
 const THEMES = [
-  {id:'mocha',         name:'Мокко',        bg:'#1a1512', a:'#d3a86a', b:'#9c2f45'},
-  {id:'terracotta',    name:'Терракота',    bg:'#f1e3d0', a:'#6b5a3a', b:'#b1512f'},
-  {id:'crimson-cloud', name:'Алый туман',   bg:'#F1FAEE', a:'#E63946', b:'#a8324a'},
-  {id:'forest-cream',  name:'Лесной крем',  bg:'#0B3D0B', a:'#F5E6CC', b:'#d4c4a8'},
-  {id:'bronze-night',  name:'Бронзовая ночь', bg:'#121A3A', a:'#C68642', b:'#a87136'},
-  {id:'olive-wine',    name:'Олива и вино', bg:'#5A1020', a:'#8A8A4B', b:'#a39858'},
-  {id:'rust-sand',     name:'Ржавчина',     bg:'#E9D8A6', a:'#9B2226', b:'#b83b3f'},
-  {id:'moss-ivory',    name:'Мох и слоновая кость', bg:'#FEFAE0', a:'#606C38', b:'#7a8a4a'},
+  {id:'mocha',         name:'Мокко',        bg:'#1c1714', a:'#cdb083', b:'#c98583'},
+  {id:'terracotta',    name:'Терракота',    bg:'#f2e6d6', a:'#6e5f44', b:'#91523a'},
+  {id:'crimson-cloud', name:'Алый туман',   bg:'#f4f7f0', a:'#a84d57', b:'#85455f'},
+  {id:'forest-cream',  name:'Лесной крем',  bg:'#16261a', a:'#d8cbb2', b:'#a8c2a5'},
+  {id:'bronze-night',  name:'Бронзовая ночь', bg:'#161d35', a:'#cfaa7a', b:'#c08f7e'},
+  {id:'olive-wine',    name:'Олива и вино', bg:'#47202a', a:'#b7b886', b:'#d4bb92'},
+  {id:'rust-sand',     name:'Ржавчина',     bg:'#eee3c8', a:'#8a4a45', b:'#735628'},
+  {id:'moss-ivory',    name:'Мох и слоновая кость', bg:'#faf6e4', a:'#5c6838', b:'#6f6730'},
 ];
 
 function currentThemeId(){
@@ -4119,8 +4262,11 @@ function slotDescText(it){
 
 /* ---------- Меню «Группа и подгруппа» (кнопка слева сверху) ---------- */
 function groupMenuLabelText(){
-  if(groupView === 'both') return { full:'Все группы', short:'Все' };
-  return { full:groupView, short:groupView };
+  const sub = subPref.sub !== 'all' ? subPref.sub : null;
+  if(groupView === 'both'){
+    return sub ? { full:`Все · ${sub} п/г`, short:`Все·${sub}` } : { full:'Все группы', short:'Все' };
+  }
+  return sub ? { full:`${groupView} · ${sub} п/г`, short:`${groupView}·${sub}` } : { full:groupView, short:groupView };
 }
 
 function updateGroupMenuUI(){
@@ -4403,6 +4549,17 @@ function openPair(group, iso, idx){
   openSheet();
 }
 
+// Строки виджета «сейчас / дальше» открывают карточку пары
+(function(){
+  const open = row=>{ if(row) openPair(row.dataset.g, row.dataset.d, Number(row.dataset.i)); };
+  dom.pulseCard.addEventListener('click', e=> open(e.target.closest('.pulse-row[data-i]')));
+  dom.pulseCard.addEventListener('keydown', e=>{
+    if(e.key !== 'Enter' && e.key !== ' ') return;
+    const row = e.target.closest('.pulse-row[data-i]');
+    if(row){ e.preventDefault(); open(row); }
+  });
+})();
+
 /* =====================================================================
    «Что дальше» — две независимые колонки (ТЗ 5.2)
    ===================================================================== */
@@ -4510,9 +4667,30 @@ function switchViewMode(mode, persist = true){
   if(typeof showScrollTodayIfNeeded === 'function') requestAnimationFrame(showScrollTodayIfNeeded);
 }
 
-function gridSlotHtml(x){
+function gridLiveClass(iso, it, now){
+  if(iso !== TODAY) return '';
+  const r = parseRange(it.t);
+  if(!r) return '';
+  if(now >= r[0] && now <= r[1]) return ' now';
+  return now > r[1] ? ' past' : '';
+}
+
+// Обновляет «идёт сейчас» / «прошла» в уже нарисованной сетке без перерисовки
+function refreshGridLive(){
+  const now = minutesNow();
+  document.querySelectorAll('#weekGrid .gv-c[data-d="' + TODAY + '"]').forEach(el=>{
+    const it = getDaySchedule(el.dataset.g, TODAY)[Number(el.dataset.i)];
+    if(!it) return;
+    el.classList.remove('now','past');
+    const c = gridLiveClass(TODAY, it, now).trim();
+    if(c) el.classList.add(c);
+  });
+}
+
+function gridSlotHtml(x, now){
   const desc = slotDescText(x.item);
-  return `<button type="button" class="gv-c ${x.g}" data-g="${x.g}" data-d="${x.iso}" data-i="${x.idx}">` +
+  const live = gridLiveClass(x.iso, x.item, now === undefined ? minutesNow() : now);
+  return `<button type="button" class="gv-c ${x.g}${live}" data-g="${x.g}" data-d="${x.iso}" data-i="${x.idx}">` +
     `<span class="gv-c-time">${escapeHtml(x.item.t)}</span>` +
     `<span class="gv-c-title">${escapeHtml(x.item.w)}</span>` +
     (desc ? `<span class="gv-c-desc">${escapeHtml(desc)}</span>` : '') +
@@ -4525,17 +4703,41 @@ function gridDayCardHtml(iso, groups){
   const tag = iso === TODAY
     ? '<span class="gv-tag">сегодня</span>'
     : (holiday ? `<span class="gv-tag">${escapeHtml(holiday)}</span>` : '');
-  const cols = groups.map(g=>{
-    const items = holiday ? [] : getDaySchedule(g, iso).map((item, idx)=>({ g, iso, idx, item }));
-    const body = items.length
-      ? items.map(gridSlotHtml).join('')
-      : `<div class="gv-empty${holiday ? '' : ' free'}">${holiday ? 'выходной' : 'пар нет'}</div>`;
-    const tagHtml = groups.length > 1 ? `<div class="gv-gtag">${g === 'g106' ? '106' : '107'}</div>` : '';
-    return `<div class="gv-gcol ${g}">${tagHtml}${body}</div>`;
-  }).join('');
+  const now = iso === TODAY ? minutesNow() : null;
+  const lists = {};
+  groups.forEach(g=>{ lists[g] = holiday ? [] : getDaySchedule(g, iso); });
+
+  let colsHtml;
+  const synced = groups.length > 1 && !holiday && (lists.g106.length || lists.g107.length);
+  if(synced){
+    // Обе группы: ячейки лежат прямо в .gv-day-cols.both — строка сетки = один временной слот
+    const rows = buildTimeRows(lists.g106, lists.g107);
+    colsHtml = `<div class="gv-gtag g106">106</div><div class="gv-gtag g107">107</div>`;
+    rows.forEach(row=>{
+      ['g106','g107'].forEach(g=>{
+        const e = row[g];
+        if(e){
+          colsHtml += gridSlotHtml({ g, iso, idx: e.i, item: e.it }, now);
+        } else {
+          const other = row[g === 'g106' ? 'g107' : 'g106'];
+          const t = other ? String(other.it.t).replace(/-/g, '–') : '';
+          colsHtml += `<div class="gv-c gv-slot-empty"><span class="gv-c-time">${escapeHtml(t)}</span><span class="gv-c-desc">окно · пар нет</span></div>`;
+        }
+      });
+    });
+  } else {
+    colsHtml = groups.map(g=>{
+      const items = lists[g].map((item, idx)=>({ g, iso, idx, item }));
+      const body = items.length
+        ? items.map(x=> gridSlotHtml(x, now)).join('')
+        : `<div class="gv-empty${holiday ? '' : ' free'}">${holiday ? 'выходной' : 'пар нет'}</div>`;
+      const tagHtml = groups.length > 1 ? `<div class="gv-gtag">${g === 'g106' ? '106' : '107'}</div>` : '';
+      return `<div class="gv-gcol ${g}">${tagHtml}${body}</div>`;
+    }).join('');
+  }
   return `<section class="gv-day-card${iso === TODAY ? ' today' : ''}" aria-label="${weekdayNames[weekdayIndex(iso)]}, ${dayNum(iso)} ${monthShort(iso)}">` +
     `<div class="gv-day-head"><span>${weekdayNames[weekdayIndex(iso)]}</span><b>${dayNum(iso)}</b><span>${monthShort(iso)}</span>${tag}</div>` +
-    `<div class="gv-day-cols${groups.length > 1 ? ' both' : ''}">${cols}</div></section>`;
+    `<div class="gv-day-cols${groups.length > 1 ? ' both' : ''}${synced ? ' synced' : ''}">${colsHtml}</div></section>`;
 }
 
 function buildWeekGrid(){
@@ -4571,7 +4773,7 @@ function buildWeekGrid(){
 }
 
 dom.weekGrid.addEventListener('click', e=>{
-  const c = e.target.closest('.gv-c');
+  const c = e.target.closest('.gv-c:not(.gv-slot-empty)');
   if(c) openPair(c.dataset.g, c.dataset.d, Number(c.dataset.i));
 });
 
@@ -5676,6 +5878,7 @@ async function initBoard(){
     } else {
       refreshLiveIndicators(dom.g106Slots, dayItems.g106);
       refreshLiveIndicators(dom.g107Slots, dayItems.g107);
+      if(currentViewMode === 'grid') refreshGridLive();
     }
     renderPulseCard();
   };
@@ -5792,39 +5995,40 @@ function pal(c1,c2,mode,adv){
   const achro=H[1]<5,sh=achro?A[0]:H[0],ss=achro?cl(A[1]*.12,5,8):H[1];
   let panel,panel2;
   if(dark){
-    panel=hslToHex(sh,ss,cl(H[2]+4.5,0,96));
-    panel2=hslToHex(sh,ss,cl(H[2]+8.5,0,96));
+    panel=hslToHex(sh,Math.min(ss,32),cl(H[2]+3.5,0,96));
+    panel2=hslToHex(sh,Math.min(ss,32),cl(H[2]+6.5,0,96));
   }else{
-    panel=mix(bg,'#ffffff',.6);
-    panel2=mix(bg,hslToHex(sh,Math.min(ss+10,32),22),.07);
+    panel=mix(bg,'#ffffff',.5);
+    panel2=mix(bg,hslToHex(sh,Math.min(ss+10,32),22),.055);
   }
   if(adv.panel){panel=adv.panel;const P=hexToHSL(panel);panel2=dark?hslToHex(P[0],P[1],cl(P[2]+4,0,96)):mix(panel,'#000000',.04)}
   const surf=[bg,panel,panel2];
-  const text=adv.text||fitTone(sh,Math.min(ss,22),dark?92:11,surf,7,dark);
+  const text=adv.text||fitTone(sh,Math.min(ss,22),dark?90:14,surf,7,dark);
   const line=adv.line||mix(bg,text,dark?.18:.15);
   const T=hexToHSL(mix(text,bg,.42)),textDim=fitTone(T[0],T[1],T[2],surf,4.5,dark);
-  const F=hexToHSL(dark?'#8fbf7a':'#52693a'),free=fitTone(F[0],F[1],F[2],surf,4.5,dark);
+  const F=hexToHSL(dark?'#97b886':'#52683d'),free=fitTone(F[0],F[1],F[2],surf,4.5,dark);
   /* акцент 106: c2 как есть, если проходит контраст ко всем поверхностям, иначе подгоняется по светлоте */
-  const g1=adv.g106||(minCtr(c2,surf)>=4.5?c2:fitTone(A[0],A[1],A[2],surf,4.5,dark));
+  const As=Math.min(A[1],dark?46:42),c2m=hslToHex(A[0],As,A[2]);
+  const g1=adv.g106||(minCtr(c2m,surf)>=4.5?c2m:fitTone(A[0],As,A[2],surf,4.5,dark));
   /* акцент 107: тёплый тональный компаньон для нейтрального c2, иначе сдвиг ±38° в сторону от оттенка фона */
   const L1=hexToHSL(g1)[2];
   const L2=cl(L1+(dark?(L1>78?-12:10):(L1<28?12:-10)),8,93);
   let g2=adv.g107;
   if(!g2){
-    if(A[1]<16)g2=fitTone(A[0]+18,cl(A[1]+8,12,26),L2,surf,4.5,dark);
+    if(A[1]<16)g2=fitTone(A[0]+18,cl(A[1]+6,12,24),L2,surf,4.5,dark);
     else{
       const up=hue(A[0]+38),dn=hue(A[0]-38);
       const h2=(achro||hdist(up,H[0])>=hdist(dn,H[0]))?up:dn;
-      g2=fitTone(h2,cl(A[1]*.9,42,82),L2,surf,4.5,dark);
+      g2=fitTone(h2,cl(As*.85,26,42),L2,surf,4.5,dark);
     }
   }
   /* цвета чётности: приглушённые гармоничные оттенки */
-  const ps=cl(A[1]*.68,28,58),pl=dark?64:42;
+  const ps=cl(A[1]*.5,20,38),pl=dark?66:42;
   const q1=fitTone(A[0]+28,ps,pl,surf,3.8,dark),q2=fitTone(A[0]-48,ps,pl,surf,3.8,dark),dim=c=>mix(c,bg,.3);
   return{bg,panel,'panel-2':panel2,line,text,'text-dim':textDim,
-    g106:g1,'g106-dim':dim(g1),'g106-soft':soft(g1,.13),g107:g2,'g107-dim':dim(g2),'g107-soft':soft(g2,.15),
-    free,'parity-1':q1,'parity-1-soft':soft(q1,.15),'parity-2':q2,'parity-2-soft':soft(q2,.15),
-    shadow:dark?'0 10px 30px -12px rgba(0,0,0,.6)':'0 10px 26px -14px rgba(60,40,20,.25)'};
+    g106:g1,'g106-dim':dim(g1),'g106-soft':soft(g1,.11),g107:g2,'g107-dim':dim(g2),'g107-soft':soft(g2,.12),
+    free,'parity-1':q1,'parity-1-soft':soft(q1,.12),'parity-2':q2,'parity-2-soft':soft(q2,.12),
+    shadow:dark?'0 10px 30px -12px rgba(0,0,0,.55)':'0 10px 26px -14px rgba(60,40,20,.2)'};
 }
 const vars=p=>Object.entries(p).map(([k,v])=>`--${k}:${v}`).join(';');
 const toCss=t=>`:root[data-theme="${t.id}"]{color-scheme:${isDark(t)?'dark':'light'};${vars(pal(t.c1,t.c2,t.mode,t.adv))}}`;
@@ -5916,9 +6120,9 @@ function fromHash(){if(!/theme=/.test(location.hash))return;const o=unpack(locat
   if(confirm('Добавить тему «'+o.name+'» и применить её?'))addImported(o)}
 
 /* ── редактор тем ── */
-const BG=['#1a1512','#121a3a','#0b3d0b','#5a1020','#10151c','#f1e3d0','#fefae0','#f1faee','#e9d8a6','#ffffff'];
+const BG=['#1c1714','#161d35','#16261a','#47202a','#10151c','#f2e6d6','#faf6e4','#f4f7f0','#eee3c8','#ffffff'];
 const ADV=[['panel','Панели'],['text','Текст'],['g106','Акцент 106'],['g107','Акцент 107'],['line','Линии']];
-const DEF=()=>({c1:'#1a1512',c2:'#d3a86a',mode:'auto',adv:{}});
+const DEF=()=>({c1:'#1c1714',c2:'#cdb083',mode:'auto',adv:{}});
 let st=DEF(),editId=null,host;
 const field=(k,l,pr)=>`<div class="tm-f"><label>${l}</label><div class="tm-in"><input type="color" data-k="${k}" data-t="p" aria-label="${l}"><input type="text" data-k="${k}" data-t="t" placeholder="#hex · rgb() · hsl()" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="${l}: значение"></div>${pr?`<div class="tm-pal" data-k="${k}">${pr.map(c=>`<button type="button" class="tm-sw" style="background:${c}" data-c="${c}" aria-label="${c}"></button>`).join('')}</div>`:''}</div>`;
 function paint(skip){
@@ -5937,7 +6141,7 @@ function paint(skip){
 function sugg(){
   const p=pal(st.c1,st.c2,st.mode,st.adv),dark=isDark(st),surf=[p.bg,p.panel,p['panel-2']],B=hexToHSL(p.bg);
   const h=B[1]>=5?B[0]:36; /* у нейтрального фона опорный оттенок фиксирован — подсказки не «прыгают» при выборе акцента */
-  return[0,32,-32,150,210,180].map(d=>fitTone(h+d,62,dark?68:38,surf,4.5,dark))}
+  return[0,32,-32,150,210,180].map(d=>fitTone(h+d,dark?44:40,dark?68:38,surf,4.5,dark))}
 function setVal(k,v){if(k==='c1'||k==='c2'){if(v)st[k]=v}else if(v)st.adv[k]=v;else delete st.adv[k]}
 function resetEd(){editId=null;st=DEF();$('#tmName').value='';$('#tmEdTitle').textContent='Создать свою тему';paint()}
 function edit(t){editId=t.id;st={c1:t.c1,c2:t.c2,mode:t.mode,adv:{...(t.adv||{})}};$('#tmName').value=t.name;
