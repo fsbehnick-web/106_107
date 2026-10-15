@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" id="themeColorMeta" content="#1a1512">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1447,9 +1450,6 @@ try{if((window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||na
   .scroll-today-btn:active{ transform: translateY(0) scale(.94); }
 
   .app-version{
-    position: fixed;
-    left: max(12px, env(safe-area-inset-left));
-    bottom: max(12px, env(safe-area-inset-bottom));
     font-size: 10px;
     font-weight: 600;
     color: var(--text-dim);
@@ -1457,7 +1457,6 @@ try{if((window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||na
     letter-spacing: .2px;
     pointer-events: none;
     user-select: none;
-    z-index: 40;
     transition: opacity .3s var(--ease);
   }
   @media (hover: hover){
@@ -1854,7 +1853,7 @@ try{if((window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||na
     body{ background:#fff !important; color:#000 !important; padding:0; }
     .board-header{ position:static; display:block; margin:0 0 12px; padding:0; background:none; border:0; -webkit-backdrop-filter:none; backdrop-filter:none; }
     .board-title{ position:static; width:auto; height:auto; margin:0; clip:auto; overflow:visible; white-space:normal; font-size:20px; }
-    .theme-switcher, .view-mode-switcher, .group-menu-trigger, .group-menu, .group-menu-scrim, .theme-menu, .theme-menu-scrim, .today-btn, .week-nav, .sheet-scrim, .detail-sheet, .scroll-top-btn, .scroll-today-btn, .update-banner, .day-export-btn, .day-share-btn, .pulse-card, .search-box, .search-results, .app-version{ display:none !important; }
+    .theme-switcher, .view-mode-switcher, .group-menu-trigger, .group-menu, .group-menu-scrim, .theme-menu, .theme-menu-scrim, .today-btn, .week-nav, .sheet-scrim, .detail-sheet, .scroll-top-btn, .scroll-today-btn, .update-banner, .day-export-btn, .day-share-btn, .pulse-card, .search-box, .search-results, .app-version-row{ display:none !important; }
     .date-rail{ overflow:visible; }
     .col{ box-shadow:none; border:1px solid #999; break-inside: avoid; }
     .slot{ animation:none !important; opacity:1 !important; break-inside: avoid; }
@@ -2164,6 +2163,19 @@ html[data-device="mobile"] .group-menu-trigger{padding:0 10px;gap:6px}
   .gm-card{flex-direction:row;align-items:center;gap:12px}
 }
 
+/* Уведомления в меню группы */
+.gm-notif{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel-2)}
+.gm-notif-txt{min-width:0;display:flex;flex-direction:column;gap:2px}
+.gm-notif-txt b{font-size:14px;font-weight:800}
+.gm-notif-txt small{font-size:11.5px;font-weight:600;color:var(--text-dim);line-height:1.4}
+.gm-switch{flex:0 0 auto;min-width:64px;padding:9px 14px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--text-dim);font:inherit;font-size:13px;font-weight:800;cursor:pointer;touch-action:manipulation;transition:border-color .25s var(--ease),background-color .25s var(--ease),color .25s var(--ease),transform .15s var(--ease)}
+.gm-switch:active{transform:scale(.96)}
+.gm-switch[aria-checked="true"]{border-color:var(--g106);background:var(--g106-soft);color:var(--g106)}
+.gm-switch:disabled{opacity:.45;cursor:default}
+.gm-switch:focus-visible{outline:2px solid var(--g106);outline-offset:2px}
+.gm-notif-hint:empty{display:none}
+.gm-notif-hint.warn{color:var(--g107)}
+
 /* ===== Новые компоненты: подгруппы, «Что дальше», сетка недели, заметки, инфо-окна ===== */
 /* «Что дальше»: две колонки 106 | 107 — как .gv-day-cols в сетке недели */
 .next-up-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 12px}
@@ -2305,6 +2317,15 @@ html[data-device="mobile"] .group-menu-trigger{padding:0 10px;gap:6px}
     <p class="gm-hint">В расписании и карточке пары будут сразу отображаться преподаватель и аудитория выбранной подгруппы.</p>
   </div>
 
+  <div class="theme-menu-section">
+    <h3>Уведомления о парах</h3>
+    <div class="gm-notif">
+      <div class="gm-notif-txt"><b>За 5 минут до пары</b><small id="notifStatus">Выключены</small></div>
+      <button type="button" class="gm-switch" id="notifToggle" role="switch" aria-checked="false" aria-label="Уведомления о парах за 5 минут">Выкл</button>
+    </div>
+    <p class="gm-hint gm-notif-hint" id="notifHint"></p>
+  </div>
+
   <div class="theme-controls">
     <button class="theme-btn" id="groupMenuReset" type="button">Сбросить фильтр</button>
     <button class="theme-btn primary" id="groupMenuDone" type="button">Готово</button>
@@ -2313,7 +2334,7 @@ html[data-device="mobile"] .group-menu-trigger{padding:0 10px;gap:6px}
 
   <!-- Theme Menu Modal -->
   <div class="theme-menu-scrim" id="themeMenuScrim"></div>
-  <div class="theme-menu" id="themeMenu" role="dialog" aria-modal="true" aria-labelledby="themeMenuTitle">
+  <div class="theme-menu" id="themeMenu" role="dialog" aria-modal="true" aria-labelledby="themeMenuTitle" aria-hidden="true" inert>
     <div class="theme-menu-header">
       <h2 id="themeMenuTitle">Темы оформления</h2>
       <button class="theme-menu-close" id="themeMenuClose" type="button" aria-label="Закрыть">×</button>
@@ -2458,7 +2479,7 @@ html[data-device="mobile"] .group-menu-trigger{padding:0 10px;gap:6px}
 <button class="kbd-help-btn" id="kbdHelpBtn" type="button" onclick="showKeyboardHelp()" title="Горячие клавиши (?)" aria-label="Горячие клавиши">⌨️</button>
 
 <div class="app-version-row">
-  <div class="app-version" aria-hidden="true">v2.1 · 14.10.2026</div>
+  <div class="app-version" aria-hidden="true">v2.3 · 15.10.2026</div>
   <button class="app-version-refresh" id="versionRefreshBtn" type="button" aria-label="Проверить наличие обновлений" title="Проверить наличие обновлений">↻</button>
 </div>
 
@@ -2482,9 +2503,13 @@ let g107 = {};
 let weeklyTemplate = {};
 let dataLoadFailed = false;
 let lastRawData = '';
-async function loadData() {
+async function loadData(forceNetwork = false) {
   try {
-    const response = await fetch('./data.json');
+    // forceNetwork: уникальный адрес + no-store, чтобы не получить копию из HTTP-кэша;
+    // Service Worker для таких запросов (?t=) сначала ждёт сеть и обновляет свой кэш.
+    const response = forceNetwork
+      ? await fetch('./data.json?t=' + Date.now(), { cache: 'no-store' })
+      : await fetch('./data.json');
     if (!response.ok) throw new Error('HTTP ' + response.status);
     const text = await response.text();
     if (text === lastRawData) return false; // данные те же — перерисовка не нужна
@@ -2782,6 +2807,7 @@ function applyGroupView(view, rerender = true){
   if(rerender) goToDate();
   renderPulseCard();
   updateGroupMenuUI();
+  if(typeof scheduleNextReminder === 'function') scheduleNextReminder();
   if(currentViewMode === 'grid') buildWeekGrid();
   if(isSearching()) runSearch();
   if(typeof showScrollTodayIfNeeded === 'function'){
@@ -3394,8 +3420,8 @@ function icsStampFor(dateISO, hhmm){
   return `${d.getUTCFullYear()}${pad(d.getUTCMonth()+1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
 }
 
-function icsUidFor(dateISO, hhmm, title){
-  const base = `${dateISO}-${hhmm}-${title}`.replace(/[^a-zA-Zа-яА-Я0-9]+/g, '-');
+function icsUidFor(dateISO, hhmm, title, groupLabel){
+  const base = `${dateISO}-${groupLabel || ''}-${hhmm}-${title}`.replace(/[^a-zA-Zа-яА-Я0-9]+/g, '-');
   return `${base}@schedule-106-107`;
 }
 
@@ -3419,7 +3445,7 @@ function itemToVevent(dateISO, it, groupLabel){
     : it.d;
   return [
     'BEGIN:VEVENT',
-    `UID:${icsUidFor(dateISO, start, it.w)}`,
+    `UID:${icsUidFor(dateISO, start, it.w, groupLabel)}`,
     `DTSTAMP:${icsStampFor(dateISO, start)}`,
     `DTSTART:${icsStampFor(dateISO, start)}`,
     `DTEND:${icsStampFor(dateISO, end)}`,
@@ -3632,23 +3658,39 @@ function closeCalSheet(){
   if(lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus({preventScroll:true});
 }
 
+// Единый реестр модальных окон: порядок = приоритет (верхнее закрывается первым).
+function getOpenModal(){
+  const list = [
+    [dom.installSheet, ()=>closeInstallSheet()],
+    [dom.calSheet, ()=>closeCalSheet()],
+    [dom.sheet, ()=>closeSheet()],
+    [dom.groupMenu, ()=>closeGroupMenu()],
+    [dom.themeMenu, ()=>window.closeThemeMenu()],
+  ];
+  for(const [el, close] of list){
+    if(el && el.classList.contains('open')) return { el, close };
+  }
+  return null;
+}
+function isAnyModalOpen(){ return !!getOpenModal(); }
+
 document.addEventListener('keydown', e=>{
   if(e.key === 'Escape'){
-    if(dom.calSheet.classList.contains('open')) closeCalSheet();
-    else if(dom.sheet.classList.contains('open')) closeSheet();
-    else if(dom.installSheet.classList.contains('open')) closeInstallSheet();
+    const m = getOpenModal();
+    if(m) m.close();
     return;
   }
   if(e.key === 'Tab'){
-    const openSheetEl = dom.calSheet.classList.contains('open') ? dom.calSheet
-      : (dom.sheet.classList.contains('open') ? dom.sheet
-      : (dom.installSheet.classList.contains('open') ? dom.installSheet : null));
-    if(!openSheetEl) return;
-    const focusable = openSheetEl.querySelectorAll(
-      'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
+    const m = getOpenModal();
+    if(!m) return;
+    const focusable = Array.from(m.el.querySelectorAll(
+      'button, a[href], input, select, textarea, summary, [tabindex]:not([tabindex="-1"])'
+    )).filter(el=> !el.disabled && !el.closest('[hidden]') && el.getClientRects().length > 0);
     if(focusable.length === 0) return;
     const first = focusable[0], last = focusable[focusable.length-1];
+    if(!m.el.contains(document.activeElement)){
+      e.preventDefault(); first.focus(); return;
+    }
     if(e.shiftKey && document.activeElement === first){
       e.preventDefault(); last.focus();
     } else if(!e.shiftKey && document.activeElement === last){
@@ -3937,6 +3979,7 @@ function updateGroupMenuUI(){
       b.setAttribute('aria-pressed', String(on));
     });
   }
+  if(typeof updateNotifUI === 'function') updateNotifUI();
 }
 
 let groupMenuLastFocus = null;
@@ -3967,6 +4010,7 @@ function setSubPref(v){
   saveSubPref();
   updateGroupMenuUI();
   refreshSlotExtras();
+  if(typeof scheduleNextReminder === 'function') scheduleNextReminder();
 }
 
 dom.groupMenuBtn.addEventListener('click', openGroupMenu);
@@ -3984,9 +4028,6 @@ dom.groupMenu.addEventListener('click', e=>{
   if(card){ applyGroupView(card.dataset.group, true); return; }
   const sb = e.target.closest('.gm-sub');
   if(sb) setSubPref(sb.dataset.sub);
-});
-document.addEventListener('keydown', e=>{
-  if(e.key === 'Escape' && dom.groupMenu.classList.contains('open')) closeGroupMenu();
 });
 
 /* =====================================================================
@@ -4447,8 +4488,8 @@ function showKeyboardHelp(){
 }
 
 /* Перезагрузка расписания после фонового обновления data.json (сообщение DATA_UPDATED от sw.js). */
-function reloadScheduleData(){
-  return loadData().then((changed)=>{
+function reloadScheduleData(forceNetwork = false){
+  return loadData(forceNetwork).then((changed)=>{
     if(!changed) return;
     generateGroupMaps();
     pairIndex = null;
@@ -4488,6 +4529,9 @@ document.addEventListener('keydown', e=>{
 document.addEventListener('keydown', e => {
   // Don't trigger shortcuts when typing in inputs
   if (e.target.matches('input, textarea')) return;
+
+  // Не срабатываем, пока открыто любое модальное окно
+  if (isAnyModalOpen()) return;
 
   // Don't trigger if modifier keys pressed (except shortcuts that use them)
   const hasModifier = e.ctrlKey || e.altKey || e.metaKey;
@@ -4569,9 +4613,9 @@ function updateScrollTopBtn(){
 }
 window.addEventListener('scroll', updateScrollTopBtn, {passive:true});
 
+// Кнопка «К сегодняшнему дню» в ленте не используется: просто гарантируем, что она скрыта.
+// Вызывается точечно при смене режима/группы/поиска, а не на каждый пиксель скролла.
 function showScrollTodayIfNeeded(){ dom.scrollTodayBtn.classList.remove('show'); }
-window.addEventListener('scroll', showScrollTodayIfNeeded, {passive:true});
-window.addEventListener('resize', showScrollTodayIfNeeded, {passive:true});
 
 let waitingWorker = null;
 
@@ -4583,10 +4627,39 @@ function hideUpdateBanner(){
   dom.updateBanner.classList.remove('show');
 }
 
+let swReg = null;
+let lastAutoUpdateCheck = Date.now();
+const AUTO_UPDATE_MIN_INTERVAL = 5 * 60 * 1000;
+
+// Ждём, пока воркер установится (installed/activated/redundant), но не дольше timeoutMs.
+function waitForInstalled(worker, timeoutMs){
+  return new Promise(resolve=>{
+    if(!worker || worker.state === 'installed' || worker.state === 'activated'){ resolve(worker); return; }
+    let done = false;
+    let timer = null;
+    const onChange = ()=>{
+      if(['installed','activated','redundant'].includes(worker.state)) finish();
+    };
+    function finish(){
+      if(done) return;
+      done = true;
+      clearTimeout(timer);
+      worker.removeEventListener('statechange', onChange);
+      resolve(worker);
+    }
+    timer = setTimeout(finish, timeoutMs);
+    worker.addEventListener('statechange', onChange);
+  });
+}
+
 function initServiceWorker(){
   if(!('serviceWorker' in navigator)) return;
-  window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js').then(reg=>{
+  const hadController = !!navigator.serviceWorker.controller;
+
+  const register = ()=>{
+    // updateViaCache: 'none' — sw.js и его импорты всегда запрашиваются в обход HTTP-кэша (важно для CDN GitHub Pages).
+    navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then(reg=>{
+      swReg = reg;
       if(reg.waiting && navigator.serviceWorker.controller){
         showUpdateBanner(reg.waiting);
       }
@@ -4600,7 +4673,9 @@ function initServiceWorker(){
         });
       });
     }).catch(()=>{});
-  });
+  };
+  if(document.readyState === 'complete') register();
+  else window.addEventListener('load', register);
 
   navigator.serviceWorker.addEventListener('message', e=>{
     if(e.data && e.data.type === 'DATA_UPDATED') reloadScheduleData().catch(()=>{});
@@ -4608,7 +4683,8 @@ function initServiceWorker(){
 
   let reloading = false;
   navigator.serviceWorker.addEventListener('controllerchange', ()=>{
-    if(reloading) return;
+    // Первая установка (раньше контроллера не было) не требует перезагрузки страницы.
+    if(reloading || !hadController) return;
     reloading = true;
     window.location.reload();
   });
@@ -4620,50 +4696,65 @@ function initServiceWorker(){
   });
   dom.updateDismissBtn.addEventListener('click', hideUpdateBanner);
 
+  // Автопроверка при возврате во вкладку — не чаще раза в 5 минут.
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.hidden) return;
+    const ts = Date.now();
+    if(ts - lastAutoUpdateCheck < AUTO_UPDATE_MIN_INTERVAL) return;
+    lastAutoUpdateCheck = ts;
+    if(swReg) swReg.update().catch(()=>{});
+    reloadScheduleData(true).catch(()=>{});
+  });
+
+  // Ручная проверка: кнопка ↻ рядом с версией.
   let refreshBusy = false;
-  dom.versionRefreshBtn.addEventListener('click', ()=>{
+  const btn = dom.versionRefreshBtn;
+  const flashOk = ()=>{
+    btn.classList.add('ok');
+    setTimeout(()=> btn.classList.remove('ok'), 1500);
+  };
+  btn.addEventListener('click', async ()=>{
     if(refreshBusy) return;
     refreshBusy = true;
-    dom.versionRefreshBtn.classList.add('busy');
-    if(!('serviceWorker' in navigator)){
-      dom.versionRefreshBtn.classList.remove('busy');
-      dom.versionRefreshBtn.classList.add('ok');
-      refreshBusy = false;
-      setTimeout(()=>{ dom.versionRefreshBtn.classList.remove('ok'); }, 1500);
-      window.location.reload();
-      return;
-    }
-    navigator.serviceWorker.getRegistration().then((reg)=>{
-      if(reg && reg.waiting && reg.controller){
-        // новая версия уже установлена, скипаем
-        reg.waiting.postMessage({type:'SKIP_WAITING'});
-        hideUpdateBanner();
-        dom.versionRefreshBtn.classList.remove('busy');
-        refreshBusy = false;
+    btn.classList.remove('ok');
+    btn.classList.add('busy');
+    let updateShown = false;
+    try{
+      const reg = swReg || await navigator.serviceWorker.getRegistration();
+      const hasController = !!navigator.serviceWorker.controller;
+
+      // Новая версия уже скачана и ждёт активации.
+      if(reg && reg.waiting && hasController){
+        showUpdateBanner(reg.waiting);
+        updateShown = true;
         return;
       }
-      const checking = ()=>{
-        dom.versionRefreshBtn.classList.add('busy');
-        reg.update();
-      };
-      reg.addEventListener('updatefound', ()=>{
-        const newWorker = reg.installing;
-        if(!newWorker) return;
-        newWorker.addEventListener('statechange', ()=>{
-          if(newWorker.state === 'installed' && reg.controller){
-            dom.versionRefreshBtn.classList.remove('busy');
-            dom.versionRefreshBtn.classList.add('ok');
-            refreshBusy = false;
-            setTimeout(()=>{ dom.versionRefreshBtn.classList.remove('ok'); }, 2000);
-          }
-        });
-      }, {once:true});
-      checking();
-    }).catch(()=>{
-      dom.versionRefreshBtn.classList.remove('busy');
+
+      const tasks = [reloadScheduleData(true)];
+      if(reg) tasks.push(reg.update());
+      await Promise.allSettled(tasks);
+
+      if(reg){
+        let worker = null;
+        if(reg.waiting && hasController){
+          worker = reg.waiting;
+        } else if(reg.installing){
+          const installing = reg.installing;
+          await waitForInstalled(installing, 5000);
+          if(installing.state === 'installed' && hasController) worker = reg.waiting || installing;
+        }
+        if(worker){
+          showUpdateBanner(worker);
+          updateShown = true;
+        }
+      }
+    }catch(e){
+      // игнорируем: ниже в finally кнопка в любом случае вернётся в норму
+    }finally{
+      btn.classList.remove('busy');
       refreshBusy = false;
-      window.location.reload();
-    });
+      if(!updateShown) flashOk();
+    }
   });
 }
 
@@ -4743,8 +4834,10 @@ function initInstallFlow(){
 }
 
 const REMIND_KEY = 'schedule-reminders-enabled-106-107';
-const REMIND_LEAD_MINUTES = 5; // Changed from 15 to 5 minutes
+const REMIND_LEAD_MINUTES = 5;
+const NOTIFIED_KEY = 'schedule-notified-slots';
 let reminderTimer = null;
+const notifiedMem = new Set(); // запасной учёт, если localStorage недоступен
 
 function remindersSupported(){
   return 'Notification' in window && 'serviceWorker' in navigator;
@@ -4752,48 +4845,201 @@ function remindersSupported(){
 function remindersEnabled(){
   try{ return localStorage.getItem(REMIND_KEY) === '1'; }catch(e){ return false; }
 }
+function remindersActive(){
+  return remindersEnabled() && remindersSupported() && Notification.permission === 'granted';
+}
 
-function findNextUpcoming(){
-  const now = minutesNow();
-  const groups = ['g106','g107'];
-  let best = null;
-  groups.forEach(g=>{
-    const items = getDaySchedule(g, TODAY);
-    items.forEach(it=>{
-      const range = parseRange(it.t);
+// Ключи уже отправленных напоминаний за указанный день: `${дата}|${группа}|${время}|${предмет}`.
+// Ключи прошлых дней при чтении отбрасываются, а при следующей записи — стираются из хранилища.
+function readNotified(today){
+  const out = new Set();
+  notifiedMem.forEach(k=>{ if(k.startsWith(today + '|')) out.add(k); });
+  try{
+    const raw = JSON.parse(localStorage.getItem(NOTIFIED_KEY) || '[]');
+    if(Array.isArray(raw)){
+      raw.forEach(k=>{ if(typeof k === 'string' && k.startsWith(today + '|')) out.add(k); });
+    }
+  }catch(e){}
+  return out;
+}
+function markNotified(today, keys){
+  const set = readNotified(today);
+  keys.forEach(k=>{ set.add(k); notifiedMem.add(k); });
+  try{ localStorage.setItem(NOTIFIED_KEY, JSON.stringify(Array.from(set))); }catch(e){}
+}
+
+function reminderGroups(){
+  return groupView === '106' ? ['g106'] : (groupView === '107' ? ['g107'] : ['g106','g107']);
+}
+function reminderKey(today, group, item){
+  return `${today}|${group}|${item.t}|${item.w}`;
+}
+
+// Все ещё не отправленные напоминания на сегодня для выбранной группы (групп).
+function reminderCandidates(today){
+  const done = readNotified(today);
+  const out = [];
+  reminderGroups().forEach(group=>{
+    getDaySchedule(group, today).forEach(item=>{
+      const range = parseRange(item.t);
       if(!range) return;
-      const remindAt = range[0] - REMIND_LEAD_MINUTES;
-      if(remindAt >= now && (!best || range[0] < best.start)){
-        best = { group:g, item:it, start:range[0], remindAt };
-      }
+      const key = reminderKey(today, group, item);
+      if(done.has(key)) return;
+      out.push({ group, item, key, start: range[0], remindAt: range[0] - REMIND_LEAD_MINUTES });
     });
   });
-  return best;
+  return out;
 }
 
+// Склеивает одинаковые пары 106 и 107 (общие лекции) в одно уведомление.
+// Разные пары в одно время остаются отдельными — уведомление придёт по каждой.
+function mergeReminders(entries){
+  const map = new Map();
+  entries.forEach(e=>{
+    const k = [e.item.t, e.item.w, slotDescText(e.item) || ''].join('|');
+    let m = map.get(k);
+    if(!m){
+      m = { item: e.item, start: e.start, groups: [], keys: [] };
+      map.set(k, m);
+    }
+    m.groups.push(e.group);
+    m.keys.push(e.key);
+  });
+  return Array.from(map.values()).sort((a, b)=> a.start - b.start);
+}
+
+// Ближайшее напоминание в будущем (то, что ещё не «созрело»): нужно для точного таймера.
+function findNextUpcoming(){
+  const today = todayISO(), now = minutesNow();
+  const future = reminderCandidates(today).filter(e=> e.remindAt > now);
+  if(!future.length) return null;
+  const remindAt = Math.min(...future.map(e=> e.remindAt));
+  return { remindAt, entries: mergeReminders(future.filter(e=> e.remindAt === remindAt)) };
+}
+
+async function showReminderNotification(title, options){
+  try{
+    const reg = await navigator.serviceWorker.getRegistration();
+    if(reg && typeof reg.showNotification === 'function'){
+      await reg.showNotification(title, options);
+      return true;
+    }
+  }catch(e){}
+  try{
+    new Notification(title, options);
+    return true;
+  }catch(e){}
+  return false;
+}
+
+function reminderGroupLabel(groups){
+  return groups.length > 1 ? 'Группы 106 и 107' : `Группа ${groups[0] === 'g106' ? '106' : '107'}`;
+}
+
+// Отправляет все «созревшие» напоминания: до начала пары осталось от 1 до REMIND_LEAD_MINUTES минут.
+// Ключ помечается ДО отправки, поэтому повторные вызовы (таймер, liveTick, смена вкладки) безопасны.
+function checkDueReminders(){
+  if(!remindersActive()) return;
+  const today = todayISO(), now = minutesNow();
+  const due = reminderCandidates(today).filter(e=> now >= e.remindAt && now < e.start);
+  if(!due.length) return;
+  markNotified(today, due.map(e=> e.key));
+  mergeReminders(due).forEach(m=>{
+    const left = Math.max(1, m.start - now);
+    const desc = slotDescText(m.item);
+    showReminderNotification(`Через ${left} мин: ${m.item.w}`, {
+      body: [reminderGroupLabel(m.groups), m.item.t, desc].filter(Boolean).join(' · '),
+      tag: `reminder-${today}-${m.groups.join('')}-${m.item.t}`,
+      icon: './icon-192.png',
+      badge: './icon-192.png'
+    });
+  });
+}
+
+// Проверяет «созревшие» напоминания и ставит точный таймер на ближайшее следующее.
 function scheduleNextReminder(){
   if(reminderTimer){ clearTimeout(reminderTimer); reminderTimer = null; }
-  if(!remindersEnabled() || !remindersSupported()) return;
-  if(Notification.permission !== 'granted') return;
-  const upcoming = findNextUpcoming();
-  if(!upcoming) return;
-  const now = minutesNow();
-  const delayMs = Math.max(0, (upcoming.remindAt - now)) * 60000;
-  reminderTimer = window.setTimeout(async ()=>{
-    try{
-      const reg = await navigator.serviceWorker.ready;
-      const groupLabel = upcoming.group === 'g106' ? '106' : '107';
-      await reg.showNotification(`Через ${REMIND_LEAD_MINUTES} мин: ${upcoming.item.w}`, {
-        body: `Группа ${groupLabel} · ${upcoming.item.t}${upcoming.item.d ? ' · ' + cleanShortDesc(upcoming.item.d) : ''}`,
-        tag: `reminder-${upcoming.group}-${upcoming.item.t}`,
-        icon: undefined,
-      });
-    }catch(e){}
+  if(!remindersActive()) return;
+  checkDueReminders();
+  const next = findNextUpcoming();
+  if(!next) return;
+  const d = new Date();
+  const secIntoMinute = d.getSeconds() + d.getMilliseconds() / 1000;
+  const ms = ((next.remindAt - minutesNow()) * 60 - secIntoMinute) * 1000 + 250;
+  const delay = Math.min(2147483000, Math.max(1000, Math.round(ms)));
+  reminderTimer = window.setTimeout(()=>{
+    reminderTimer = null;
     scheduleNextReminder();
-  }, delayMs);
+  }, delay);
 }
 
-// Notification prompt functions
+async function setRemindersEnabled(on){
+  if(!on){
+    try{ localStorage.removeItem(REMIND_KEY); }catch(e){}
+    if(reminderTimer){ clearTimeout(reminderTimer); reminderTimer = null; }
+    updateNotifUI();
+    return false;
+  }
+  if(!remindersSupported()){ updateNotifUI(); return false; }
+  let perm = Notification.permission;
+  if(perm === 'default'){
+    try{ perm = await Notification.requestPermission(); }catch(e){ perm = Notification.permission; }
+  }
+  if(perm === 'granted'){
+    try{ localStorage.setItem(REMIND_KEY, '1'); }catch(e){}
+    scheduleNextReminder();
+    updateNotifUI();
+    return true;
+  }
+  updateNotifUI();
+  return false;
+}
+
+// Переключатель в меню «Группа и подгруппа».
+function updateNotifUI(){
+  const btn = document.getElementById('notifToggle');
+  const status = document.getElementById('notifStatus');
+  const hint = document.getElementById('notifHint');
+  if(!btn || !status || !hint) return;
+  const supported = remindersSupported();
+  const perm = supported ? Notification.permission : 'unsupported';
+  const on = remindersActive();
+  btn.setAttribute('aria-checked', String(on));
+  btn.textContent = on ? 'Вкл' : 'Выкл';
+  btn.disabled = !supported || perm === 'denied';
+  hint.classList.remove('warn');
+  if(!supported){
+    status.textContent = 'Недоступны в этом браузере';
+    const ios = document.documentElement.getAttribute('data-os') === 'ios';
+    hint.textContent = ios
+      ? 'На iPhone и iPad уведомления работают, когда приложение установлено на экран «Домой».'
+      : 'Этот браузер не поддерживает уведомления.';
+  } else if(perm === 'denied'){
+    status.textContent = 'Доступ заблокирован';
+    hint.textContent = 'Разрешите уведомления для этого сайта в настройках браузера (значок замка рядом с адресом → «Уведомления»), затем вернитесь сюда и включите переключатель.';
+    hint.classList.add('warn');
+  } else if(on){
+    status.textContent = `Включены · за ${REMIND_LEAD_MINUTES} минут до начала пары`;
+    hint.textContent = 'Напоминания приходят для выбранной группы и подгруппы, пока приложение открыто или работает в фоне.';
+  } else {
+    status.textContent = 'Выключены';
+    hint.textContent = '';
+  }
+}
+
+(function initNotifToggle(){
+  const btn = document.getElementById('notifToggle');
+  if(btn) btn.addEventListener('click', ()=>{ setRemindersEnabled(!remindersActive()); });
+  try{
+    if(navigator.permissions && navigator.permissions.query){
+      navigator.permissions.query({ name: 'notifications' }).then(st=>{
+        st.onchange = ()=>{ updateNotifUI(); scheduleNextReminder(); };
+      }).catch(()=>{});
+    }
+  }catch(e){}
+})();
+
+// Notification permission prompt functions
 const NOTIFICATION_PROMPT_DISMISSED_KEY = 'notification-prompt-dismissed-106-107';
 
 function showNotificationPrompt() {
@@ -4826,33 +5072,18 @@ async function enableNotifications() {
     dismissNotificationPrompt();
     return;
   }
-
-  try {
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-      try {
-        localStorage.setItem(REMIND_KEY, '1');
-      } catch(e) {}
-      scheduleNextReminder();
-      dismissNotificationPrompt();
-
-      // Show success message
-      const prompt = document.getElementById('notificationPrompt');
-      if (prompt) {
-        prompt.innerHTML = `
-          <h3>✓ Уведомления включены</h3>
-          <p>Вы получите уведомление за 5 минут до начала пары</p>
-        `;
-        setTimeout(() => {
-          prompt.classList.remove('show');
-        }, 2500);
-      }
-    } else {
-      dismissNotificationPrompt();
-    }
-  } catch(e) {
-    alert('Не удалось включить уведомления');
-    dismissNotificationPrompt();
+  const ok = await setRemindersEnabled(true);
+  try { localStorage.setItem(NOTIFICATION_PROMPT_DISMISSED_KEY, '1'); } catch(e) {}
+  const prompt = document.getElementById('notificationPrompt');
+  if (!prompt) return;
+  if (ok) {
+    prompt.innerHTML = `
+      <h3>✓ Уведомления включены</h3>
+      <p>Вы получите уведомление за ${REMIND_LEAD_MINUTES} минут до начала пары</p>
+    `;
+    setTimeout(() => { prompt.classList.remove('show'); }, 2500);
+  } else {
+    prompt.classList.remove('show');
   }
 }
 
@@ -5244,12 +5475,6 @@ async function initBoard(){
   if(dom.themeMenuScrim) dom.themeMenuScrim.onclick = closeThemeMenu;
   if(dom.themeResetBtn) dom.themeResetBtn.onclick = resetToSystemTheme;
 
-  // Close theme menu on Escape
-  document.addEventListener('keydown', (e) => {
-    if(e.key === 'Escape' && dom.themeMenu && dom.themeMenu.classList.contains('open')){
-      closeThemeMenu();
-    }
-  });
 
   document.querySelectorAll('.drop-in, .rise-in').forEach(el=>{
     el.addEventListener('animationend', function handler(){
@@ -5262,6 +5487,8 @@ async function initBoard(){
   });
 
   const liveTick = ()=>{
+    // Напоминания проверяем всегда (в том числе при возврате из фона), даже если интерфейс перерисовывать не нужно.
+    if(remindersEnabled()) scheduleNextReminder();
     if(document.hidden) return;
     const dayChanged = checkDayRollover();
     if(dayChanged){
@@ -5392,8 +5619,24 @@ window.buildThemeSwitcher=function(){
     b.onclick=()=>applyTheme(t.id,true);sw.insertBefore(b,gear)});
   applyTheme(currentThemeId(),false);
 };
-window.openThemeMenu=function(){buildThemeMenuGrid();updateThemeMenuInfo();dom.themeMenu.classList.add('open');dom.themeMenuScrim.classList.add('open');lockBodyScroll()};
-window.closeThemeMenu=function(){if(!dom.themeMenu.classList.contains('open'))return;dom.themeMenu.classList.remove('open');dom.themeMenuScrim.classList.remove('open');unlockBodyScroll()};
+let themeMenuLastFocus=null;
+window.openThemeMenu=function(){
+  if(dom.themeMenu.classList.contains('open'))return;
+  themeMenuLastFocus=document.activeElement;
+  buildThemeMenuGrid();updateThemeMenuInfo();
+  dom.themeMenu.inert=false;dom.themeMenu.setAttribute('aria-hidden','false');
+  dom.themeMenu.classList.add('open');dom.themeMenuScrim.classList.add('open');
+  lockBodyScroll();
+  dom.themeMenuClose.focus({preventScroll:true});
+};
+window.closeThemeMenu=function(){
+  if(!dom.themeMenu.classList.contains('open'))return;
+  dom.themeMenu.classList.remove('open');dom.themeMenuScrim.classList.remove('open');
+  dom.themeMenu.setAttribute('aria-hidden','true');dom.themeMenu.inert=true;
+  unlockBodyScroll();
+  if(themeMenuLastFocus&&typeof themeMenuLastFocus.focus==='function')themeMenuLastFocus.focus({preventScroll:true});
+  themeMenuLastFocus=null;
+};
 window.openCustomThemeModal=function(){openThemeMenu();$('#tmEd').scrollIntoView({block:'start'})};
 
 function hide(id){if(visible().length<=1)return alert('Нельзя скрыть последнюю тему');
