@@ -2103,6 +2103,7 @@ html[data-device="mobile"] .theme-menu.open{transform:none}
 html[data-device="mobile"] .theme-grid{grid-template-columns:repeat(2,1fr)}
 html[data-device="tablet"] .theme-grid{grid-template-columns:repeat(3,1fr)}
 html[data-standalone][data-touch] body{overscroll-behavior-y:contain}
+html{background:var(--bg)}
 .view-mode-switcher{overflow:hidden}
 .view-mode-btn{display:flex;align-items:center;justify-content:center}
 @media (max-width:479px){.vm-t{display:none}.view-mode-btn{padding:0}}
@@ -2515,6 +2516,7 @@ let g106 = {};
 let g107 = {};
 
 let weeklyTemplate = {};
+let dayChanges = {};
 let dataLoadFailed = false;
 let lastRawData = '';
 async function loadData(forceNetwork = false) {
@@ -2533,6 +2535,10 @@ async function loadData(forceNetwork = false) {
     own106 = data.own106 || {};
     own107 = data.own107 || {};
     weeklyTemplate = data.weeklyTemplate || {};
+    dayChanges = data.dayChanges || {};
+    // HOLIDAYS — константа-объект, на него ссылается весь код: обновляем содержимое на месте
+    Object.keys(HOLIDAYS).forEach(k=> delete HOLIDAYS[k]);
+    Object.assign(HOLIDAYS, { "2026-11-04": "День народного единства" }, data.holidays || {});
     dataLoadFailed = false;
     return true;
   } catch (e) {
@@ -2654,21 +2660,76 @@ function weekTypeFor(dateISO){
   return evenWeek ? 1 : 2;
 }
 
-function buildRegularDaySchedule(group, dateISO){
-  const weekday = weekdayIndex(dateISO);
-  const dayTemplate = (weeklyTemplate[group] && weeklyTemplate[group][weekday]) || [];
-  const parity = weekTypeFor(dateISO);
-  const fromTemplate = dayTemplate.filter(it=>{
-    if(it.week !== "all" && it.week !== parity) return false;
-    if(it.until && dateISO > it.until) return false;
-    return true;
-  });
-  const oneOff = (singleExceptions[group] && singleExceptions[group][dateISO]) || [];
-  return [...fromTemplate, ...oneOff].sort((a,b)=>{
+function sortByTime(list){
+  return list.sort((a,b)=>{
     const ra = parseRange(a.t), rb = parseRange(b.t);
     if(!ra || !rb) return 0;
     return ra[0]-rb[0];
   });
+}
+
+// Время начала из строки вида "12:40" или "12:40–14:10" (в минутах от полуночи)
+function startMinutes(str){
+  const m = /^\s*(\d{1,2}):(\d{2})/.exec(String(str));
+  return m ? Number(m[1])*60 + Number(m[2]) : null;
+}
+
+// Применяет одно правило из dayChanges к списку пар дня.
+// Возвращает новый список (шаблонные объекты не мутируются).
+function applyDayRule(list, rule){
+  if(!rule) return list;
+  if(Array.isArray(rule)) return rule.slice();
+  if(rule.cancelAll === true) return [];
+  let out = Array.isArray(rule.set) ? rule.set.slice() : list.slice();
+  if(Array.isArray(rule.cancel) && rule.cancel.length){
+    out = out.filter(it=>{
+      const r = parseRange(it.t);
+      const itStart = r ? r[0] : startMinutes(it.t);
+      return !rule.cancel.some(c=>{
+        const cs = startMinutes(c);
+        if(cs !== null && itStart !== null && cs === itStart) return true;
+        return String(it.t).startsWith(String(c));
+      });
+    });
+  }
+  if(Array.isArray(rule.add)){
+    rule.add.forEach(raw=>{
+      const item = Object.assign({}, raw, { t: String(raw.t).replace(/-/g, '–') });
+      const r = parseRange(item.t);
+      const idx = r ? out.findIndex(it=>{
+        const ir = parseRange(it.t);
+        return ir && ir[0] === r[0];
+      }) : -1;
+      if(idx >= 0) out[idx] = item; else out.push(item);
+    });
+  }
+  return out;
+}
+
+function buildRegularDaySchedule(group, dateISO){
+  const weekday = weekdayIndex(dateISO);
+  const dayTemplate = (weeklyTemplate[group] && weeklyTemplate[group][weekday]) || [];
+  const parity = weekTypeFor(dateISO);
+  let list = dayTemplate.filter(it=>{
+    if(it.week !== "all" && it.week !== parity) return false;
+    if(it.until && dateISO > it.until) return false;
+    return true;
+  });
+
+  const bothRule  = dayChanges.both  && dayChanges.both[dateISO];
+  const groupRule = dayChanges[group] && dayChanges[group][dateISO];
+
+  if(bothRule && !Array.isArray(bothRule) && bothRule.cancelAll === true) return [];
+  list = applyDayRule(list, bothRule);
+  if(groupRule){
+    if(!Array.isArray(groupRule) && groupRule.cancelAll === true) return [];
+    list = applyDayRule(list, groupRule);
+  } else {
+    // старый механизм разовых исключений — если для группы и даты нет правил в dayChanges
+    const oneOff = (singleExceptions[group] && singleExceptions[group][dateISO]) || [];
+    list = [...list, ...oneOff];
+  }
+  return sortByTime(list);
 }
 
 function getDaySchedule(group, dateISO){
@@ -2786,7 +2847,7 @@ let currentDate = todayTarget();
     if(window.location.search.includes('date=')){
       const url = new URL(window.location.href);
       url.searchParams.delete('date');
-      window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+      window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
     }
   }catch(e){}
 })();
@@ -3687,6 +3748,104 @@ function getOpenModal(){
   return null;
 }
 function isAnyModalOpen(){ return !!getOpenModal(); }
+
+/* «Назад» / жест «назад»: сначала закрывает верхний слой (окно → поиск → промпт уведомлений) и не уводит со страницы;
+   когда слоёв нет, первый «назад» только предупреждает, второй (в течение 2 с) — выходит. */
+function navToast(msg){
+  let e = document.querySelector('.tm-toast');
+  if(!e){ e = document.createElement('div'); e.className = 'tm-toast'; e.setAttribute('role','status'); document.body.appendChild(e); }
+  e.textContent = msg; e.hidden = false;
+  clearTimeout(navToast.t); navToast.t = setTimeout(()=>{ e.hidden = true; }, 2000);
+}
+(function initBackNav(){
+  const here = ()=>location.href;
+  const guardState = ()=> (history.state && history.state.schedGuard) || null;
+  const push = kind=>{ try{ history.pushState({ schedGuard: kind }, '', here()); }catch(e){} };
+  const notifEl = ()=>document.getElementById('notificationPrompt');
+  const notifOpen = ()=>{ const n = notifEl(); return !!(n && n.classList.contains('show')); };
+
+  // Единая функция закрытия верхнего активного слоя: модалка → поиск → промпт уведомлений.
+  function closeTopLayer(){
+    const m = getOpenModal();
+    if(m){ m.close(); return true; }
+    if(isSearching()){
+      clearSearch(true);
+      if(dom.searchInput) dom.searchInput.blur();
+      return true;
+    }
+    if(notifOpen()){ dismissNotificationPrompt(); return true; }
+    return false;
+  }
+  function hasActiveLayer(){
+    return !!getOpenModal() || isSearching() || notifOpen();
+  }
+
+  // Базовая запись + рабочая запись поверх неё (во всех браузерах, не только standalone).
+  const activatedAtInit = !!(navigator.userActivation && navigator.userActivation.hasBeenActive);
+  try{ history.replaceState({ schedGuard: 'root' }, '', here()); }catch(e){}
+  push('app');
+
+  // Мобильный Chrome помечает записи, добавленные без пользовательского ввода, как «пропускаемые».
+  // Поэтому при первом действии пользователя ещё раз ставим защитную запись уже внутри жеста.
+  const firstEvents = ['pointerdown', 'touchstart', 'keydown'];
+  const onFirstGesture = ()=>{
+    firstEvents.forEach(t=> removeEventListener(t, onFirstGesture, true));
+    const want = hasActiveLayer() ? 'layer' : 'app';
+    if(!activatedAtInit || guardState() !== want) push(want);
+  };
+  firstEvents.forEach(t=> addEventListener(t, onFirstGesture, { capture:true, passive:true }));
+
+  // Слой открылся (false → true): добавляем запись 'layer'. history.back() при закрытии кнопкой × НЕ вызываем.
+  let was = hasActiveLayer();
+  const sync = ()=>{
+    const now = hasActiveLayer();
+    if(now && !was && guardState() !== 'layer') push('layer');
+    was = now;
+  };
+  const mo = new MutationObserver(sync);
+  [dom.installSheet, dom.calSheet, dom.sheet, dom.groupMenu, dom.themeMenu, notifEl()].forEach(el=>{
+    if(el) mo.observe(el, { attributes:true, attributeFilter:['class'] });
+  });
+  mo.observe(document.body, { attributes:true, attributeFilter:['class'] }); // body.searching
+
+  let armedUntil = 0, exiting = false, exitTimer = 0;
+  const rearm = ()=>{
+    exiting = false; armedUntil = 0;
+    const g = guardState();
+    if(g !== 'app' && g !== 'layer') push(hasActiveLayer() ? 'layer' : 'app');
+  };
+
+  addEventListener('popstate', ()=>{
+    // Выход уже начат: проматываем оставшиеся служебные записи назад.
+    if(exiting){ history.back(); return; }
+
+    if(hasActiveLayer()){
+      closeTopLayer();
+      const g = guardState();
+      if(hasActiveLayer()){
+        if(g !== 'layer') push('layer');          // остался ещё слой — следующий «Назад» закроет его
+      } else if(g !== 'app' && g !== 'layer'){
+        push('app');                               // оказались на 'root' — возвращаем барьер
+      }
+      return;                                      // страница остаётся на месте
+    }
+
+    const now = Date.now();
+    if(now < armedUntil){                          // повторный «Назад» в течение 2 с — выходим
+      exiting = true;
+      clearTimeout(exitTimer);
+      exitTimer = setTimeout(rearm, 1500);         // если выходить некуда — снова ставим барьер
+      history.back();
+      return;
+    }
+    armedUntil = now + 2000;
+    push('app');
+    navToast('Нажмите «Назад» ещё раз для выхода');
+  });
+
+  // Возврат из bfcache: сбрасываем состояние выхода.
+  addEventListener('pageshow', e=>{ if(e.persisted){ clearTimeout(exitTimer); rearm(); } });
+})();
 
 document.addEventListener('keydown', e=>{
   if(e.key === 'Escape'){
@@ -5599,26 +5758,78 @@ function parse(s){
 const lum=h=>{const[r,g,b]=hexToRGB(h).map(x=>{x/=255;return x<=.03928?x/12.92:((x+.055)/1.055)**2.4});return .2126*r+.7152*g+.0722*b};
 const ctr=(a,b)=>{const x=lum(a),y=lum(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
 const mix=(a,b,t)=>{const p=hexToRGB(a),q=hexToRGB(b);return rgbToHex(...p.map((v,i)=>v+(q[i]-v)*t))};
-const lift=(c,bg,m)=>{const to=lum(bg)<.4?'#ffffff':'#000000';let r=c;for(let i=0;i<14&&ctr(r,bg)<m;i++)r=mix(r,to,.12);return r};
 const soft=(c,a)=>`rgba(${hexToRGB(c).join(',')},${a})`;
-const isDark=t=>t.mode==='dark'||(t.mode!=='light'&&lum(t.c1)<.18);
+const isDark=t=>t.mode==='dark'||(t.mode!=='light'&&lum(t.c1)<.22);
+const hue=h=>((h%360)+360)%360;
+const hdist=(a,b)=>{const d=Math.abs(hue(a)-hue(b));return d>180?360-d:d};
+const minCtr=(c,surf)=>Math.min(...surf.map(b=>ctr(c,b)));
+/* подбор светлоты в HSL: оттенок h и насыщенность s сохраняются (s мягко падает только на краях L>86 / L<16),
+   контраст держится ко ВСЕМ поверхностям surf; диапазон L 8..93%, направление — по теме */
+const edgeS=(s,L)=>L>86?s*cl(1-(L-86)*.06,.5,1):L<16?s*cl(1-(16-L)*.05,.6,1):s;
+function fitTone(h,s,L0,surf,m,dark){
+  const col=L=>hslToHex(hue(h),cl(edgeS(s,L),0,100),L),mc=L=>minCtr(col(L),surf);
+  L0=cl(L0,8,93);
+  if(mc(L0)>=m)return col(L0);
+  const end=dark?93:8,opp=dark?8:93;
+  if(mc(end)>=m){
+    let lo=dark?L0:8,hi=dark?93:L0;
+    for(let i=0;i<18;i++){const mid=(lo+hi)/2;if(mc(mid)>=m){if(dark)hi=mid;else lo=mid}else{if(dark)lo=mid;else hi=mid}}
+    return col(dark?hi:lo);
+  }
+  return mc(opp)>mc(end)?col(opp):col(end); /* на таком фоне норма недостижима — берём лучший из возможных */
+}
 
 /* ── палитра из двух цветов (фон + акцент); adv — ручные правки ── */
 function pal(c1,c2,mode,adv){
-  adv=adv||{};const dark=isDark({mode,c1}),H=hexToHSL(c1),A=hexToHSL(c2),bg=c1;
-  const text=adv.text||lift(hslToHex(H[0],Math.min(H[1],22),dark?92:11),bg,7);
-  const panel=adv.panel||mix(bg,'#ffffff',dark?.05:.5),line=adv.line||mix(bg,text,dark?.18:.15);
-  const fit=(h,m=4.5)=>{let L=A[2],c;for(let i=0;i<24;i++){c=hslToHex(((h%360)+360)%360,Math.max(A[1],25),cl(L,6,94));if(ctr(c,bg)>=m)break;L+=dark?3:-3}return lift(c,bg,m)};
-  const g1=adv.g106||fit(A[0]),g2=adv.g107||fit(A[0]+55),q1=fit(A[0]+100,3.2),q2=fit(A[0]+210,3.2),dim=c=>mix(c,bg,.3);
-  return{bg,panel,'panel-2':mix(bg,text,dark?.1:.07),line,text,'text-dim':lift(mix(text,bg,.42),bg,4.5),
+  adv=adv||{};
+  const dark=isDark({mode,c1}),lc=lum(c1),H0=hexToHSL(c1),A=hexToHSL(c2);
+  /* фон: явный режим при «чужой» яркости c1 переводит фон в нужный диапазон, оттенок сохраняется */
+  let bg=c1;
+  if(mode==='dark'&&lc>=.22)bg=hslToHex(H0[0],Math.min(H0[1],35),11.5);
+  else if(mode==='light'&&lc<.22)bg=hslToHex(H0[0],Math.min(H0[1],30),94);
+  const H=hexToHSL(bg);
+  /* почти ахроматический фон получает микро-оттенок от акцента (для панелей) */
+  const achro=H[1]<5,sh=achro?A[0]:H[0],ss=achro?cl(A[1]*.12,5,8):H[1];
+  let panel,panel2;
+  if(dark){
+    panel=hslToHex(sh,ss,cl(H[2]+4.5,0,96));
+    panel2=hslToHex(sh,ss,cl(H[2]+8.5,0,96));
+  }else{
+    panel=mix(bg,'#ffffff',.6);
+    panel2=mix(bg,hslToHex(sh,Math.min(ss+10,32),22),.07);
+  }
+  if(adv.panel){panel=adv.panel;const P=hexToHSL(panel);panel2=dark?hslToHex(P[0],P[1],cl(P[2]+4,0,96)):mix(panel,'#000000',.04)}
+  const surf=[bg,panel,panel2];
+  const text=adv.text||fitTone(sh,Math.min(ss,22),dark?92:11,surf,7,dark);
+  const line=adv.line||mix(bg,text,dark?.18:.15);
+  const T=hexToHSL(mix(text,bg,.42)),textDim=fitTone(T[0],T[1],T[2],surf,4.5,dark);
+  const F=hexToHSL(dark?'#8fbf7a':'#52693a'),free=fitTone(F[0],F[1],F[2],surf,4.5,dark);
+  /* акцент 106: c2 как есть, если проходит контраст ко всем поверхностям, иначе подгоняется по светлоте */
+  const g1=adv.g106||(minCtr(c2,surf)>=4.5?c2:fitTone(A[0],A[1],A[2],surf,4.5,dark));
+  /* акцент 107: тёплый тональный компаньон для нейтрального c2, иначе сдвиг ±38° в сторону от оттенка фона */
+  const L1=hexToHSL(g1)[2];
+  const L2=cl(L1+(dark?(L1>78?-12:10):(L1<28?12:-10)),8,93);
+  let g2=adv.g107;
+  if(!g2){
+    if(A[1]<16)g2=fitTone(A[0]+18,cl(A[1]+8,12,26),L2,surf,4.5,dark);
+    else{
+      const up=hue(A[0]+38),dn=hue(A[0]-38);
+      const h2=(achro||hdist(up,H[0])>=hdist(dn,H[0]))?up:dn;
+      g2=fitTone(h2,cl(A[1]*.9,42,82),L2,surf,4.5,dark);
+    }
+  }
+  /* цвета чётности: приглушённые гармоничные оттенки */
+  const ps=cl(A[1]*.68,28,58),pl=dark?64:42;
+  const q1=fitTone(A[0]+28,ps,pl,surf,3.8,dark),q2=fitTone(A[0]-48,ps,pl,surf,3.8,dark),dim=c=>mix(c,bg,.3);
+  return{bg,panel,'panel-2':panel2,line,text,'text-dim':textDim,
     g106:g1,'g106-dim':dim(g1),'g106-soft':soft(g1,.13),g107:g2,'g107-dim':dim(g2),'g107-soft':soft(g2,.15),
-    free:lift(dark?'#8fbf7a':'#52693a',bg,4.5),'parity-1':q1,'parity-1-soft':soft(q1,.15),'parity-2':q2,'parity-2-soft':soft(q2,.15),
+    free,'parity-1':q1,'parity-1-soft':soft(q1,.15),'parity-2':q2,'parity-2-soft':soft(q2,.15),
     shadow:dark?'0 10px 30px -12px rgba(0,0,0,.6)':'0 10px 26px -14px rgba(60,40,20,.25)'};
 }
 const vars=p=>Object.entries(p).map(([k,v])=>`--${k}:${v}`).join(';');
 const toCss=t=>`:root[data-theme="${t.id}"]{color-scheme:${isDark(t)?'dark':'light'};${vars(pal(t.c1,t.c2,t.mode,t.adv))}}`;
 function norm(t){t.c1=t.c1||t.bg;t.c2=t.c2||t.a;t.mode=(t.mode==='light'||t.mode==='dark')?t.mode:'auto';
-  const p=pal(t.c1,t.c2,t.mode,t.adv);t.bg=t.c1;t.a=p.g106;t.b=p.g107;t.custom=true;t.css=toCss(t);return t}
+  const p=pal(t.c1,t.c2,t.mode,t.adv);t.bg=p.bg;t.a=p.g106;t.b=p.g107;t.custom=true;t.css=toCss(t);return t}
 
 /* ── хранилище тем ── */
 const styleEl=()=>{let e=$('#custom-themes-style');if(!e){e=document.createElement('style');e.id='custom-themes-style';document.head.appendChild(e)}return e};
@@ -5700,7 +5911,7 @@ function addImported(o){const l=rd(K,[]),same=l.find(x=>x.name===o.name&&x.c1===
   if(!same){l.push(t);saveCustoms(l)}
   const h=hidden();if(h.includes(t.id))wr(HK,h.filter(x=>x!==t.id));
   applyTheme(t.id,true);refresh()}
-function fromHash(){if(!/theme=/.test(location.hash))return;const o=unpack(location.hash);history.replaceState(null,'',location.pathname+location.search);
+function fromHash(){if(!/theme=/.test(location.hash))return;const o=unpack(location.hash);history.replaceState(history.state,'',location.pathname+location.search);
   if(!o)return toast('Не удалось прочитать тему из ссылки');
   if(confirm('Добавить тему «'+o.name+'» и применить её?'))addImported(o)}
 
@@ -5717,16 +5928,16 @@ function paint(skip){
   host.querySelectorAll('.tm-mode button').forEach(b=>b.classList.toggle('on',b.dataset.m===st.mode));
   $('#tmPrev').style.cssText=vars(p);
   $('#tmSug').innerHTML=[...new Set(sugg())].map(c=>`<button type="button" class="tm-sw" style="background:${c}" data-c="${c}" aria-label="${c}"></button>`).join('');
-  const bd=(l,a)=>{const r=ctr(a,p.bg);return`<span class="tm-badge ${r>=4.5?'ok':'warn'}">${l} ${r.toFixed(1)}:1</span>`};
-  const weak=[['текст',p.text],['106',p.g106],['107',p.g107],['доп.',p['text-dim']]].filter(([,c])=>ctr(c,p.bg)<4.5);
+  const sf=[p.bg,p.panel,p['panel-2']],cr=a=>minCtr(a,sf);
+  const bd=(l,a)=>{const r=cr(a);return`<span class="tm-badge ${r>=4.5?'ok':'warn'}">${l} ${r.toFixed(1)}:1</span>`};
+  const weak=[['текст',p.text],['106',p.g106],['107',p.g107],['доп.',p['text-dim']]].filter(([,c])=>cr(c)<4.5);
   $('#tmBadges').innerHTML=weak.length?'⚠ '+weak.map(([l,c])=>bd(l,c)).join(''):'';
 }
 /* акценты из гармоний фона: родственный, триада, комплементарный… — стабильны при смене акцента */
-function sugg(){const bg=st.c1,dark=isDark(st),h=hexToHSL(bg)[0];
-  return[0,30,150,180,210,300].map(d=>{let L=dark?68:38,c;for(let i=0;i<20;i++){c=hslToHex(((h+d)%360+360)%360,62,cl(L,6,94));if(ctr(c,bg)>=4.5)break;L+=dark?3:-3}return lift(c,bg,4.5)})}
-function rnd(){const h=Math.random()*360,dark=Math.random()<.6,d=[30,150,180,210][Math.random()*4|0];
-  st.c1=hslToHex(h,15+Math.random()*30,dark?8+Math.random()*8:90+Math.random()*6);
-  st.c2=hslToHex(h+d,60+Math.random()*25,dark?66:40);st.mode='auto';st.adv={};paint()}
+function sugg(){
+  const p=pal(st.c1,st.c2,st.mode,st.adv),dark=isDark(st),surf=[p.bg,p.panel,p['panel-2']],B=hexToHSL(p.bg);
+  const h=B[1]>=5?B[0]:36; /* у нейтрального фона опорный оттенок фиксирован — подсказки не «прыгают» при выборе акцента */
+  return[0,32,-32,150,210,180].map(d=>fitTone(h+d,62,dark?68:38,surf,4.5,dark))}
 function setVal(k,v){if(k==='c1'||k==='c2'){if(v)st[k]=v}else if(v)st.adv[k]=v;else delete st.adv[k]}
 function resetEd(){editId=null;st=DEF();$('#tmName').value='';$('#tmEdTitle').textContent='Создать свою тему';paint()}
 function edit(t){editId=t.id;st={c1:t.c1,c2:t.c2,mode:t.mode,adv:{...(t.adv||{})}};$('#tmName').value=t.name;
@@ -5737,7 +5948,7 @@ function buildEditor(){
 ${field('c1','Фон',BG)}${field('c2','Акцент')}<div class="tm-sug" id="tmSug" data-k="c2"></div>
 <div class="tm-mode" role="group" aria-label="Режим">${[['auto','Авто'],['dark','Тёмная'],['light','Светлая']].map(([v,l])=>`<button type="button" data-m="${v}">${l}</button>`).join('')}</div>
 <details class="tm-adv"><summary>Тонкая настройка (необязательно)</summary>${ADV.map(([k,l])=>field(k,l)).join('')}<p class="tm-hint">Пусто — подберётся само.</p></details>
-<div class="tm-tools"><button type="button" id="tmRnd" class="theme-btn">🎲 Подобрать цвета</button><button type="button" id="tmShare" class="theme-btn">⤴ Поделиться</button></div>
+<div class="tm-tools"><button type="button" id="tmShare" class="theme-btn">⤴ Поделиться</button></div>
 <div class="tm-prev" id="tmPrev"><div class="tm-pv-h">Группа 106 <i>107</i></div><div class="tm-pv-s"><b>09:00–10:30</b>Математический анализ</div><div class="tm-pv-s now"><b>10:40–12:10</b>Алгебра</div></div>
 <div class="tm-badges" id="tmBadges"></div>
 <div class="tm-btns"><button type="button" id="tmSave" class="theme-btn primary">Сохранить тему</button><button type="button" id="tmClear" class="theme-btn">Очистить</button></div>
@@ -5752,7 +5963,6 @@ ${field('c1','Фон',BG)}${field('c2','Акцент')}<div class="tm-sug" id="t
     const sw=e.target.closest('.tm-sw');if(sw){setVal(sw.parentElement.dataset.k,sw.dataset.c);paint();return}
     const m=e.target.closest('.tm-mode button');if(m){st.mode=m.dataset.m;paint()}});
   $('#tmClear').onclick=resetEd;
-  $('#tmRnd').onclick=rnd;
   $('#tmShare').onclick=()=>share({name:$('#tmName').value.trim()||'Моя тема',c1:st.c1,c2:st.c2,mode:st.mode,adv:{...st.adv}});
   $('#tmImpBtn').onclick=()=>{const o=unpack($('#tmImp').value);if(!o)return toast('Не удалось прочитать тему');addImported(o);$('#tmImp').value='';toast('Тема «'+o.name+'» добавлена')};
   $('#tmSave').onclick=()=>{
