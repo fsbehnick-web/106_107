@@ -20,5 +20,3 @@ Thumbs.db
 .env.local
 .env.*.local
 
-# Отдельный репозиторий z
-/z/
